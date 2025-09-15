@@ -7,34 +7,41 @@ export function init(): void {
 
   const el = {
     // controls
-    size: document.getElementById('size'),
-    sizeVal: document.getElementById('sizeVal'),
-    speed: document.getElementById('speed'),
-    speedVal: document.getElementById('speedVal'),
-    start: document.getElementById('start'),
-    pause: document.getElementById('pause'),
-    shuffle: document.getElementById('shuffle'),
+    size: document.getElementById('size') as HTMLInputElement,
+    sizeVal: document.getElementById('sizeVal') as HTMLElement,
+    speed: document.getElementById('speed') as HTMLInputElement,
+    speedVal: document.getElementById('speedVal') as HTMLElement,
+    start: document.getElementById('start') as HTMLButtonElement,
+    pause: document.getElementById('pause') as HTMLButtonElement,
+    shuffle: document.getElementById('shuffle') as HTMLButtonElement,
     // steppers
-    sizeMinus: document.getElementById('sizeMinus'),
-    sizePlus: document.getElementById('sizePlus'),
-    speedMinus: document.getElementById('speedMinus'),
-    speedPlus: document.getElementById('speedPlus'),
+    sizeMinus: document.getElementById('sizeMinus') as HTMLButtonElement,
+    sizePlus: document.getElementById('sizePlus') as HTMLButtonElement,
+    speedMinus: document.getElementById('speedMinus') as HTMLButtonElement,
+    speedPlus: document.getElementById('speedPlus') as HTMLButtonElement,
     // boards
-    barsBubble: document.getElementById('bars-bubble'),
-    barsQuick: document.getElementById('bars-quick'),
-    stepsBubble: document.getElementById('steps-bubble'),
-    stepsQuick: document.getElementById('steps-quick'),
+    barsBubble: document.getElementById('bars-bubble') as HTMLElement,
+    barsQuick: document.getElementById('bars-quick') as HTMLElement,
+    stepsBubble: document.getElementById('steps-bubble') as HTMLElement,
+    stepsQuick: document.getElementById('steps-quick') as HTMLElement,
     // quick overlay
-    partition: document.getElementById('partition-quick'),
-    zoneLeft: document.getElementById('zone-left'),
-    zoneRight: document.getElementById('zone-right'),
-    boundary: document.getElementById('boundary-line'),
-    subrange: document.getElementById('subrange-box'),
-    pivotLine: document.getElementById('pivot-hline'),
+    partition: document.getElementById('partition-quick') as HTMLElement,
+    zoneLeft: document.getElementById('zone-left') as HTMLElement,
+    zoneRight: document.getElementById('zone-right') as HTMLElement,
+    boundary: document.getElementById('boundary-line') as HTMLElement,
+    subrange: document.getElementById('subrange-box') as HTMLElement,
+    pivotLine: document.getElementById('pivot-hline') as HTMLElement,
   };
 
-  const Global = {
-    base: [],       // 共有の初期配列
+  const Global: {
+    base: number[];       // 共有の初期配列
+    size: number;
+    speed: number;
+    playing: boolean;
+    timerBubble: ReturnType<typeof setInterval> | null;
+    timerQuick: ReturnType<typeof setInterval> | null;
+  } = {
+    base: [],
     size: 20,
     speed: 1.0,
     playing: false,
@@ -168,11 +175,11 @@ export function init(): void {
     return steps;
   }
 
-  function renderBoard(board, barsEl, stepsEl){
+  function renderBoard(board: any, barsEl: HTMLElement, stepsEl: HTMLElement){
     const max = Math.max(...board.data, 1);
     // Quick 側は overlay を保持するため、既存バーのみ削除
     if(barsEl !== el.barsQuick){ barsEl.innerHTML=''; }
-    else{ Array.from(barsEl.querySelectorAll('.bar')).forEach(n=>n.remove()); }
+    else{ Array.from(barsEl.querySelectorAll('.bar')).forEach((n: Element)=>n.remove()); }
 
     board.data.forEach((v, idx)=>{
       const bar = document.createElement('div');
@@ -186,14 +193,14 @@ export function init(): void {
     stepsEl.textContent = String(board.steps.length);
   }
 
-  function clearHighlights(barsEl){ Array.from(barsEl.querySelectorAll('.bar')).forEach(c=>{ c.classList.remove('swap'); c.classList.remove('compare'); }); }
-  function markSwap(barsEl, i, j){ const bi = barsEl.querySelectorAll('.bar')[i]; const bj = barsEl.querySelectorAll('.bar')[j]; if(bi) bi.classList.add('swap'); if(bj) bj.classList.add('swap'); }
-  function markCompare(barsEl, i, j){ const bi = barsEl.querySelectorAll('.bar')[i]; const bj = barsEl.querySelectorAll('.bar')[j]; if(bi) bi.classList.add('compare'); if(bj) bj.classList.add('compare'); }
-  function setPivot(board, barsEl, idx){ board.pivotIndex = idx; Array.from(barsEl.querySelectorAll('.bar')).forEach((c, i)=> c.classList.toggle('pivot', i === idx)); }
-  function finishGlow(barsEl){ Array.from(barsEl.querySelectorAll('.bar')).forEach(c=> c.classList.add('sorted')); }
+  function clearHighlights(barsEl: HTMLElement){ Array.from(barsEl.querySelectorAll('.bar')).forEach((c: Element)=>{ c.classList.remove('swap'); c.classList.remove('compare'); }); }
+  function markSwap(barsEl: HTMLElement, i: number, j: number){ const bi = barsEl.querySelectorAll<HTMLElement>('.bar')[i]; const bj = barsEl.querySelectorAll<HTMLElement>('.bar')[j]; if(bi) bi.classList.add('swap'); if(bj) bj.classList.add('swap'); }
+  function markCompare(barsEl: HTMLElement, i: number, j: number){ const bi = barsEl.querySelectorAll<HTMLElement>('.bar')[i]; const bj = barsEl.querySelectorAll<HTMLElement>('.bar')[j]; if(bi) bi.classList.add('compare'); if(bj) bj.classList.add('compare'); }
+  function setPivot(board: any, barsEl: HTMLElement, idx: number | null){ board.pivotIndex = idx; Array.from(barsEl.querySelectorAll('.bar')).forEach((c: Element, i)=> c.classList.toggle('pivot', i === idx)); }
+  function finishGlow(barsEl: HTMLElement){ Array.from(barsEl.querySelectorAll('.bar')).forEach((c: Element)=> c.classList.add('sorted')); }
 
   // --- Quick 用: 境界・横線の描画 ---
-  function updateQuickOverlay(params){
+  function updateQuickOverlay(params?: {lo: number | null; hi: number | null; k?: number | null; show?: boolean | null}){
     const {lo, hi, k, show} = params || {};
     const n = Quick.data.length || 1;
     const leftPct  = (lo==null? 0 : (lo / n) * 100);
@@ -230,7 +237,7 @@ export function init(): void {
     }
   }
 
-  function applyStep(board, barsEl, step){
+  function applyStep(board: any, barsEl: HTMLElement, step: any){
     if(!step) return;
     clearHighlights(barsEl);
 
@@ -240,7 +247,7 @@ export function init(): void {
     else if(step.t==='swap'){
       const {i,j} = step;
       if(i < 0 || j < 0) return;
-      const bars = barsEl.querySelectorAll('.bar');
+      const bars = barsEl.querySelectorAll<HTMLElement>('.bar');
 
       // 値/ラベルを入れ替え
       [board.data[i], board.data[j]] = [board.data[j], board.data[i]];
@@ -294,17 +301,17 @@ export function init(): void {
       updateQuickOverlay({lo, hi, k: step.k, show: step.show});
     }
     else if(step.t==='markL' && board.kind==='quick'){
-      const bar = barsEl.querySelectorAll('.bar')[step.i]; if(bar){ bar.classList.add('candL'); }
+      const bar = barsEl.querySelectorAll<HTMLElement>('.bar')[step.i]; if(bar){ bar.classList.add('candL'); }
     }
     else if(step.t==='markR' && board.kind==='quick'){
-      const bar = barsEl.querySelectorAll('.bar')[step.i]; if(bar){ bar.classList.add('candR'); }
+      const bar = barsEl.querySelectorAll<HTMLElement>('.bar')[step.i]; if(bar){ bar.classList.add('candR'); }
     }
     else if(step.t==='clearMarks' && board.kind==='quick'){
-      Array.from(barsEl.querySelectorAll('.bar')).forEach(b=> b.classList.remove('candL','candR'));
+      Array.from(barsEl.querySelectorAll('.bar')).forEach((b: Element)=> b.classList.remove('candL','candR'));
     }
   }
 
-  function tick(board){
+  function tick(board: any){
     const isBubble = board.kind==='bubble';
     const barsEl   = isBubble ? el.barsBubble : el.barsQuick;
     const stepsEl  = isBubble ? el.stepsBubble : el.stepsQuick;
@@ -352,8 +359,8 @@ export function init(): void {
 
     renderBoard(Bubble, el.barsBubble, el.stepsBubble);
     renderBoard(Quick , el.barsQuick , el.stepsQuick );
-    Array.from(el.barsBubble.querySelectorAll('.bar')).forEach(c=> c.classList.remove('sorted'));
-    Array.from(el.barsQuick .querySelectorAll('.bar')).forEach(c=> c.classList.remove('sorted','candL','candR'));
+    Array.from(el.barsBubble.querySelectorAll('.bar')).forEach((c: Element)=> c.classList.remove('sorted'));
+    Array.from(el.barsQuick .querySelectorAll('.bar')).forEach((c: Element)=> c.classList.remove('sorted','candL','candR'));
   }
 
   // ======= サニティテスト（コンソール出力のみ） =======
@@ -365,9 +372,9 @@ export function init(): void {
   function isSortedAsc(a){ for(let i=1;i<a.length;i++){ if(a[i-1]>a[i]) return false; } return true; }
 
   function runSanityTests(){
-    const ok = (name)=>console.log('✅', name);
-    const ng = (name, detail)=>console.warn('❌', name, detail||'');
-    const globalSnap = { speed: Global.speed, slider: parseFloat(el.speed.value), label: el.speedVal.textContent };
+    const ok = (name: string, detail?: unknown)=>console.log('✅', name, detail ?? '');
+    const ng = (name: string, detail?: unknown)=>console.warn('❌', name, detail ?? '');
+    const globalSnap = { speed: Global.speed, slider: parseFloat(el.speed.value), label: el.speedVal.textContent || '' };
 
     // T0: isSortedAsc
     { const asc=[1,2,3,4,5], dsc=[5,4,3,2,1]; const okAsc=isSortedAsc(asc)===true, okDsc=isSortedAsc(dsc)===false; (okAsc&&okDsc)? ok('isSortedAsc basic') : ng('isSortedAsc basic', `${okAsc},${okDsc}`); }
@@ -388,9 +395,9 @@ export function init(): void {
     // T8: fixed transition speed
     { const before=getComputedStyle(document.documentElement).getPropertyValue('--transMs').trim(); Global.speed=0.2; rescheduleTimers(); const after1=getComputedStyle(document.documentElement).getPropertyValue('--transMs').trim(); Global.speed=10.0; rescheduleTimers(); const after2=getComputedStyle(document.documentElement).getPropertyValue('--transMs').trim(); (before===after1 && after1===after2)? ok('fixed transition speed') : ng('fixed transition speed', `before=${before}, after1=${after1}, after2=${after2}`); }
     // T9: details open by default
-    { const d1=document.getElementById('board-bubble'); const d2=document.getElementById('board-quick'); (d1.open && d2.open)? ok('details open by default') : ng('details open by default', `bubble=${d1.open}, quick=${d2.open}`); }
+    { const d1=document.getElementById('board-bubble') as HTMLDetailsElement; const d2=document.getElementById('board-quick') as HTMLDetailsElement; (d1.open && d2.open)? ok('details open by default') : ng('details open by default', `bubble=${d1.open}, quick=${d2.open}`); }
     // T10: speed restored after tests
-    { Global.speed = parseFloat(globalSnap.speed); el.speed.value = String(globalSnap.slider); el.speedVal.textContent = String(globalSnap.label); const after = computeInterval(); (parseFloat(el.speed.value)===globalSnap.speed && el.speedVal.textContent===globalSnap.label && after===computeInterval()) ? ok('speed restored after tests') : ng('speed restored after tests', `speed=${Global.speed}, label=${el.speedVal.textContent}`); }
+    { Global.speed = globalSnap.speed; el.speed.value = String(globalSnap.slider); el.speedVal.textContent = String(globalSnap.label); const after = computeInterval(); (parseFloat(el.speed.value)===globalSnap.speed && el.speedVal.textContent===globalSnap.label && after===computeInterval()) ? ok('speed restored after tests') : ng('speed restored after tests', `speed=${Global.speed}, label=${el.speedVal.textContent}`); }
     // T11: quick has range/boundary
     { const st=buildQuickSteps([3,2,1]); const hasRange=st.some(s=>s.t==='range'); const hasBoundary=st.some(s=>s.t==='boundary'); (hasRange&&hasBoundary)? ok('quick has range/boundary') : ng('quick has range/boundary', JSON.stringify(st.slice(0,6))); }
     // T12: overlay style updated
@@ -412,7 +419,7 @@ export function init(): void {
     // T20: boundary hidden in left scan
     { const st=buildQuickSteps([2,3,1]); const hidden=st.some(s=>s.t==='boundary' && s.show===false); (hidden)? ok('boundary hidden in left scan') : ng('boundary hidden in left scan', JSON.stringify(st.slice(0,10))); }
     // T21: boundary hidden after markL
-    { const st=buildQuickSteps([1,3,2,4]); const idxL=st.findIndex(s=>s.t==='markL'); let okFlag=false; if(idxL>=0){ for(let u=idxL+1; u<st.length; u++){ if(st[u].t==='boundary' && s.show===false){ okFlag=true; break; } if(st[u].t==='markR' || st[u].t==='swap') break; } } okFlag? ok('boundary hidden after markL') : ng('boundary hidden after markL'); }
+    { const st=buildQuickSteps([1,3,2,4]); const idxL=st.findIndex(s=>s.t==='markL'); let okFlag=false; if(idxL>=0){ for(let u=idxL+1; u<st.length; u++){ if(st[u].t==='boundary' && st[u].show===false){ okFlag=true; break; } if(st[u].t==='markR' || st[u].t==='swap') break; } } okFlag? ok('boundary hidden after markL') : ng('boundary hidden after markL'); }
     // T22: boundary hidden after swap
     try{
       const snap=snapshotBoard(Quick);
@@ -441,12 +448,12 @@ export function init(): void {
     try{
       const prev = Global.size;
       el.size.value = '50'; el.size.dispatchEvent(new Event('input', {bubbles:true}));
-      const barsNow = el.barsBubble.querySelectorAll('.bar').length; const labelNow = el.sizeVal.textContent.trim();
+      const barsNow = el.barsBubble.querySelectorAll('.bar').length; const labelNow = (el.sizeVal.textContent || '').trim();
       (barsNow===50 && labelNow==='50') ? ok('size slider reaches 50') : ng('size slider reaches 50', `bars=${barsNow}, label=${labelNow}`);
       el.size.value = String(prev); el.size.dispatchEvent(new Event('input', {bubbles:true}));
     }catch(e){ ng('size slider reaches 50 (exception)', String(e)); }
     // T31: linear 5x vs 2.5x
-    { const eps=1; const keep=Global.speed; Global.speed=2.5; const i25=computeInterval(); Global.speed=5.0; const i5=computeInterval(); Global.speed=keep; (Math.abs(i10*2 - i5)<=eps)? ok('linearity 5x vs 2.5x') : ng('linearity 5x vs 2.5x', `i5=${i5}, i25=${i25}`); }
+    { const eps=1; const keep=Global.speed; Global.speed=2.5; const i25=computeInterval(); Global.speed=5.0; const i5=computeInterval(); Global.speed=keep; (Math.abs(i5*2 - i25)<=eps)? ok('linearity 5x vs 2.5x') : ng('linearity 5x vs 2.5x', `i5=${i5}, i25=${i25}`); }
     // T32: linear 2x vs 1x
     { const eps=1; const keep=Global.speed; Global.speed=1.0; const i1=computeInterval(); Global.speed=2.0; const i2=computeInterval(); Global.speed=keep; (Math.abs(i2*2 - i1)<=eps)? ok('linearity 2x vs 1x') : ng('linearity 2x vs 1x', `i1=${i1}, i2=${i2}`); }
     // T33: linear 3x vs 1.5x
@@ -458,7 +465,7 @@ export function init(): void {
   }
 
   // ======= イベント =======
-  function adjustByStep(inputEl, dir){
+  function adjustByStep(inputEl: HTMLInputElement, dir: number){
     const min = parseFloat(inputEl.min); const max = parseFloat(inputEl.max); const step = parseFloat(inputEl.step || '1');
     const cur = parseFloat(inputEl.value);
     let next = cur + dir*step;
@@ -469,7 +476,7 @@ export function init(): void {
   }
 
   el.size.addEventListener('input', (e)=>{
-    const n = parseInt(e.target.value, 10);
+    const n = parseInt((e.target as HTMLInputElement).value, 10);
     el.sizeVal.textContent = String(n);
     Global.size = n;
     Global.base = genArray(n);
@@ -481,7 +488,7 @@ export function init(): void {
   el.sizePlus .addEventListener('click', ()=> adjustByStep(el.size, +1));
 
   el.speed.addEventListener('input', (e)=>{
-    const sp = parseFloat(e.target.value);
+    const sp = parseFloat((e.target as HTMLInputElement).value);
     Global.speed = sp; el.speedVal.textContent = sp.toFixed(2) + 'x';
     if(Global.playing) rescheduleTimers(); else updateVisualSpeed();
   });
