@@ -146,6 +146,7 @@ export default function App() {
       <div className="toolbar">
         <div className="group stepper">
           <label>本数</label>
+          <span className="value">{size}</span>
           <button className="stepperBtn" onClick={decSize}>
             -
           </button>
@@ -159,10 +160,10 @@ export default function App() {
           <button className="stepperBtn" onClick={incSize}>
             +
           </button>
-          <span>{size}</span>
         </div>
         <div className="group stepper">
-          <label>速度</label>
+          <label>アニメ速度</label>
+          <span className="value">{speed.toFixed(2)}x</span>
           <button className="stepperBtn" onClick={decSpeed}>
             -
           </button>
@@ -177,7 +178,6 @@ export default function App() {
           <button className="stepperBtn" onClick={incSpeed}>
             +
           </button>
-          <span>{speed.toFixed(2)}x</span>
         </div>
         <button className="btn primary" onClick={play}>
           再生
