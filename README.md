@@ -24,6 +24,9 @@ src/
 tests/
   run-tests.ts        … 仕様に基づくテスト
   helpers.ts          … テスト用ユーティリティ
+scripts/
+  dev.js              … 開発サーバー
+  copy-static.js      … HTML/CSS コピー
 public/
   (tsc の出力先)
 ```
@@ -47,7 +50,15 @@ public/
    ```
 
 ## 起動方法
-ビルド後、ブラウザで `src/index.html` を開きます。ローカルファイルとして開くか、任意の静的サーバーで配信してください。
+開発サーバーを起動するには次を実行します。
+
+```bash
+yarn dev
+```
+
+ブラウザで http://localhost:3000 を開きます。
+
+ビルド済みの静的ファイルは `public/` 以下に生成されるため、任意の静的サーバーで公開できます。
 
 ## 備考
 - TypeScript の出力は `public/` 以下に生成されます。

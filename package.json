@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/copy-static.js",
+    "dev": "node scripts/dev.js",
     "test": "node public/tests/run-tests.js",
     "lint": "eslint 'src/**/*.{ts,tsx}' 'tests/**/*.ts'"
   },
