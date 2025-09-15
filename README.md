@@ -13,6 +13,7 @@
 ```
 src/
   App.tsx             … 画面全体の UI
+  index.html          … Vite エントリ
   algorithms/
     bubbleSort.ts     … バブルソートのステップ生成
     quickSort.ts      … クイックソートのステップ生成
@@ -25,10 +26,8 @@ src/
 tests/
   run-tests.ts        … 仕様に基づくテスト
   helpers.ts          … テスト用ユーティリティ
-index.html            … Vite エントリ
 vite.config.ts        … Vite 設定
-dist/                 … `yarn test` 実行時の一時出力
-public/               … `yarn build` の生成物
+public/               … `yarn build` とテストの生成物
 ```
 
 ## 開発手順
@@ -63,4 +62,4 @@ yarn dev
 ビルド済みの静的ファイルは `public/` 以下に生成されるため、任意の静的サーバーで公開できます。
 
 ## 備考
-- テスト用のトランスパイル結果は `dist/` 以下に生成されます。
+- テスト用のトランスパイル結果は `public/` 以下に生成されます。
