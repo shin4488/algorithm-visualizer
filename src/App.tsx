@@ -1,10 +1,9 @@
+import React, { useState, useEffect, useRef } from "react";
 import { buildBubbleSteps } from "./algorithms/bubbleSort";
 import { buildQuickSteps } from "./algorithms/quickSort";
 import { genArray } from "./array";
 import { computeInterval } from "./speed";
 import type { Step } from "./steps";
-
-const { useState, useEffect, useRef } = React;
 
 interface BoardState {
   data: number[];

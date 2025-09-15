@@ -1,8 +1,13 @@
-declare const React: any;
-declare const ReactDOM: any;
+declare module 'react' {
+  export const useState: any;
+  export const useEffect: any;
+  export const useRef: any;
+  const React: any;
+  export default React;
+}
 
-declare namespace JSX {
-  interface IntrinsicElements {
-    [elemName: string]: any;
-  }
+declare module 'react-dom/client' {
+  export function createRoot(element: Element | DocumentFragment): {
+    render(children: any): void;
+  };
 }

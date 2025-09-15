@@ -5,6 +5,7 @@
 ## 利用技術
 - React 18
 - TypeScript 5
+- Vite 5
 - Yarn (パッケージ管理)
 - ESLint / Prettier
 
@@ -20,15 +21,14 @@ src/
   steps.ts            … 可視化ステップ型定義
   main.tsx            … エントリーポイント
   styles.css          … スタイル
-  types.d.ts          … グローバル型定義
+  types.d.ts          … 型定義スタブ
 tests/
   run-tests.ts        … 仕様に基づくテスト
   helpers.ts          … テスト用ユーティリティ
-scripts/
-  dev.js              … 開発サーバー
-  copy-static.js      … HTML/CSS コピー
-public/
-  (tsc の出力先)
+index.html            … Vite エントリ
+vite.config.ts        … Vite 設定
+dist/                 … `yarn test` 実行時の一時出力
+public/               … `yarn build` の生成物
 ```
 
 ## 開発手順
@@ -36,30 +36,31 @@ public/
    ```bash
    yarn install
    ```
-2. ビルド
+2. 開発サーバー
+   ```bash
+   yarn dev
+   ```
+3. ビルド
    ```bash
    yarn build
    ```
-3. テスト実行
+4. テスト実行
    ```bash
    yarn test
    ```
-4. コード整形・静的解析
+5. コード整形・静的解析
    ```bash
    yarn lint
    ```
 
 ## 起動方法
-開発サーバーを起動するには次を実行します。
+開発サーバーを起動するには次を実行し、ブラウザで http://localhost:5173 を開きます。
 
 ```bash
 yarn dev
 ```
 
-ブラウザで http://localhost:3000 を開きます。
-
 ビルド済みの静的ファイルは `public/` 以下に生成されるため、任意の静的サーバーで公開できます。
 
 ## 備考
-- TypeScript の出力は `public/` 以下に生成されます。
-- React と ReactDOM は `node_modules/` から UMD 版を読み込みます。
+- テスト用のトランスパイル結果は `dist/` 以下に生成されます。
