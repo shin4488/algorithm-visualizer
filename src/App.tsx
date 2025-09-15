@@ -145,8 +145,9 @@ export default function App() {
       </h1>
       <div className="toolbar">
         <div className="group stepper">
-          <label>本数</label>
-          <span className="value">{size}</span>
+          <label>
+            本数: <span className="value">{size}</span>
+          </label>
           <button className="stepperBtn" onClick={decSize}>
             -
           </button>
@@ -162,8 +163,9 @@ export default function App() {
           </button>
         </div>
         <div className="group stepper">
-          <label>アニメ速度</label>
-          <span className="value">{speed.toFixed(2)}x</span>
+          <label>
+            アニメ速度: <span className="value">{speed.toFixed(2)}x</span>
+          </label>
           <button className="stepperBtn" onClick={decSpeed}>
             -
           </button>
