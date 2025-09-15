@@ -1,11 +1,9 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
-const App: React.FC = () => {
-  return <h1>アルゴリズム可視化へようこそ</h1>;
-};
+const App: React.FC = () => null;
 
-const container = document.getElementById('root');
+const container = document.getElementById('react-root');
 if (container) {
   const root = createRoot(container);
   root.render(<App />);
