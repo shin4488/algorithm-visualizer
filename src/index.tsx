@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
+import App from './App';
+import { init } from './visualizer';
 
-const App: React.FC = () => null;
+const Root: React.FC = () => {
+  useEffect(() => {
+    init();
+  }, []);
+  return <App />;
+};
 
-const container = document.getElementById('react-root');
+const container = document.getElementById('root');
 if (container) {
-  const root = createRoot(container);
-  root.render(<App />);
+  createRoot(container).render(<Root />);
 }

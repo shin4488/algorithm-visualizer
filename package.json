@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "yarn parcel src/index.html --dist-dir public",
-    "build": "yarn parcel build src/index.html --dist-dir public",
+    "dev": "parcel src/index.html --dist-dir public",
+    "build": "parcel build src/index.html --dist-dir public",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
