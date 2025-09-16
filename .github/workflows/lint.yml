@@ -1,0 +1,83 @@
+name: Lint and format
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  eslint:
+    name: ESLint (reviewdog)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Collect files for ESLint
+        id: eslint-files
+        run: |
+          files=$(git diff --name-only --diff-filter=ACMRTUXB origin/${{ github.event.pull_request.base.ref }}...HEAD | grep -E '\.(js|jsx|ts|tsx)$' || true)
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$files" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+      - name: Run ESLint with reviewdog
+        if: steps.eslint-files.outputs.files != ''
+        uses: reviewdog/action-eslint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          filter_mode: diff_context
+          fail_on_error: true
+          eslint_flags: '${{ steps.eslint-files.outputs.files }}'
+      - name: Skip ESLint (no changed files)
+        if: steps.eslint-files.outputs.files == ''
+        run: echo "No files to lint"
+
+  prettier:
+    name: Prettier (reviewdog)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Collect files for Prettier
+        id: prettier-files
+        run: |
+          files=$(git diff --name-only --diff-filter=ACMRTUXB origin/${{ github.event.pull_request.base.ref }}...HEAD | grep -E '\.(js|jsx|ts|tsx|css|scss|json|md)$' || true)
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$files" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+      - name: Run Prettier with reviewdog
+        if: steps.prettier-files.outputs.files != ''
+        uses: reviewdog/action-prettier@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          filter_mode: diff_context
+          fail_on_error: true
+          prettier_path: ./node_modules/.bin/prettier
+          prettier_flags: '--check ${{ steps.prettier-files.outputs.files }}'
+      - name: Skip Prettier (no changed files)
+        if: steps.prettier-files.outputs.files == ''
+        run: echo "No files to format"
