@@ -124,7 +124,9 @@ describe('Algorithm visualizer UI specification', () => {
     expect(
       within(quickLegend as HTMLElement).getByText('入れ替え/比較（赤）'),
     ).toBeInTheDocument();
-    expect(within(quickLegend as HTMLElement).getByText(/ピボット/)).toBeInTheDocument();
+    expect(
+      within(quickLegend as HTMLElement).getByText('ピボット', { exact: true })
+    ).toBeInTheDocument();
     expect(within(quickLegend as HTMLElement).getByText(/境界/)).toBeInTheDocument();
     expect(within(quickLegend as HTMLElement).getByText(/ピボット高/)).toBeInTheDocument();
     expect(within(quickLegend as HTMLElement).getByText(/ソート完了/)).toBeInTheDocument();
