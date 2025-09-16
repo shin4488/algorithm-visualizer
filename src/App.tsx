@@ -3,9 +3,7 @@ import './styles.css';
 
 const App = () => (
   <div className="wrap">
-    <h1>
-      アルゴリズム可視化 <span className="sub">— バブルソート & クイックソート（同時比較・折りたたみ可）</span>
-    </h1>
+    <h1>アルゴリズム可視化</h1>
     <div className="panel">
       <div className="toolbar">
         <div className="group">
