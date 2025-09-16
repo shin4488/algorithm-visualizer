@@ -1,9 +1,141 @@
+export interface StepBase { show?: boolean | null }
+export interface StepCompare extends StepBase { t: 'compare'; i: number; j: number }
+export interface StepSwap    extends StepBase { t: 'swap'; i: number; j: number }
+export interface StepPivot   extends StepBase { t: 'pivot'; i: number | null }
+export interface StepRange   extends StepBase { t: 'range'; lo: number | null; hi: number | null }
+export interface StepBoundary extends StepBase { t: 'boundary'; k: number; lo?: number; hi?: number }
+export interface StepMarkL   extends StepBase { t: 'markL'; i: number }
+export interface StepMarkR   extends StepBase { t: 'markR'; i: number }
+export interface StepClear   extends StepBase { t: 'clearMarks' }
+export type Step =
+  | StepCompare
+  | StepSwap
+  | StepPivot
+  | StepRange
+  | StepBoundary
+  | StepMarkL
+  | StepMarkR
+  | StepClear;
+
+export function genArray(n: number): number[] {
+  const size = Math.max(0, Number.isFinite(n) ? Math.floor(n) : 0);
+  const arr = Array.from({ length: size }, (_, i) => i + 1);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+export function buildBubbleSteps(arr: number[]): Step[] {
+  const a = arr.slice();
+  const steps: Step[] = [];
+  const n = a.length;
+  for (let i = 0; i < n - 1; i++) {
+    for (let j = 0; j < n - 1 - i; j++) {
+      steps.push({ t: 'compare', i: j, j: j + 1 });
+      if (a[j] > a[j + 1]) {
+        [a[j], a[j + 1]] = [a[j + 1], a[j]];
+        steps.push({ t: 'swap', i: j, j: j + 1 });
+      }
+    }
+  }
+  return steps;
+}
+
+// ===== ユーザー指定の二方向探索（右端ピボット）実装 =====
+export function buildQuickSteps(arr: number[]): Step[] {
+  const a = arr.slice();
+  const steps: Step[] = [];
+
+  const swap = (i: number, j: number) => {
+    if (i === j) return;
+    [a[i], a[j]] = [a[j], a[i]];
+    steps.push({ t: 'swap', i, j });
+  };
+  const stack: Array<[number, number]> = [[0, a.length - 1]];
+
+  while (stack.length) {
+    const [lo, hi] = stack.pop()!;
+    if (lo >= hi) continue;
+
+    const pIdx = hi; // 1) ピボットは右端
+    const pivotVal = a[pIdx];
+
+    // 可視化
+    steps.push({ t: 'range', lo, hi });
+    steps.push({ t: 'pivot', i: pIdx });
+
+    let i = lo;
+    let j = hi - 1; // 右探索は pivot の1つ左から
+    steps.push({ t: 'boundary', k: i, lo, hi, show: false }); // 左走査時は境界線を隠す
+
+    // 両側探索（Hoare 風）
+    while (true) {
+      // 左から：pivot 以下ならスルー（毎回比較表示）。境界線は非表示更新
+      while (i <= j && a[i] <= pivotVal) {
+        steps.push({ t: 'compare', i: i, j: pIdx });
+        i++;
+      }
+      // 候補（a[i] > pivot）に止まった位置も比較表示＆マークリング
+      if (i <= j) {
+        steps.push({ t: 'compare', i: i, j: pIdx });
+        steps.push({ t: 'markL', i: i });
+        // 左候補が確定したら、右走査に入る前に境界線を非表示にする
+        steps.push({ t: 'boundary', k: i, lo, hi, show: false });
+      }
+
+      // 右から：pivot 以上ならスルー（毎回比較表示）。このフェーズは境界線を表示してOK
+      while (i <= j && a[j] >= pivotVal) {
+        steps.push({ t: 'compare', i: j, j: pIdx });
+        j--;
+      }
+      if (i <= j) {
+        steps.push({ t: 'compare', i: j, j: pIdx });
+        steps.push({ t: 'markR', i: j });
+      }
+
+      if (i >= j) {
+        steps.push({ t: 'clearMarks' });
+        break;
+      } // 交差/一致で終了
+
+      // 候補を交換
+      swap(i, j);
+      steps.push({ t: 'clearMarks' });
+      i++;
+      j--;
+      // スワップ直後は左側に余計な境界線を出さない
+      steps.push({ t: 'boundary', k: i, lo, hi, show: false });
+    }
+
+    // i が hi+1 へ進んだケースをケア
+    if (i > hi) i = hi;
+
+    // ピボットを境界 i に配置
+    swap(i, hi);
+    steps.push({ t: 'pivot', i: i });
+    // ピボット確定直後は「処理対象なし」のため、水色枠/境界は消す
+    steps.push({ t: 'boundary', k: i, lo, hi, show: false });
+    steps.push({ t: 'range', lo: null, hi: null });
+
+    // 再帰領域
+    stack.push([lo, i - 1]);
+    stack.push([i + 1, hi]);
+  }
+
+  // 片付け
+  steps.push({ t: 'pivot', i: null });
+  steps.push({ t: 'range', lo: null, hi: null });
+  return steps;
+}
+
 export function init(): void {
   // ======= 共通設定 =======
   const SWAP_TRANS_MS = 120; // 棒の入れ替え（高さ遷移）は常に一定速度
-  const BASE_STEP_MS = 600;  // 1.00x のときのステップ間隔（←これが実効速度の基準）
-  const MIN_TIMER_MS = 4;    // 線形比率を壊さないための下限（ブラウザの最小タイマーに合わせる）
-  const SPEED_COEFF  = 0.7;  // 全体をスロー目に（線形）
+  const BASE_STEP_MS = 600; // 1.00x のときのステップ間隔（←これが実効速度の基準）
+  const MIN_TIMER_MS = 4; // 線形比率を壊さないための下限（ブラウザの最小タイマーに合わせる）
+  const SPEED_COEFF = 0.7; // 全体をスロー目に（線形）
 
   const el = {
     // controls
@@ -32,17 +164,6 @@ export function init(): void {
     subrange: document.getElementById('subrange-box') as HTMLElement,
     pivotLine: document.getElementById('pivot-hline') as HTMLElement,
   };
-
-  interface StepBase { show?: boolean | null }
-  interface StepCompare extends StepBase { t: 'compare'; i: number; j: number }
-  interface StepSwap    extends StepBase { t: 'swap'; i: number; j: number }
-  interface StepPivot   extends StepBase { t: 'pivot'; i: number | null }
-  interface StepRange   extends StepBase { t: 'range'; lo: number | null; hi: number | null }
-  interface StepBoundary extends StepBase { t: 'boundary'; k: number; lo?: number; hi?: number }
-  interface StepMarkL   extends StepBase { t: 'markL'; i: number }
-  interface StepMarkR   extends StepBase { t: 'markR'; i: number }
-  interface StepClear   extends StepBase { t: 'clearMarks' }
-  type Step = StepCompare | StepSwap | StepPivot | StepRange | StepBoundary | StepMarkL | StepMarkR | StepClear;
 
   interface Board {
     kind: 'bubble' | 'quick';
@@ -73,17 +194,6 @@ export function init(): void {
     timerQuick: null,
   };
 
-  // ------ 乱数配列（1..n の置換） ------
-  function genArray(n: number): number[]{
-    const size = Math.max(0, Number.isFinite(n) ? Math.floor(n) : 0);
-    const arr = Array.from({length: size}, (_, i) => i + 1);
-    for(let i = arr.length - 1; i > 0; i--){
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
-
   function computeInterval(){
     // スライダー値 s を線形変換（比率厳密）
     const s = Math.min(parseFloat(el.speed.max)||10, Math.max(parseFloat(el.speed.min)||0.2, Global.speed));
@@ -108,96 +218,6 @@ export function init(): void {
   }
   const Bubble: Board = makeBoard('bubble');
   const Quick : Board = makeBoard('quick');
-
-  function buildBubbleSteps(arr: number[]): Step[]{
-    const a = arr.slice(); const steps: Step[] = []; const n = a.length;
-    for(let i=0;i<n-1;i++){
-      for(let j=0;j<n-1-i;j++){
-        steps.push({t:'compare', i:j, j:j+1});
-        if(a[j] > a[j+1]){ [a[j], a[j+1]] = [a[j+1], a[j]]; steps.push({t:'swap', i:j, j:j+1}); }
-      }
-    }
-    return steps;
-  }
-
-  // ===== ユーザー指定の二方向探索（右端ピボット）実装 =====
-  function buildQuickSteps(arr: number[]): Step[]{
-    const a = arr.slice();
-    const steps: Step[] = [];
-
-    const swap = (i: number, j: number)=>{ if(i===j) return; [a[i], a[j]] = [a[j], a[i]]; steps.push({t:'swap', i, j}); };
-    const stack: Array<[number, number]> = [[0, a.length-1]];
-
-    while(stack.length){
-      const [lo, hi] = stack.pop()!;
-      if(lo >= hi) continue;
-
-      const pIdx = hi;                 // 1) ピボットは右端
-      const pivotVal = a[pIdx];
-
-      // 可視化
-      steps.push({t:'range', lo, hi});
-      steps.push({t:'pivot', i:pIdx});
-
-      let i = lo;
-      let j = hi - 1;                  // 右探索は pivot の1つ左から
-      steps.push({t:'boundary', k:i, lo, hi, show:false}); // 左走査時は境界線を隠す
-
-      // 両側探索（Hoare 風）
-      while(true){
-        // 左から：pivot 以下ならスルー（毎回比較表示）。境界線は非表示更新
-        while(i <= j && a[i] <= pivotVal){
-          steps.push({t:'compare', i:i, j:pIdx});
-          i++;
-        }
-        // 候補（a[i] > pivot）に止まった位置も比較表示＆マークリング
-        if(i <= j){
-          steps.push({t:'compare', i:i, j:pIdx});
-          steps.push({t:'markL', i:i});
-          // 左候補が確定したら、右走査に入る前に境界線を非表示にする
-          steps.push({t:'boundary', k:i, lo, hi, show:false});
-        }
-
-        // 右から：pivot 以上ならスルー（毎回比較表示）。このフェーズは境界線を表示してOK
-        while(i <= j && a[j] >= pivotVal){
-          steps.push({t:'compare', i:j, j:pIdx});
-          j--;
-        }
-        if(i <= j){
-          steps.push({t:'compare', i:j, j:pIdx});
-          steps.push({t:'markR', i:j});
-        }
-
-        if(i >= j){ steps.push({t:'clearMarks'}); break; } // 交差/一致で終了
-
-        // 候補を交換
-        swap(i, j);
-        steps.push({t:'clearMarks'});
-        i++; j--;
-        // スワップ直後は左側に余計な境界線を出さない
-        steps.push({t:'boundary', k:i, lo, hi, show:false});
-      }
-
-      // i が hi+1 へ進んだケースをケア
-      if(i > hi) i = hi;
-
-      // ピボットを境界 i に配置
-      swap(i, hi);
-      steps.push({t:'pivot', i:i});
-      // ピボット確定直後は「処理対象なし」のため、水色枠/境界は消す
-      steps.push({t:'boundary', k:i, lo, hi, show:false});
-      steps.push({t:'range', lo:null, hi:null});
-
-      // 再帰領域
-      stack.push([lo, i-1]);
-      stack.push([i+1, hi]);
-    }
-
-    // 片付け
-    steps.push({t:'pivot', i:null});
-    steps.push({t:'range', lo:null, hi:null});
-    return steps;
-  }
 
   function renderBoard(board: Board, barsEl: HTMLElement, stepsEl: HTMLElement){
     const max = Math.max(...board.data, 1);

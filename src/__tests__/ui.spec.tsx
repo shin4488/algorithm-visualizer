@@ -109,12 +109,16 @@ describe('Algorithm visualizer UI specification', () => {
 
     const bubbleLegend = bubblePanel.querySelector('.legend');
     expect(bubbleLegend).not.toBeNull();
-    expect(within(bubbleLegend as HTMLElement).getByText(/入れ替え/比較（赤）/)).toBeInTheDocument();
+    expect(
+      within(bubbleLegend as HTMLElement).getByText('入れ替え/比較（赤）'),
+    ).toBeInTheDocument();
     expect(within(bubbleLegend as HTMLElement).getByText(/ソート完了/)).toBeInTheDocument();
 
     const quickLegend = quickPanel.querySelector('.legend');
     expect(quickLegend).not.toBeNull();
-    expect(within(quickLegend as HTMLElement).getByText(/入れ替え/比較（赤）/)).toBeInTheDocument();
+    expect(
+      within(quickLegend as HTMLElement).getByText('入れ替え/比較（赤）'),
+    ).toBeInTheDocument();
     expect(within(quickLegend as HTMLElement).getByText(/ピボット/)).toBeInTheDocument();
     expect(within(quickLegend as HTMLElement).getByText(/境界/)).toBeInTheDocument();
     expect(within(quickLegend as HTMLElement).getByText(/ピボット高/)).toBeInTheDocument();
