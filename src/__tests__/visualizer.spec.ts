@@ -153,12 +153,12 @@ describe('visualizer logic specification', () => {
     random.mockRestore();
 
     expect(five).toHaveLength(5);
-    expect(new Set(five)).toHaveSize(5);
+    expect(new Set(five).size).toBe(5);
     expect(Math.min(...five)).toBe(1);
     expect(Math.max(...five)).toBe(5);
 
     expect(fifty).toHaveLength(50);
-    expect(new Set(fifty)).toHaveSize(50);
+    expect(new Set(fifty).size).toBe(50);
     expect(Math.min(...fifty)).toBe(1);
     expect(Math.max(...fifty)).toBe(50);
   });

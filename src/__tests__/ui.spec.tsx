@@ -33,7 +33,7 @@ describe('Algorithm visualizer UI specification', () => {
   it('renders the size control slider with the specified defaults and range', () => {
     renderWithInit();
 
-    const sizeSlider = screen.getByLabelText(/本数/i) as HTMLInputElement;
+    const sizeSlider = screen.getByRole('slider', { name: /本数/ }) as HTMLInputElement;
     expect(sizeSlider).toHaveAttribute('type', 'range');
     expect(sizeSlider).toHaveAttribute('min', '5');
     expect(sizeSlider).toHaveAttribute('max', '50');
@@ -54,7 +54,7 @@ describe('Algorithm visualizer UI specification', () => {
   it('renders the speed control with the specified range and two-decimal display', async () => {
     renderWithInit();
 
-    const speedSlider = screen.getByLabelText(/アニメ速度/i) as HTMLInputElement;
+    const speedSlider = screen.getByRole('slider', { name: /アニメ速度/ }) as HTMLInputElement;
     expect(speedSlider).toHaveAttribute('type', 'range');
     expect(speedSlider).toHaveAttribute('min', '0.2');
     expect(speedSlider).toHaveAttribute('max', '10');
@@ -104,8 +104,13 @@ describe('Algorithm visualizer UI specification', () => {
     expect(bubblePanel.open).toBe(true);
     expect(quickPanel.open).toBe(true);
 
-    expect(within(bubblePanel).getByText(/ステップ:\s*0/)).toBeInTheDocument();
-    expect(within(quickPanel).getByText(/ステップ:\s*0/)).toBeInTheDocument();
+    const bubbleMeta = bubblePanel.querySelector('.summary-meta');
+    expect(bubbleMeta).not.toBeNull();
+    expect(bubbleMeta).toHaveTextContent(/^ステップ:\s*0$/);
+
+    const quickMeta = quickPanel.querySelector('.summary-meta');
+    expect(quickMeta).not.toBeNull();
+    expect(quickMeta).toHaveTextContent(/^ステップ:\s*0$/);
 
     const bubbleLegend = bubblePanel.querySelector('.legend');
     expect(bubbleLegend).not.toBeNull();
@@ -131,7 +136,7 @@ describe('Algorithm visualizer UI specification', () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: '本数を1増やす' }));
 
-    const sizeSlider = screen.getByLabelText(/本数/i) as HTMLInputElement;
+    const sizeSlider = screen.getByRole('slider', { name: /本数/ }) as HTMLInputElement;
     await waitFor(() => {
       expect(sizeSlider.value).toBe('21');
     });
@@ -151,7 +156,7 @@ describe('Algorithm visualizer UI specification', () => {
   it('rebuilds both panels when the size slider is moved directly', () => {
     renderWithInit();
 
-    const sizeSlider = screen.getByLabelText(/本数/i) as HTMLInputElement;
+    const sizeSlider = screen.getByRole('slider', { name: /本数/ }) as HTMLInputElement;
     fireEvent.input(sizeSlider, { target: { value: '18' } });
 
     expect(sizeSlider.value).toBe('18');
@@ -165,7 +170,7 @@ describe('Algorithm visualizer UI specification', () => {
   it('updates the speed label to two decimal places when the slider value changes', () => {
     renderWithInit();
 
-    const speedSlider = screen.getByLabelText(/アニメ速度/i) as HTMLInputElement;
+    const speedSlider = screen.getByRole('slider', { name: /アニメ速度/ }) as HTMLInputElement;
     fireEvent.input(speedSlider, { target: { value: '2.5' } });
 
     expect(speedSlider.value).toBe('2.5');
@@ -176,7 +181,7 @@ describe('Algorithm visualizer UI specification', () => {
   it('shuffles with the current bar count and keeps both panels synchronized', async () => {
     renderWithInit();
 
-    const sizeSlider = screen.getByLabelText(/本数/i) as HTMLInputElement;
+    const sizeSlider = screen.getByRole('slider', { name: /本数/ }) as HTMLInputElement;
     fireEvent.input(sizeSlider, { target: { value: '12' } });
 
     const randomSpy = vi.spyOn(Math, 'random');
