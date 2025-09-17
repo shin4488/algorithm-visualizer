@@ -1,131 +1,426 @@
 import React from 'react';
 import './styles.css';
+import {
+  genArray,
+  buildBubbleSteps,
+  buildQuickSteps,
+  computeInterval,
+  SWAP_TRANS_MS,
+  type Step,
+} from './visualizer';
 
-const App = () => (
-  <div className="wrap">
-    <h1>アルゴリズム可視化</h1>
-    <div className="panel">
-      <div className="toolbar">
-        <div className="group">
-          <label htmlFor="size">
-            本数:{' '}
-            <span id="sizeVal" className="mono">
-              20
-            </span>
-          </label>
-          <div className="stepper">
-            <button id="sizeMinus" className="stepperBtn" aria-label="本数を1減らす">
-              −
-            </button>
-            <input id="size" type="range" min="5" max="50" step="1" defaultValue="20" />
-            <button id="sizePlus" className="stepperBtn" aria-label="本数を1増やす">
-              ＋
-            </button>
-          </div>
-        </div>
-        <div className="group">
-          <label htmlFor="speed">
-            アニメ速度:{' '}
-            <span id="speedVal" className="mono">
-              1.00x
-            </span>
-          </label>
-          {/* 左ほど遅く / 右ほど速く。0.20x〜10.00x（棒の入れ替え速度は固定） */}
-          <div className="stepper">
-            <button id="speedMinus" className="stepperBtn" aria-label="速度を一段階遅く">
-              −
-            </button>
-            <input id="speed" type="range" min="0.2" max="10" step="0.05" defaultValue="1" />
-            <button id="speedPlus" className="stepperBtn" aria-label="速度を一段階速く">
-              ＋
-            </button>
-          </div>
-        </div>
-        {/* ボタン順：Start, Pause, Shuffle（リセット位置に移動） */}
-        <button id="start" className="btn primary">
-          ▶ 再生
-        </button>
-        <button id="pause" className="btn ghost" disabled>
-          ⏸ 一時停止
-        </button>
-        <button id="shuffle" className="btn">
-          シャッフル
-        </button>
-      </div>
+type Kind = 'bubble' | 'quick';
+type Range = { lo: number; hi: number } | null;
 
-      {/* 上段：バブルソート（折りたたみ） */}
-      <details className="board" id="board-bubble" open>
-        <summary>
-          <div className="summary-title">
-            <span className="caret"></span>
-            <h2 style={{ margin: 0, fontSize: '16px', color: '#cbd5ff' }}>バブルソート</h2>
-          </div>
-          <div className="summary-meta">
-            ステップ:{' '}
-            <span id="steps-bubble" className="mono">
-              0
-            </span>
-          </div>
-        </summary>
-        <div id="bars-bubble" className="bars" aria-label="バブルソートのバー表示"></div>
-        <div className="legend">
-          <span className="chip">
-            <span className="box swap"></span>入れ替え/比較（赤）
-          </span>
-          {/* バブルソートはピボットを使わないため、表示しない */}
-          <span className="chip">
-            <span className="box sorted"></span>ソート完了
-          </span>
-        </div>
-        <div className="footer"></div>
-      </details>
+type BoardState = {
+  kind: Kind;
+  data: number[];
+  ids: number[];
+  steps: Step[];
+  stepIndex: number;
+  finished: boolean;
+  compare?: [number, number] | null;
+  swapPair?: [number, number] | null;
+  candL?: number | null;
+  candR?: number | null;
+  pivotIndex: number | null;
+  range: Range;
+  boundaryIndex: number | null;
+  boundaryVisible: boolean;
+};
 
-      {/* 下段：クイックソート（折りたたみ） */}
-      <details className="board" id="board-quick" open>
-        <summary>
-          <div className="summary-title">
-            <span className="caret"></span>
-            <h2 style={{ margin: 0, fontSize: '16px', color: '#cbd5ff' }}>クイックソート</h2>
-          </div>
-          <div className="summary-meta">
-            ステップ:{' '}
-            <span id="steps-quick" className="mono">
-              0
-            </span>
-          </div>
-        </summary>
-        <div id="bars-quick" className="bars" aria-label="クイックソートのバー表示">
-          {/* グループ分けの境界・範囲を示すオーバーレイ（動的に生成/更新） */}
-          <div className="partition-overlay" id="partition-quick" aria-hidden="true">
-            <div className="zone" id="zone-left"></div>
-            <div className="zone" id="zone-right"></div>
-            <div className="subrange" id="subrange-box"></div>
-            <div className="boundary" id="boundary-line"></div>
-            <div className="pivot-hline" id="pivot-hline"></div>
-          </div>
-        </div>
-        <div className="legend">
-          <span className="chip">
-            <span className="box swap"></span>入れ替え/比較（赤）
-          </span>
-          <span className="chip">
-            <span className="box pivot"></span>ピボット
-          </span>
-          <span className="chip">
-            <span className="box boundary"></span>境界（グループ分け）
-          </span>
-          <span className="chip">
-            <span className="box" style={{ background: 'var(--pivotLine)' }}></span>
-            ピボット高（横線）
-          </span>
-          <span className="chip">
-            <span className="box sorted"></span>ソート完了
-          </span>
-        </div>
-        <div className="footer"></div>
-      </details>
+function makeBoard(kind: Kind, base: number[]): BoardState {
+  const n = base.length;
+  return {
+    kind,
+    data: base.slice(),
+    ids: Array.from({ length: n }, (_, i) => i + 1),
+    steps: [],
+    stepIndex: 0,
+    finished: false,
+    compare: null,
+    swapPair: null,
+    candL: null,
+    candR: null,
+    pivotIndex: null,
+    range: null,
+    boundaryIndex: null,
+    boundaryVisible: false,
+  };
+}
+
+function applyStep(b: BoardState, step: Step): BoardState {
+  const next: BoardState = { ...b, compare: null, swapPair: null };
+  switch (step.t) {
+    case 'compare':
+      return { ...next, compare: [step.i, step.j] };
+    case 'swap': {
+      const data = next.data.slice();
+      const ids = next.ids.slice();
+      const { i, j } = step;
+      [data[i], data[j]] = [data[j], data[i]];
+      [ids[i], ids[j]] = [ids[j], ids[i]];
+      let pivotIndex = next.pivotIndex;
+      if (pivotIndex != null) {
+        if (pivotIndex === i) pivotIndex = j;
+        else if (pivotIndex === j) pivotIndex = i;
+      }
+      return { ...next, data, ids, swapPair: [i, j], candL: null, candR: null, pivotIndex };
+    }
+    case 'pivot':
+      return { ...next, pivotIndex: step.i ?? null };
+    case 'range':
+      if (next.kind !== 'quick') return next;
+      if (step.lo == null || step.hi == null) {
+        return {
+          ...next,
+          range: null,
+          boundaryIndex: null,
+          boundaryVisible: false,
+          pivotIndex: null,
+          candL: null,
+          candR: null,
+        };
+      }
+      return {
+        ...next,
+        range: { lo: step.lo, hi: step.hi },
+        boundaryIndex: step.lo,
+        boundaryVisible: true,
+        pivotIndex: null,
+        candL: null,
+        candR: null,
+      };
+    case 'boundary':
+      return next.kind === 'quick'
+        ? { ...next, boundaryIndex: step.k, boundaryVisible: step.show !== false }
+        : next;
+    case 'markL':
+      return next.kind === 'quick' ? { ...next, candL: step.i } : next;
+    case 'markR':
+      return next.kind === 'quick' ? { ...next, candR: step.i } : next;
+    case 'clearMarks':
+      return next.kind === 'quick' ? { ...next, candL: null, candR: null } : next;
+    default:
+      return next;
+  }
+}
+
+function Bars({ board }: { board: BoardState }) {
+  const max = Math.max(...board.data, 1);
+  const n = board.data.length;
+
+  const isCompare = (idx: number) =>
+    !!board.compare && (idx === board.compare[0] || idx === board.compare[1]);
+  const isSwap = (idx: number) =>
+    !!board.swapPair && (idx === board.swapPair[0] || idx === board.swapPair[1]);
+  const isPivot = (idx: number) => board.pivotIndex === idx;
+  const isCandL = (idx: number) => board.candL === idx;
+  const isCandR = (idx: number) => board.candR === idx;
+
+  return (
+    <div
+      className="bars"
+      aria-label={`${board.kind === 'bubble' ? 'バブル' : 'クイック'}ソートのバー表示`}
+    >
+      {board.kind === 'quick' && <QuickOverlay board={board} />}
+
+      {Array.from({ length: n }, (_, i) => {
+        const h = (board.data[i] / max) * 100;
+        const classes = [
+          'bar',
+          isPivot(i) ? 'pivot' : '',
+          isCompare(i) ? 'compare' : '',
+          isSwap(i) ? 'swap' : '',
+          isCandL(i) ? 'candL' : '',
+          isCandR(i) ? 'candR' : '',
+          board.finished ? 'sorted' : '',
+        ]
+          .filter(Boolean)
+          .join(' ');
+        return (
+          <div key={i} className={classes} style={{ height: `${h}%` }} data-label={board.ids[i]} />
+        );
+      })}
     </div>
-  </div>
-);
+  );
+}
+
+function QuickOverlay({ board }: { board: BoardState }) {
+  const n = Math.max(board.data.length, 1);
+  const range = board.range;
+  const lo = range?.lo ?? 0;
+  const hi = range?.hi ?? n - 1;
+
+  const showRange = range != null;
+  const leftPct = (lo / n) * 100;
+  const rightPct = ((hi + 1) / n) * 100;
+  const boundaryPct = ((board.boundaryIndex ?? lo) / n) * 100;
+
+  const pivotHeightPct =
+    board.pivotIndex != null && board.data.length
+      ? (board.data[board.pivotIndex] / Math.max(...board.data, 1)) * 100
+      : null;
+
+  return (
+    <div className="partition-overlay" aria-hidden="true">
+      <div
+        className="zone"
+        style={{
+          left: `${leftPct}%`,
+          right: `${100 - boundaryPct}%`,
+          display: showRange ? 'block' : 'none',
+        }}
+      />
+      <div
+        className="zone"
+        style={{
+          left: `${boundaryPct}%`,
+          right: `${100 - rightPct}%`,
+          display: showRange ? 'block' : 'none',
+        }}
+      />
+      <div
+        className="subrange"
+        style={{
+          left: `${leftPct}%`,
+          right: `${100 - rightPct}%`,
+          display: showRange ? 'block' : 'none',
+        }}
+      />
+      <div
+        className="boundary"
+        style={{
+          left: `${boundaryPct}%`,
+          display: showRange && board.boundaryVisible ? 'block' : 'none',
+        }}
+      />
+      <div
+        className="pivot-hline"
+        style={{
+          left: `${leftPct}%`,
+          right: `${100 - rightPct}%`,
+          bottom: pivotHeightPct != null ? `${pivotHeightPct}%` : undefined,
+          display: showRange && pivotHeightPct != null ? 'block' : 'none',
+        }}
+      />
+    </div>
+  );
+}
+
+const App: React.FC = () => {
+  const [size, setSize] = React.useState<number>(20);
+  const [speed, setSpeed] = React.useState<number>(1.0);
+  const [playing, setPlaying] = React.useState<boolean>(false);
+
+  const [base, setBase] = React.useState<number[]>(() => genArray(20));
+  const [bubble, setBubble] = React.useState<BoardState>(() => makeBoard('bubble', base));
+  const [quick, setQuick] = React.useState<BoardState>(() => makeBoard('quick', base));
+
+  const stepsBubble = bubble.steps.length;
+  const stepsQuick = quick.steps.length;
+
+  // タイマー（speed / playing の変更で再スケジュール）
+  React.useEffect(() => {
+    if (!playing) return;
+    const iv = computeInterval(speed);
+    const id = window.setInterval(() => {
+      setBubble((prev) => {
+        if (prev.finished || prev.stepIndex >= prev.steps.length) return prev;
+        const step = prev.steps[prev.stepIndex];
+        const n = applyStep(prev, step);
+        const finished = prev.stepIndex + 1 >= prev.steps.length;
+        return { ...n, stepIndex: prev.stepIndex + 1, finished };
+      });
+      setQuick((prev) => {
+        if (prev.finished || prev.stepIndex >= prev.steps.length) return prev;
+        const step = prev.steps[prev.stepIndex];
+        const n = applyStep(prev, step);
+        const finished = prev.stepIndex + 1 >= prev.steps.length;
+        return { ...n, stepIndex: prev.stepIndex + 1, finished };
+      });
+    }, iv);
+    return () => window.clearInterval(id);
+  }, [playing, speed]);
+
+  // 両方終われば自動停止
+  React.useEffect(() => {
+    if (playing && bubble.finished && quick.finished) setPlaying(false);
+  }, [playing, bubble.finished, quick.finished]);
+
+  const resetFrom = (arr: number[]) => {
+    setBase(arr);
+    setBubble(makeBoard('bubble', arr));
+    setQuick(makeBoard('quick', arr));
+    setPlaying(false);
+  };
+
+  const handleStart = () => {
+    setBubble((prev) =>
+      prev.steps.length ? prev : { ...prev, steps: buildBubbleSteps(prev.data) },
+    );
+    setQuick((prev) => (prev.steps.length ? prev : { ...prev, steps: buildQuickSteps(prev.data) }));
+    setPlaying(true);
+  };
+  const handlePause = () => setPlaying(false);
+  const handleShuffle = () => resetFrom(genArray(size));
+
+  const handleSizeInput = (n: number) => {
+    const nn = Math.max(5, Math.min(50, Math.floor(n)));
+    setSize(nn);
+    resetFrom(genArray(nn));
+  };
+  const handleSpeedInput = (s: number) => {
+    const ss = Math.max(0.2, Math.min(10, s));
+    setSpeed(ss);
+  };
+
+  // CSS カスタムプロパティを型安全に
+  const rootStyle: React.CSSProperties & Record<'--transMs', string> = {
+    '--transMs': `${SWAP_TRANS_MS}ms`,
+  };
+
+  return (
+    <div className="wrap" style={rootStyle}>
+      <h1>アルゴリズム可視化</h1>
+
+      <div className="panel">
+        <div className="toolbar">
+          <div className="group" style={{ padding: '8px 10px' }}>
+            <label htmlFor="size">
+              本数: <span className="mono">{size}</span>
+            </label>
+            <div className="stepper">
+              <button
+                className="stepperBtn"
+                aria-label="本数を1減らす"
+                onClick={() => handleSizeInput(size - 1)}
+              >
+                −
+              </button>
+              <input
+                id="size"
+                type="range"
+                min={5}
+                max={50}
+                step={1}
+                value={size}
+                onChange={(e) => handleSizeInput(Number(e.currentTarget.value))}
+              />
+              <button
+                className="stepperBtn"
+                aria-label="本数を1増やす"
+                onClick={() => handleSizeInput(size + 1)}
+              >
+                ＋
+              </button>
+            </div>
+          </div>
+
+          <div className="group" style={{ padding: '8px 10px' }}>
+            <label htmlFor="speed">
+              アニメ速度: <span className="mono">{speed.toFixed(2)}x</span>
+            </label>
+            <div className="stepper">
+              <button
+                className="stepperBtn"
+                aria-label="速度を一段階遅く"
+                onClick={() => handleSpeedInput(Number((speed - 0.05).toFixed(2)))}
+              >
+                −
+              </button>
+              <input
+                id="speed"
+                type="range"
+                min={0.2}
+                max={10}
+                step={0.05}
+                value={speed}
+                onChange={(e) => handleSpeedInput(Number(e.currentTarget.value))}
+              />
+              <button
+                className="stepperBtn"
+                aria-label="速度を一段階速く"
+                onClick={() => handleSpeedInput(Number((speed + 0.05).toFixed(2)))}
+              >
+                ＋
+              </button>
+            </div>
+          </div>
+
+          <button className="btn primary" onClick={handleStart} disabled={playing}>
+            ▶ 再生
+          </button>
+          <button className="btn ghost" onClick={handlePause} disabled={!playing}>
+            ⏸ 一時停止
+          </button>
+          <button className="btn" onClick={handleShuffle}>
+            シャッフル
+          </button>
+        </div>
+
+        <details className="board" id="board-bubble" open>
+          <summary>
+            <div className="summary-title">
+              <span className="caret"></span>
+              <h2 style={{ margin: 0, fontSize: '16px', color: '#cbd5ff' }}>バブルソート</h2>
+            </div>
+            <div className="summary-meta">
+              ステップ:{' '}
+              <span className="mono" id="steps-bubble">
+                {stepsBubble}
+              </span>
+            </div>
+          </summary>
+          <Bars board={bubble} />
+          <div className="legend">
+            <span className="chip">
+              <span className="box swap"></span>入れ替え/比較（赤）
+            </span>
+            <span className="chip">
+              <span className="box sorted"></span>ソート完了
+            </span>
+          </div>
+          <div className="footer" />
+        </details>
+
+        <details className="board" id="board-quick" open>
+          <summary>
+            <div className="summary-title">
+              <span className="caret"></span>
+              <h2 style={{ margin: 0, fontSize: '16px', color: '#cbd5ff' }}>クイックソート</h2>
+            </div>
+            <div className="summary-meta">
+              ステップ:{' '}
+              <span className="mono" id="steps-quick">
+                {stepsQuick}
+              </span>
+            </div>
+          </summary>
+          <Bars board={quick} />
+          <div className="legend">
+            <span className="chip">
+              <span className="box swap"></span>入れ替え/比較（赤）
+            </span>
+            <span className="chip">
+              <span className="box pivot"></span>ピボット
+            </span>
+            <span className="chip">
+              <span className="box boundary"></span>境界（グループ分け）
+            </span>
+            <span className="chip">
+              <span className="box" style={{ background: 'var(--pivotLine)' }}></span>
+              ピボット高（横線）
+            </span>
+            <span className="chip">
+              <span className="box sorted"></span>ソート完了
+            </span>
+          </div>
+          <div className="footer" />
+        </details>
+      </div>
+    </div>
+  );
+};
 
 export default App;
