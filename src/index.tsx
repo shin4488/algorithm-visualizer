@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import { init } from './visualizer';
 
-const Root = () => {
+const Root: React.FunctionComponent = () => {
   useEffect(() => {
     init();
   }, []);
@@ -11,6 +11,7 @@ const Root = () => {
 };
 
 const container = document.getElementById('root');
-if (container) {
-  createRoot(container).render(<Root />);
+if (container instanceof HTMLElement) {
+  const root = createRoot(container as Element);
+  root.render(<Root />);
 }

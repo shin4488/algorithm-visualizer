@@ -8,7 +8,10 @@ const App = () => (
       <div className="toolbar">
         <div className="group">
           <label htmlFor="size">
-            本数: <span id="sizeVal" className="mono">20</span>
+            本数:{' '}
+            <span id="sizeVal" className="mono">
+              20
+            </span>
           </label>
           <div className="stepper">
             <button id="sizeMinus" className="stepperBtn" aria-label="本数を1減らす">
@@ -22,7 +25,10 @@ const App = () => (
         </div>
         <div className="group">
           <label htmlFor="speed">
-            アニメ速度: <span id="speedVal" className="mono">1.00x</span>
+            アニメ速度:{' '}
+            <span id="speedVal" className="mono">
+              1.00x
+            </span>
           </label>
           {/* 左ほど遅く / 右ほど速く。0.20x〜10.00x（棒の入れ替え速度は固定） */}
           <div className="stepper">
@@ -55,7 +61,10 @@ const App = () => (
             <h2 style={{ margin: 0, fontSize: '16px', color: '#cbd5ff' }}>バブルソート</h2>
           </div>
           <div className="summary-meta">
-            ステップ: <span id="steps-bubble" className="mono">0</span>
+            ステップ:{' '}
+            <span id="steps-bubble" className="mono">
+              0
+            </span>
           </div>
         </summary>
         <div id="bars-bubble" className="bars" aria-label="バブルソートのバー表示"></div>
@@ -79,7 +88,10 @@ const App = () => (
             <h2 style={{ margin: 0, fontSize: '16px', color: '#cbd5ff' }}>クイックソート</h2>
           </div>
           <div className="summary-meta">
-            ステップ: <span id="steps-quick" className="mono">0</span>
+            ステップ:{' '}
+            <span id="steps-quick" className="mono">
+              0
+            </span>
           </div>
         </summary>
         <div id="bars-quick" className="bars" aria-label="クイックソートのバー表示">
@@ -103,7 +115,8 @@ const App = () => (
             <span className="box boundary"></span>境界（グループ分け）
           </span>
           <span className="chip">
-            <span className="box" style={{ background: 'var(--pivotLine)' }}></span>ピボット高（横線）
+            <span className="box" style={{ background: 'var(--pivotLine)' }}></span>
+            ピボット高（横線）
           </span>
           <span className="chip">
             <span className="box sorted"></span>ソート完了
