@@ -1,0 +1,15 @@
+{
+  "files.trimTrailingWhitespace": true,
+  "editor.insertSpaces": true,
+  "search.exclude": {
+    "**/node_modules": true
+  },
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "[markdown]": {
+    // markdownは改行するために空白を使うため、formatOnSaveを無効化
+    "editor.formatOnSave": false
+  },
+}
