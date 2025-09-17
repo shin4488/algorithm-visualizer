@@ -6,18 +6,23 @@
     "dev": "parcel src/index.html --dist-dir public",
     "build": "parcel build src/index.html --dist-dir public",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "node ./scripts/lint.mjs",
+    "lint:ci": "node ./scripts/lint.mjs --format unix",
+    "format": "node ./scripts/format.mjs --write",
+    "format:check": "node ./scripts/format.mjs --check",
+    "format:check:ci": "node ./scripts/format.mjs --check --format unix"
   },
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/react": "^18.2.24",
-    "@types/react-dom": "^18.2.9",
     "@testing-library/jest-dom": "^6.4.5",
     "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",
+    "@types/react": "^18.2.24",
+    "@types/react-dom": "^18.2.9",
     "jsdom": "^24.0.0",
     "parcel": "^2.12.0",
     "typescript": "^5.4.5",

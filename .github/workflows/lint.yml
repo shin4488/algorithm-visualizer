@@ -1,0 +1,50 @@
+name: Lint and Format
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+      - name: Lint
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_ENV: production
+        run: |
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRTUXB origin/${{ github.base_ref }}...HEAD)
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No files to lint."
+            exit 0
+          fi
+          yarn lint:ci -- $CHANGED_FILES | reviewdog -efm="%f:%l:%c: [%t] %m" -name=custom-lint -reporter=github-pr-review -filter-mode=diff -fail-on-error
+      - name: Format check
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRTUXB origin/${{ github.base_ref }}...HEAD)
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No files to format."
+            exit 0
+          fi
+          yarn format:check:ci -- $CHANGED_FILES | reviewdog -efm="%f:%l:%c: [%t] %m" -name=custom-format -reporter=github-pr-review -filter-mode=diff -fail-on-error
