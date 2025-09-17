@@ -20,8 +20,11 @@ export default [
     },
   },
 
-  // 型情報ありの推奨セット
-  ...tseslint.configs.recommendedTypeChecked,
+  // 型情報ありの推奨セット（TS/TSXにだけスコープする）
+  ...tseslint.configs.recommendedTypeChecked.map((config) => ({
+    ...config,
+    files: ['**/*.ts', '**/*.tsx'],
+  })),
 
   // Prettier 競合OFF
   eslintConfigPrettier,
