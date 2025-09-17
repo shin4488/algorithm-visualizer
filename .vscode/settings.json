@@ -1,4 +1,6 @@
 {
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": false,
   "files.trimTrailingWhitespace": true,
   "editor.insertSpaces": true,
   "search.exclude": {
@@ -8,8 +10,18 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[markdown]": {
     // markdownは改行するために空白を使うため、formatOnSaveを無効化
     "editor.formatOnSave": false
   },
+  "[javascript]": {
+    "editor.tabSize": 2
+  },
+  "[json]": {
+    "editor.tabSize": 2
+  },
+  "[typescript]": {
+    "editor.tabSize": 2
+  }
 }
