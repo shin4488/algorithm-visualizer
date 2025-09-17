@@ -1,13 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import {
-  act,
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
 import { init } from '../visualizer';
@@ -43,12 +35,8 @@ describe('Algorithm visualizer UI specification', () => {
     const sizeDisplay = document.getElementById('sizeVal');
     expect(sizeDisplay).toHaveTextContent('20');
 
-    expect(
-      screen.getByRole('button', { name: '本数を1減らす' }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: '本数を1増やす' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '本数を1減らす' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '本数を1増やす' })).toBeInTheDocument();
   });
 
   it('renders the speed control with the specified range and two-decimal display', async () => {
@@ -83,14 +71,14 @@ describe('Algorithm visualizer UI specification', () => {
     expect(bubbleBars).toHaveLength(20);
     expect(quickBars).toHaveLength(20);
 
-    const bubbleHeights = Array.from(bubbleBars, (bar) => bar.style.height);
-    const quickHeights = Array.from(quickBars, (bar) => bar.style.height);
+    const bubbleHeights = Array.from(bubbleBars, bar => bar.style.height);
+    const quickHeights = Array.from(quickBars, bar => bar.style.height);
     expect(bubbleHeights).toEqual(quickHeights);
 
-    bubbleBars.forEach((bar) => {
+    bubbleBars.forEach(bar => {
       expect(bar.getAttribute('data-label')).toMatch(/^\d+$/);
     });
-    quickBars.forEach((bar) => {
+    quickBars.forEach(bar => {
       expect(bar.getAttribute('data-label')).toMatch(/^\d+$/);
     });
   });
@@ -115,15 +103,13 @@ describe('Algorithm visualizer UI specification', () => {
     const bubbleLegend = bubblePanel.querySelector('.legend');
     expect(bubbleLegend).not.toBeNull();
     expect(
-      within(bubbleLegend as HTMLElement).getByText('入れ替え/比較（赤）'),
+      within(bubbleLegend as HTMLElement).getByText('入れ替え/比較（赤）')
     ).toBeInTheDocument();
     expect(within(bubbleLegend as HTMLElement).getByText(/ソート完了/)).toBeInTheDocument();
 
     const quickLegend = quickPanel.querySelector('.legend');
     expect(quickLegend).not.toBeNull();
-    expect(
-      within(quickLegend as HTMLElement).getByText('入れ替え/比較（赤）'),
-    ).toBeInTheDocument();
+    expect(within(quickLegend as HTMLElement).getByText('入れ替え/比較（赤）')).toBeInTheDocument();
     expect(
       within(quickLegend as HTMLElement).getByText('ピボット', { exact: true })
     ).toBeInTheDocument();
@@ -150,8 +136,8 @@ describe('Algorithm visualizer UI specification', () => {
     expect(bubbleBars).toHaveLength(21);
     expect(quickBars).toHaveLength(21);
 
-    const bubbleHeights = Array.from(bubbleBars, (bar) => (bar as HTMLElement).style.height);
-    const quickHeights = Array.from(quickBars, (bar) => (bar as HTMLElement).style.height);
+    const bubbleHeights = Array.from(bubbleBars, bar => (bar as HTMLElement).style.height);
+    const quickHeights = Array.from(quickBars, bar => (bar as HTMLElement).style.height);
     expect(bubbleHeights).toEqual(quickHeights);
   });
 
@@ -201,8 +187,8 @@ describe('Algorithm visualizer UI specification', () => {
     expect(bubbleBars).toHaveLength(expectedCount);
     expect(quickBars).toHaveLength(expectedCount);
 
-    const bubbleHeights = Array.from(bubbleBars, (bar) => (bar as HTMLElement).style.height);
-    const quickHeights = Array.from(quickBars, (bar) => (bar as HTMLElement).style.height);
+    const bubbleHeights = Array.from(bubbleBars, bar => (bar as HTMLElement).style.height);
+    const quickHeights = Array.from(quickBars, bar => (bar as HTMLElement).style.height);
     expect(bubbleHeights).toEqual(quickHeights);
   });
 

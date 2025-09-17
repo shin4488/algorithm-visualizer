@@ -1,10 +1,5 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import {
-  buildBubbleSteps,
-  buildQuickSteps,
-  genArray,
-  type Step,
-} from '../visualizer';
+import { buildBubbleSteps, buildQuickSteps, genArray, type Step } from '../visualizer';
 type StepWithBoundary = Extract<Step, { t: 'boundary' }>;
 
 afterEach(() => {
@@ -32,11 +27,11 @@ describe('visualizer logic specification', () => {
 
     expect(sorted).toEqual([1, 2, 3, 4, 5]);
 
-    const comparisons = steps.filter((step) => step.t === 'compare');
+    const comparisons = steps.filter(step => step.t === 'compare');
     const n = original.length;
     expect(comparisons).toHaveLength((n * (n - 1)) / 2);
 
-    comparisons.forEach((step) => {
+    comparisons.forEach(step => {
       if (step.t === 'compare') {
         expect(step.j - step.i).toBe(1);
       }
@@ -130,7 +125,7 @@ describe('visualizer logic specification', () => {
               pendingPivotSwap = step;
             } else {
               const window = steps.slice(index + 1, index + 4);
-              const boundary = window.find((s) => s.t === 'boundary') as StepWithBoundary | undefined;
+              const boundary = window.find(s => s.t === 'boundary') as StepWithBoundary | undefined;
               expect(boundary).toBeDefined();
               expect(boundary?.show).toBe(false);
             }
@@ -142,7 +137,8 @@ describe('visualizer logic specification', () => {
       }
     });
 
-    const hasCandidateMarks = steps.some((step) => step.t === 'markL') && steps.some((step) => step.t === 'markR');
+    const hasCandidateMarks =
+      steps.some(step => step.t === 'markL') && steps.some(step => step.t === 'markR');
     expect(hasCandidateMarks).toBe(true);
   });
 
