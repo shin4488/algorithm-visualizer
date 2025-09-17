@@ -25,6 +25,8 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
       - name: Collect files for ESLint
         id: eslint-files
         run: |
@@ -34,13 +36,16 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
       - name: Run ESLint with reviewdog
         if: steps.eslint-files.outputs.files != ''
-        uses: reviewdog/action-eslint@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          filter_mode: diff_context
-          fail_on_error: true
-          eslint_flags: '${{ steps.eslint-files.outputs.files }}'
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -o pipefail
+          node ./scripts/run-eslint-ci.mjs ${{ steps.eslint-files.outputs.files }} \
+            | reviewdog -f=eslint \
+              -name=eslint \
+              -reporter=github-pr-review \
+              -filter-mode=diff_context \
+              -fail-on-error=true
       - name: Skip ESLint (no changed files)
         if: steps.eslint-files.outputs.files == ''
         run: echo "No files to lint"
@@ -61,6 +66,8 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
       - name: Collect files for Prettier
         id: prettier-files
         run: |
@@ -70,14 +77,16 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
       - name: Run Prettier with reviewdog
         if: steps.prettier-files.outputs.files != ''
-        uses: reviewdog/action-prettier@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          filter_mode: diff_context
-          fail_on_error: true
-          prettier_path: ./node_modules/.bin/prettier
-          prettier_flags: '--check ${{ steps.prettier-files.outputs.files }}'
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -o pipefail
+          node ./scripts/prettier-list-different.mjs ${{ steps.prettier-files.outputs.files }} \
+            | reviewdog -f=rdjson \
+              -name=prettier \
+              -reporter=github-pr-review \
+              -filter-mode=diff_context \
+              -fail-on-error=true
       - name: Skip Prettier (no changed files)
         if: steps.prettier-files.outputs.files == ''
         run: echo "No files to format"
