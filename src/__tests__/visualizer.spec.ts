@@ -1,11 +1,5 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import {
-  buildBubbleSteps,
-  buildQuickSteps,
-  genArray,
-  type Step,
-} from '../visualizer';
-type StepWithBoundary = Extract<Step, { t: 'boundary' }>;
+import { buildBubbleSteps, buildQuickSteps, genArray, type Step } from '../visualizer';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -130,7 +124,7 @@ describe('visualizer logic specification', () => {
               pendingPivotSwap = step;
             } else {
               const window = steps.slice(index + 1, index + 4);
-              const boundary = window.find((s) => s.t === 'boundary') as StepWithBoundary | undefined;
+              const boundary = window.find((s) => s.t === 'boundary');
               expect(boundary).toBeDefined();
               expect(boundary?.show).toBe(false);
             }
@@ -142,7 +136,8 @@ describe('visualizer logic specification', () => {
       }
     });
 
-    const hasCandidateMarks = steps.some((step) => step.t === 'markL') && steps.some((step) => step.t === 'markR');
+    const hasCandidateMarks =
+      steps.some((step) => step.t === 'markL') && steps.some((step) => step.t === 'markR');
     expect(hasCandidateMarks).toBe(true);
   });
 
