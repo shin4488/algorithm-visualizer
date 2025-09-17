@@ -73,7 +73,7 @@ describe('Algorithm visualizer UI specification (React-state version)', () => {
     expect(within(speedLabel).getByText('1.05x')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '速度を一段階遅く' }));
-    expect(speedSlider.value).toBe('1.00');
+    expect(speedSlider.value).toBe('1');
     expect(within(speedLabel).getByText('1.00x')).toBeInTheDocument();
   });
 
