@@ -22,7 +22,8 @@ import {
   Accordion,
   Badge,
   Stack,
-  Code,
+  Flex,
+  Box,
 } from '@mantine/core';
 
 type Kind = 'bubble' | 'quick';
@@ -306,11 +307,11 @@ const App: React.FC = () => {
           アルゴリズム可視化
         </Title>
         <Text c="var(--muted)" size="sm">
-          {/* ▼ ここを変更：文言をサイト旧仕様に合わせる */}
           ソートアルゴリズムの比較アニメーション
         </Text>
       </Stack>
 
+      {/* パネル */}
       <Paper
         p="md"
         radius={16}
@@ -322,23 +323,19 @@ const App: React.FC = () => {
           boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
         }}
       >
-        {/* ツールバー */}
-        <Group wrap="wrap" gap="md" align="center">
+        {/* ツールバー（Mantineのレスポンシブだけで横一列） */}
+        <Flex
+          wrap={{ base: 'wrap', sm: 'wrap', md: 'wrap', lg: 'nowrap' }}
+          gap={{ base: 'md', sm: 8 }}
+          align="center"
+        >
           {/* 本数 */}
-          <Group
-            gap="xs"
-            align="center"
-            style={{
-              padding: '8px 10px',
-              background: '#0c1530',
-              borderRadius: 12,
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}
-          >
-            <Text size="xs" c="var(--muted)">
-              本数: <Code>{size}</Code>
-            </Text>
-            <Group gap="xs" align="center">
+          <Box flex={{ base: '1 1 100%', md: '1 1 0' }} miw={{ base: 260, sm: 250 }}>
+            {/* ここを nowrap に */}
+            <Group gap="xs" align="center" wrap="nowrap">
+              <Text size="xs" c="var(--muted)">
+                本数: {size}
+              </Text>
               <ActionIcon
                 variant="default"
                 aria-label="本数を1減らす"
@@ -353,7 +350,7 @@ const App: React.FC = () => {
                 min={5}
                 max={50}
                 step={1}
-                w={220}
+                w={{ base: 160, md: 140, lg: 160 }}
                 styles={{
                   root: {
                     paddingTop: 8,
@@ -374,23 +371,15 @@ const App: React.FC = () => {
                 ＋
               </ActionIcon>
             </Group>
-          </Group>
+          </Box>
 
-          {/* 速度 */}
-          <Group
-            gap="xs"
-            align="center"
-            style={{
-              padding: '8px 10px',
-              background: '#0c1530',
-              borderRadius: 12,
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}
-          >
-            <Text size="xs" c="var(--muted)">
-              アニメ速度: <Code>{speed.toFixed(2)}x</Code>
-            </Text>
-            <Group gap="xs" align="center">
+          {/* アニメ速度 */}
+          <Box flex={{ base: '1 1 100%', md: '1 1 0' }} miw={{ base: 260, md: 250 }}>
+            {/* ここを nowrap に */}
+            <Group gap="xs" align="center" wrap="nowrap">
+              <Text size="xs" c="var(--muted)">
+                アニメ速度: {speed.toFixed(2)}
+              </Text>
               <ActionIcon
                 variant="default"
                 aria-label="速度を一段階遅く"
@@ -399,13 +388,15 @@ const App: React.FC = () => {
               >
                 −
               </ActionIcon>
+
+              {/* ← 幅を短く */}
               <Slider
                 value={speed}
                 onChange={(v) => handleSpeedInput(v)}
                 min={0.2}
                 max={10}
                 step={0.05}
-                w={220}
+                w={{ base: 160, md: 140, lg: 160 }}
                 styles={{
                   root: {
                     paddingTop: 8,
@@ -417,6 +408,7 @@ const App: React.FC = () => {
                   thumb: { borderColor: 'var(--accent)', background: 'var(--accent)' },
                 }}
               />
+
               <ActionIcon
                 variant="default"
                 aria-label="速度を一段階速く"
@@ -426,31 +418,30 @@ const App: React.FC = () => {
                 ＋
               </ActionIcon>
             </Group>
-          </Group>
+          </Box>
 
-          {/* ▼ 一時停止：見た目を“ゴースト風”に固定（左に ⏸） */}
-          <Button
-            variant="default"
-            onClick={handlePause}
-            disabled={!playing}
-            leftSection={<span style={{ fontWeight: 700 }}>⏸</span>}
-            styles={{ root: pauseBtnStyle }}
-          >
-            一時停止
-          </Button>
+          {/* 再生・一時停止・シャッフル（折り返し禁止） */}
+          <Box flex="0 0 auto">
+            <Group gap="sm" align="center" wrap="nowrap">
+              <Button onClick={handleStart} disabled={playing} style={primaryBtnStyle}>
+                ▶ 再生
+              </Button>
+              <Button
+                variant="default"
+                onClick={handlePause}
+                disabled={!playing}
+                styles={{ root: pauseBtnStyle }}
+              >
+                ⏸ 一時停止
+              </Button>
+              <Button variant="default" onClick={handleShuffle} style={ghostBtnStyle}>
+                シャッフル
+              </Button>
+            </Group>
+          </Box>
+        </Flex>
 
-          {/* 再生：従来のプライマリ */}
-          <Button onClick={handleStart} disabled={playing} style={primaryBtnStyle}>
-            ▶ 再生
-          </Button>
-
-          {/* シャッフル：ゴースト寄せ */}
-          <Button variant="default" onClick={handleShuffle} style={ghostBtnStyle}>
-            シャッフル
-          </Button>
-        </Group>
-
-        {/* ▼ トグルアイコンを左に */}
+        {/* 折り畳み（トグルは左） */}
         <Accordion
           multiple
           defaultValue={['bubble', 'quick']}
@@ -468,7 +459,7 @@ const App: React.FC = () => {
                   </Text>
                 </Group>
                 <Text size="xs" c="#cbd5ff">
-                  ステップ: <Code id="steps-bubble">{stepsBubble}</Code>
+                  ステップ: {stepsBubble}
                 </Text>
               </Group>
             </Accordion.Control>
@@ -494,7 +485,7 @@ const App: React.FC = () => {
                   </Text>
                 </Group>
                 <Text size="xs" c="#cbd5ff">
-                  ステップ: <Code id="steps-quick">{stepsQuick}</Code>
+                  ステップ: {stepsQuick}
                 </Text>
               </Group>
             </Accordion.Control>
@@ -531,7 +522,7 @@ const App: React.FC = () => {
   );
 };
 
-/* ---- 見た目を旧サイトに寄せるための最小インライン style ---- */
+/* ---- 最小の見た目寄せ（既存デザインを維持） ---- */
 const stepperBtnStyle: React.CSSProperties = {
   width: 28,
   height: 28,
@@ -551,7 +542,6 @@ const primaryBtnStyle: React.CSSProperties = {
   fontWeight: 600,
 };
 
-/* ▼ 一時停止（ゴースト風） */
 const pauseBtnStyle: React.CSSProperties = {
   background: 'transparent',
   border: '1px solid rgba(255, 255, 255, 0.35)',
@@ -559,6 +549,7 @@ const pauseBtnStyle: React.CSSProperties = {
   borderRadius: 12,
   padding: '10px 14px',
   fontWeight: 600,
+  whiteSpace: 'nowrap',
 };
 
 const ghostBtnStyle: React.CSSProperties = {
@@ -567,6 +558,7 @@ const ghostBtnStyle: React.CSSProperties = {
   borderRadius: 12,
   padding: '10px 14px',
   fontWeight: 600,
+  whiteSpace: 'nowrap',
 };
 
 const boardStyle: React.CSSProperties = {
