@@ -9,6 +9,22 @@ import {
   type Step,
 } from './visualizer';
 
+/* === Mantine UI === */
+import {
+  Container,
+  Paper,
+  Group,
+  Button,
+  Title,
+  Text,
+  Slider,
+  ActionIcon,
+  Accordion,
+  Badge,
+  Stack,
+  Box,
+} from '@mantine/core';
+
 type Kind = 'bubble' | 'quick';
 type Range = { lo: number; hi: number } | null;
 
@@ -281,146 +297,293 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="wrap" style={rootStyle}>
-      <h1>アルゴリズム可視化</h1>
+    <Container size={1280} px="md" py="md" style={rootStyle}>
+      <Stack gap="xs">
+        <Title
+          order={1}
+          style={{ margin: 0, fontWeight: 700, fontSize: 'clamp(20px, 2.4vw, 28px)' }}
+        >
+          アルゴリズム可視化
+        </Title>
+        <Text c="var(--muted)" size="sm">
+          {/* ▼ ここを変更：文言をサイト旧仕様に合わせる */}
+          ソートアルゴリズムの比較アニメーション
+        </Text>
+      </Stack>
 
-      <div className="panel">
-        <div className="toolbar">
-          <div className="group" style={{ padding: '8px 10px' }}>
-            <label htmlFor="size">
-              本数: <span className="mono">{size}</span>
-            </label>
-            <div className="stepper">
-              <button
-                className="stepperBtn"
+      <Paper
+        p="md"
+        radius={16}
+        mt="md"
+        withBorder
+        style={{
+          background: 'var(--panel)',
+          borderColor: 'rgba(255,255,255,0.06)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+        }}
+      >
+        {/* ツールバー */}
+        <Group wrap="wrap" gap="md" align="center">
+          {/* 本数 */}
+          <Group
+            gap="xs"
+            align="center"
+            style={{
+              padding: '1px 1px',
+              background: '#0c1530',
+              borderRadius: 12,
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <Text size="xs" c="var(--muted)">
+              本数: {size}
+            </Text>
+            <Group gap="xs" align="center">
+              <ActionIcon
+                variant="default"
                 aria-label="本数を1減らす"
                 onClick={() => handleSizeInput(size - 1)}
+                style={stepperBtnStyle}
               >
                 −
-              </button>
-              <input
-                id="size"
-                type="range"
+              </ActionIcon>
+              <Slider
+                value={size}
+                onChange={(v) => handleSizeInput(v)}
                 min={5}
                 max={50}
                 step={1}
-                value={size}
-                onChange={(e) => handleSizeInput(Number(e.currentTarget.value))}
+                w={220}
+                styles={{
+                  root: {
+                    paddingTop: 8,
+                    paddingBottom: 8,
+                    background: '#0f1b3a',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: 10,
+                  },
+                  thumb: { borderColor: 'var(--accent)', background: 'var(--accent)' },
+                }}
               />
-              <button
-                className="stepperBtn"
+              <ActionIcon
+                variant="default"
                 aria-label="本数を1増やす"
                 onClick={() => handleSizeInput(size + 1)}
+                style={stepperBtnStyle}
               >
                 ＋
-              </button>
-            </div>
-          </div>
+              </ActionIcon>
+            </Group>
+          </Group>
 
-          <div className="group" style={{ padding: '8px 10px' }}>
-            <label htmlFor="speed">
-              アニメ速度: <span className="mono">{speed.toFixed(2)}x</span>
-            </label>
-            <div className="stepper">
-              <button
-                className="stepperBtn"
+          {/* 速度 */}
+          <Group
+            gap="xs"
+            align="center"
+            style={{
+              padding: '1px 1px',
+              background: '#0c1530',
+              borderRadius: 12,
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <Text size="xs" c="var(--muted)">
+              アニメ速度: {speed.toFixed(2)}
+            </Text>
+            <Group gap="xs" align="center">
+              <ActionIcon
+                variant="default"
                 aria-label="速度を一段階遅く"
                 onClick={() => handleSpeedInput(Number((speed - 0.05).toFixed(2)))}
+                style={stepperBtnStyle}
               >
                 −
-              </button>
-              <input
-                id="speed"
-                type="range"
+              </ActionIcon>
+              <Slider
+                value={speed}
+                onChange={(v) => handleSpeedInput(v)}
                 min={0.2}
                 max={10}
                 step={0.05}
-                value={speed}
-                onChange={(e) => handleSpeedInput(Number(e.currentTarget.value))}
+                w={220}
+                styles={{
+                  root: {
+                    paddingTop: 8,
+                    paddingBottom: 8,
+                    background: '#0f1b3a',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: 10,
+                  },
+                  thumb: { borderColor: 'var(--accent)', background: 'var(--accent)' },
+                }}
               />
-              <button
-                className="stepperBtn"
+              <ActionIcon
+                variant="default"
                 aria-label="速度を一段階速く"
                 onClick={() => handleSpeedInput(Number((speed + 0.05).toFixed(2)))}
+                style={stepperBtnStyle}
               >
                 ＋
-              </button>
-            </div>
-          </div>
+              </ActionIcon>
+            </Group>
+          </Group>
 
-          <button className="btn primary" onClick={handleStart} disabled={playing}>
-            ▶ 再生
-          </button>
-          <button className="btn ghost" onClick={handlePause} disabled={!playing}>
-            ⏸ 一時停止
-          </button>
-          <button className="btn" onClick={handleShuffle}>
-            シャッフル
-          </button>
-        </div>
+          <Box style={{ flex: '0 0 auto', marginLeft: 'auto' }}>
+            <Group gap="sm" align="center" wrap="nowrap">
+              {/* 再生：従来のプライマリ */}
+              <Button onClick={handleStart} disabled={playing} style={primaryBtnStyle}>
+                ▶ 再生
+              </Button>
 
-        <details className="board" id="board-bubble" open>
-          <summary>
-            <div className="summary-title">
-              <span className="caret"></span>
-              <h2 style={{ margin: 0, fontSize: '16px', color: '#cbd5ff' }}>バブルソート</h2>
-            </div>
-            <div className="summary-meta">
-              ステップ:{' '}
-              <span className="mono" id="steps-bubble">
-                {stepsBubble}
-              </span>
-            </div>
-          </summary>
-          <Bars board={bubble} />
-          <div className="legend">
-            <span className="chip">
-              <span className="box swap"></span>入れ替え/比較（赤）
-            </span>
-            <span className="chip">
-              <span className="box sorted"></span>ソート完了
-            </span>
-          </div>
-          <div className="footer" />
-        </details>
+              {/* 一時停止：ゴースト風 */}
+              <Button
+                variant="default"
+                onClick={handlePause}
+                disabled={!playing}
+                leftSection={<span style={{ fontWeight: 700 }}>⏸</span>}
+                styles={{ root: pauseBtnStyle }}
+              >
+                一時停止
+              </Button>
 
-        <details className="board" id="board-quick" open>
-          <summary>
-            <div className="summary-title">
-              <span className="caret"></span>
-              <h2 style={{ margin: 0, fontSize: '16px', color: '#cbd5ff' }}>クイックソート</h2>
-            </div>
-            <div className="summary-meta">
-              ステップ:{' '}
-              <span className="mono" id="steps-quick">
-                {stepsQuick}
-              </span>
-            </div>
-          </summary>
-          <Bars board={quick} />
-          <div className="legend">
-            <span className="chip">
-              <span className="box swap"></span>入れ替え/比較（赤）
-            </span>
-            <span className="chip">
-              <span className="box pivot"></span>ピボット
-            </span>
-            <span className="chip">
-              <span className="box boundary"></span>境界（グループ分け）
-            </span>
-            <span className="chip">
-              <span className="box" style={{ background: 'var(--pivotLine)' }}></span>
-              ピボット高（横線）
-            </span>
-            <span className="chip">
-              <span className="box sorted"></span>ソート完了
-            </span>
-          </div>
-          <div className="footer" />
-        </details>
-      </div>
-    </div>
+              {/* シャッフル */}
+              <Button variant="default" onClick={handleShuffle} style={ghostBtnStyle}>
+                シャッフル
+              </Button>
+            </Group>
+          </Box>
+        </Group>
+
+        {/* ▼ トグルアイコンを左に */}
+        <Accordion
+          multiple
+          defaultValue={['bubble', 'quick']}
+          mt="md"
+          radius="md"
+          variant="separated"
+          chevronPosition="left"
+        >
+          <Accordion.Item value="bubble" style={boardStyle}>
+            <Accordion.Control style={boardSummaryStyle}>
+              <Group justify="space-between" w="100%">
+                <Group gap={10} align="center">
+                  <Text style={{ margin: 0, fontSize: 16, color: '#cbd5ff', fontWeight: 600 }}>
+                    バブルソート
+                  </Text>
+                </Group>
+                <Text size="xs" c="#cbd5ff">
+                  ステップ: {stepsBubble}
+                </Text>
+              </Group>
+            </Accordion.Control>
+            <Accordion.Panel>
+              <Bars board={bubble} />
+              <Group gap="xs" mt="xs">
+                <Badge variant="light" leftSection={<span className="legend-box legend-swap" />}>
+                  入れ替え/比較（赤）
+                </Badge>
+                <Badge variant="light" leftSection={<span className="legend-box legend-sorted" />}>
+                  ソート完了
+                </Badge>
+              </Group>
+            </Accordion.Panel>
+          </Accordion.Item>
+
+          <Accordion.Item value="quick" style={boardStyle}>
+            <Accordion.Control style={boardSummaryStyle}>
+              <Group justify="space-between" w="100%">
+                <Group gap={10} align="center">
+                  <Text style={{ margin: 0, fontSize: 16, color: '#cbd5ff', fontWeight: 600 }}>
+                    クイックソート
+                  </Text>
+                </Group>
+                <Text size="xs" c="#cbd5ff">
+                  ステップ: {stepsQuick}
+                </Text>
+              </Group>
+            </Accordion.Control>
+            <Accordion.Panel>
+              <Bars board={quick} />
+              <Group gap="xs" mt="xs" wrap="wrap">
+                <Badge variant="light" leftSection={<span className="legend-box legend-swap" />}>
+                  入れ替え/比較（赤）
+                </Badge>
+                <Badge variant="light" leftSection={<span className="legend-box legend-pivot" />}>
+                  ピボット
+                </Badge>
+                <Badge
+                  variant="light"
+                  leftSection={<span className="legend-box legend-boundary" />}
+                >
+                  境界（グループ分け）
+                </Badge>
+                <Badge
+                  variant="light"
+                  leftSection={<span className="legend-box legend-pivotline" />}
+                >
+                  ピボット高（横線）
+                </Badge>
+                <Badge variant="light" leftSection={<span className="legend-box legend-sorted" />}>
+                  ソート完了
+                </Badge>
+              </Group>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
+      </Paper>
+    </Container>
   );
+};
+
+/* ---- 見た目を旧サイトに寄せるための最小インライン style ---- */
+const stepperBtnStyle: React.CSSProperties = {
+  width: 28,
+  height: 28,
+  borderRadius: 8,
+  border: '1px solid rgba(255, 255, 255, 0.15)',
+  background: 'linear-gradient(180deg, #1a2552 0%, #131d40 100%)',
+  color: '#e6ebff',
+  fontWeight: 700,
+  lineHeight: 1,
+};
+
+const primaryBtnStyle: React.CSSProperties = {
+  background: 'linear-gradient(180deg, #2854ff 0%, #1d36a8 100%)',
+  border: '1px solid #4062ff',
+  borderRadius: 12,
+  padding: '10px 14px',
+  fontWeight: 600,
+};
+
+/* ▼ 一時停止（ゴースト風） */
+const pauseBtnStyle: React.CSSProperties = {
+  background: 'transparent',
+  border: '1px solid rgba(255, 255, 255, 0.35)',
+  color: 'var(--text)',
+  borderRadius: 12,
+  padding: '10px 14px',
+  fontWeight: 600,
+};
+
+const ghostBtnStyle: React.CSSProperties = {
+  background: 'linear-gradient(180deg, #1a2552 0%, #131d40 100%)',
+  border: '1px solid rgba(255, 255, 255, 0.12)',
+  borderRadius: 12,
+  padding: '10px 14px',
+  fontWeight: 600,
+};
+
+const boardStyle: React.CSSProperties = {
+  marginTop: 14,
+  padding: 0,
+  borderRadius: 14,
+  background: '#0a1330',
+  border: '1px dashed rgba(255, 255, 255, 0.08)',
+  boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+};
+
+const boardSummaryStyle: React.CSSProperties = {
+  padding: '12px 14px',
 };
 
 export default App;
