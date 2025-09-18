@@ -2,8 +2,10 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { MantineProvider, createTheme } from '@mantine/core';
 import '@mantine/core/styles.css';
+import ReactGA from 'react-ga4';
 import App from './App';
 
+ReactGA.initialize('G-3W9LXS29S2');
 const theme = createTheme({
   defaultRadius: 'md',
   fontFamily:

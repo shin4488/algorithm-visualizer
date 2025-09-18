@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactGA from 'react-ga4';
 import './styles.css';
 import {
   genArray,
@@ -272,14 +273,25 @@ const App: React.FC = () => {
   };
 
   const handleStart = () => {
+    // number型で送る（toFixedしない）
+    ReactGA.event('play_click', { animation_speed: speed, bar_size: size });
+
     setBubble((prev) =>
       prev.steps.length ? prev : { ...prev, steps: buildBubbleSteps(prev.data) },
     );
     setQuick((prev) => (prev.steps.length ? prev : { ...prev, steps: buildQuickSteps(prev.data) }));
     setPlaying(true);
   };
-  const handlePause = () => setPlaying(false);
-  const handleShuffle = () => resetFrom(genArray(size));
+  const handlePause = () => {
+    // number型で送る（toFixedしない）
+    ReactGA.event('pause_click', { animation_speed: speed, bar_size: size });
+    setPlaying(false);
+  };
+  const handleShuffle = () => {
+    // number型で送る（toFixedしない）
+    ReactGA.event('shuffle_click', { animation_speed: speed, bar_size: size });
+    resetFrom(genArray(size));
+  };
 
   const handleSizeInput = (n: number) => {
     const nn = Math.max(5, Math.min(50, Math.floor(n)));
