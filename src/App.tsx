@@ -22,7 +22,7 @@ import {
   Accordion,
   Badge,
   Stack,
-  Code,
+  Box,
 } from '@mantine/core';
 
 type Kind = 'bubble' | 'quick';
@@ -297,7 +297,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <Container size={1100} px="md" py="md" style={rootStyle}>
+    <Container size={1280} px="md" py="md" style={rootStyle}>
       <Stack gap="xs">
         <Title
           order={1}
@@ -329,14 +329,14 @@ const App: React.FC = () => {
             gap="xs"
             align="center"
             style={{
-              padding: '8px 10px',
+              padding: '1px 1px',
               background: '#0c1530',
               borderRadius: 12,
               border: '1px solid rgba(255,255,255,0.06)',
             }}
           >
             <Text size="xs" c="var(--muted)">
-              本数: <Code>{size}</Code>
+              本数: {size}
             </Text>
             <Group gap="xs" align="center">
               <ActionIcon
@@ -381,14 +381,14 @@ const App: React.FC = () => {
             gap="xs"
             align="center"
             style={{
-              padding: '8px 10px',
+              padding: '1px 1px',
               background: '#0c1530',
               borderRadius: 12,
               border: '1px solid rgba(255,255,255,0.06)',
             }}
           >
             <Text size="xs" c="var(--muted)">
-              アニメ速度: <Code>{speed.toFixed(2)}x</Code>
+              アニメ速度: {speed.toFixed(2)}
             </Text>
             <Group gap="xs" align="center">
               <ActionIcon
@@ -428,26 +428,30 @@ const App: React.FC = () => {
             </Group>
           </Group>
 
-          {/* ▼ 一時停止：見た目を“ゴースト風”に固定（左に ⏸） */}
-          <Button
-            variant="default"
-            onClick={handlePause}
-            disabled={!playing}
-            leftSection={<span style={{ fontWeight: 700 }}>⏸</span>}
-            styles={{ root: pauseBtnStyle }}
-          >
-            一時停止
-          </Button>
+          <Box style={{ flex: '0 0 auto', marginLeft: 'auto' }}>
+            <Group gap="sm" align="center" wrap="nowrap">
+              {/* 再生：従来のプライマリ */}
+              <Button onClick={handleStart} disabled={playing} style={primaryBtnStyle}>
+                ▶ 再生
+              </Button>
 
-          {/* 再生：従来のプライマリ */}
-          <Button onClick={handleStart} disabled={playing} style={primaryBtnStyle}>
-            ▶ 再生
-          </Button>
+              {/* 一時停止：ゴースト風 */}
+              <Button
+                variant="default"
+                onClick={handlePause}
+                disabled={!playing}
+                leftSection={<span style={{ fontWeight: 700 }}>⏸</span>}
+                styles={{ root: pauseBtnStyle }}
+              >
+                一時停止
+              </Button>
 
-          {/* シャッフル：ゴースト寄せ */}
-          <Button variant="default" onClick={handleShuffle} style={ghostBtnStyle}>
-            シャッフル
-          </Button>
+              {/* シャッフル */}
+              <Button variant="default" onClick={handleShuffle} style={ghostBtnStyle}>
+                シャッフル
+              </Button>
+            </Group>
+          </Box>
         </Group>
 
         {/* ▼ トグルアイコンを左に */}
@@ -468,7 +472,7 @@ const App: React.FC = () => {
                   </Text>
                 </Group>
                 <Text size="xs" c="#cbd5ff">
-                  ステップ: <Code id="steps-bubble">{stepsBubble}</Code>
+                  ステップ: {stepsBubble}
                 </Text>
               </Group>
             </Accordion.Control>
@@ -494,7 +498,7 @@ const App: React.FC = () => {
                   </Text>
                 </Group>
                 <Text size="xs" c="#cbd5ff">
-                  ステップ: <Code id="steps-quick">{stepsQuick}</Code>
+                  ステップ: {stepsQuick}
                 </Text>
               </Group>
             </Accordion.Control>
