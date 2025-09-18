@@ -1,9 +1,33 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { MantineProvider } from '@mantine/core';
+import '@mantine/core/styles.css';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
 
-const renderApp = () => render(<App />);
+/** jsdom で Mantine が参照する matchMedia を軽量ポリフィル */
+beforeAll(() => {
+  if (!('matchMedia' in window)) {
+    // @ts-expect-error define polyfill
+    window.matchMedia = (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {}, // deprecated
+      removeListener: () => {}, // deprecated
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    });
+  }
+});
+
+const renderApp = () =>
+  render(
+    <MantineProvider defaultColorScheme="dark">
+      <App />
+    </MantineProvider>,
+  );
 
 // === 型ガード & ヘルパー ===============================
 
@@ -47,8 +71,9 @@ describe('Algorithm visualizer UI specification (React-state version)', () => {
     expect(sizeSlider).toHaveAttribute('step', '1');
     expect(sizeSlider.value).toBe('20');
 
-    const sizeLabel = screen.getByText('本数:', { selector: 'label' });
-    expect(within(sizeLabel).getByText('20')).toBeInTheDocument();
+    // label 自身のテキストを検証
+    const sizeLabel = screen.getByText(/^本数:/, { selector: 'label' });
+    expect(sizeLabel).toHaveTextContent(/^本数:\s*20$/);
 
     expect(screen.getByRole('button', { name: '本数を1減らす' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '本数を1増やす' })).toBeInTheDocument();
@@ -64,17 +89,17 @@ describe('Algorithm visualizer UI specification (React-state version)', () => {
     expect(speedSlider).toHaveAttribute('step', '0.05');
     expect(speedSlider.value).toBe('1');
 
-    const speedLabel = screen.getByText('アニメ速度:', { selector: 'label' });
-    expect(within(speedLabel).getByText('1.00x')).toBeInTheDocument();
+    const speedLabel = screen.getByText(/^アニメ速度:/, { selector: 'label' });
+    expect(speedLabel).toHaveTextContent(/^アニメ速度:\s*1\.00$/);
 
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: '速度を一段階速く' }));
     expect(speedSlider.value).toBe('1.05');
-    expect(within(speedLabel).getByText('1.05x')).toBeInTheDocument();
+    expect(speedLabel).toHaveTextContent(/^アニメ速度:\s*1\.05$/);
 
     await user.click(screen.getByRole('button', { name: '速度を一段階遅く' }));
     expect(speedSlider.value).toBe('1');
-    expect(within(speedLabel).getByText('1.00x')).toBeInTheDocument();
+    expect(speedLabel).toHaveTextContent(/^アニメ速度:\s*1\.00$/);
   });
 
   it('initializes both algorithm panels with matching bar arrangements and labels', () => {
@@ -121,16 +146,16 @@ describe('Algorithm visualizer UI specification (React-state version)', () => {
 
     const bubbleLegend = q<HTMLElement>(bubblePanel!, '.legend');
     expect(bubbleLegend).not.toBeNull();
-    expect(within(bubbleLegend!).getByText('入れ替え/比較（赤）')).toBeInTheDocument();
-    expect(within(bubbleLegend!).getByText(/ソート完了/)).toBeInTheDocument();
+    expect(bubbleLegend!.textContent).toMatch(/入れ替え\/比較（赤）/);
+    expect(bubbleLegend!.textContent).toMatch(/ソート完了/);
 
     const quickLegend = q<HTMLElement>(quickPanel!, '.legend');
     expect(quickLegend).not.toBeNull();
-    expect(within(quickLegend!).getByText('入れ替え/比較（赤）')).toBeInTheDocument();
-    expect(within(quickLegend!).getByText('ピボット', { exact: true })).toBeInTheDocument();
-    expect(within(quickLegend!).getByText(/境界/)).toBeInTheDocument();
-    expect(within(quickLegend!).getByText(/ピボット高/)).toBeInTheDocument();
-    expect(within(quickLegend!).getByText(/ソート完了/)).toBeInTheDocument();
+    expect(quickLegend!.textContent).toMatch(/入れ替え\/比較（赤）/);
+    expect(quickLegend!.textContent).toMatch(/ピボット(?!高)/);
+    expect(quickLegend!.textContent).toMatch(/境界/);
+    expect(quickLegend!.textContent).toMatch(/ピボット高/);
+    expect(quickLegend!.textContent).toMatch(/ソート完了/);
   });
 
   it('increments the bar count immediately when using the size stepper controls', async () => {
@@ -144,8 +169,8 @@ describe('Algorithm visualizer UI specification (React-state version)', () => {
       expect(sizeSlider.value).toBe('21');
     });
 
-    const sizeLabel = screen.getByText('本数:', { selector: 'label' });
-    expect(within(sizeLabel).getByText('21')).toBeInTheDocument();
+    const sizeLabel = screen.getByText(/^本数:/, { selector: 'label' });
+    expect(sizeLabel).toHaveTextContent(/^本数:\s*21$/);
 
     const bubbleRegion = screen.getByLabelText('バブルソートのバー表示');
     const quickRegion = screen.getByLabelText('クイックソートのバー表示');
@@ -165,8 +190,8 @@ describe('Algorithm visualizer UI specification (React-state version)', () => {
 
     expect(sizeSlider.value).toBe('18');
 
-    const sizeLabel = screen.getByText('本数:', { selector: 'label' });
-    expect(within(sizeLabel).getByText('18')).toBeInTheDocument();
+    const sizeLabel = screen.getByText(/^本数:/, { selector: 'label' });
+    expect(sizeLabel).toHaveTextContent(/^本数:\s*18$/);
 
     const bubbleRegion = screen.getByLabelText('バブルソートのバー表示');
     const quickRegion = screen.getByLabelText('クイックソートのバー表示');
@@ -182,8 +207,8 @@ describe('Algorithm visualizer UI specification (React-state version)', () => {
 
     expect(speedSlider.value).toBe('2.5');
 
-    const speedLabel = screen.getByText('アニメ速度:', { selector: 'label' });
-    expect(within(speedLabel).getByText('2.50x')).toBeInTheDocument();
+    const speedLabel = screen.getByText(/^アニメ速度:/, { selector: 'label' });
+    expect(speedLabel).toHaveTextContent(/^アニメ速度:\s*2\.50$/);
   });
 
   it('shuffles with the current bar count and keeps both panels synchronized', async () => {

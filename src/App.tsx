@@ -17,10 +17,7 @@ import {
   Button,
   Title,
   Text,
-  Slider,
   ActionIcon,
-  Accordion,
-  Badge,
   Stack,
   Flex,
   Box,
@@ -323,19 +320,18 @@ const App: React.FC = () => {
           boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
         }}
       >
-        {/* ツールバー（Mantineのレスポンシブだけで横一列） */}
+        {/* ツールバー：iPad(sm)ではボタンを次行、md以上は1行 */}
         <Flex
-          wrap={{ base: 'wrap', sm: 'wrap', md: 'wrap', lg: 'nowrap' }}
-          gap={{ base: 'md', sm: 8 }}
+          wrap={{ base: 'wrap', sm: 'wrap', md: 'nowrap' }}
+          gap={{ base: 'md', md: 8 }}
           align="center"
         >
-          {/* 本数 */}
-          <Box flex={{ base: '1 1 100%', md: '1 1 0' }} miw={{ base: 260, sm: 250 }}>
-            {/* ここを nowrap に */}
+          {/* 本数（ネイティブ range） */}
+          <Box flex={{ base: '1 1 100%', sm: '1 1 0' }} miw={{ base: 260, sm: 250 }}>
             <Group gap="xs" align="center" wrap="nowrap">
-              <Text size="xs" c="var(--muted)">
+              <label htmlFor="size" style={{ fontSize: 12, color: 'var(--muted)' }}>
                 本数: {size}
-              </Text>
+              </label>
               <ActionIcon
                 variant="default"
                 aria-label="本数を1減らす"
@@ -344,23 +340,15 @@ const App: React.FC = () => {
               >
                 −
               </ActionIcon>
-              <Slider
-                value={size}
-                onChange={(v) => handleSizeInput(v)}
+              <input
+                id="size"
+                type="range"
                 min={5}
                 max={50}
                 step={1}
-                w={{ base: 160, md: 140, lg: 160 }}
-                styles={{
-                  root: {
-                    paddingTop: 8,
-                    paddingBottom: 8,
-                    background: '#0f1b3a',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 10,
-                  },
-                  thumb: { borderColor: 'var(--accent)', background: 'var(--accent)' },
-                }}
+                value={size}
+                onChange={(e) => handleSizeInput(Number(e.currentTarget.value))}
+                style={{ width: 160 }}
               />
               <ActionIcon
                 variant="default"
@@ -373,13 +361,12 @@ const App: React.FC = () => {
             </Group>
           </Box>
 
-          {/* アニメ速度 */}
-          <Box flex={{ base: '1 1 100%', md: '1 1 0' }} miw={{ base: 260, md: 250 }}>
-            {/* ここを nowrap に */}
+          {/* アニメ速度（ネイティブ range） */}
+          <Box flex={{ base: '1 1 100%', sm: '1 1 0' }} miw={{ base: 260, sm: 250 }}>
             <Group gap="xs" align="center" wrap="nowrap">
-              <Text size="xs" c="var(--muted)">
+              <label htmlFor="speed" style={{ fontSize: 12, color: 'var(--muted)' }}>
                 アニメ速度: {speed.toFixed(2)}
-              </Text>
+              </label>
               <ActionIcon
                 variant="default"
                 aria-label="速度を一段階遅く"
@@ -388,27 +375,16 @@ const App: React.FC = () => {
               >
                 −
               </ActionIcon>
-
-              {/* ← 幅を短く */}
-              <Slider
-                value={speed}
-                onChange={(v) => handleSpeedInput(v)}
+              <input
+                id="speed"
+                type="range"
                 min={0.2}
                 max={10}
                 step={0.05}
-                w={{ base: 160, md: 140, lg: 160 }}
-                styles={{
-                  root: {
-                    paddingTop: 8,
-                    paddingBottom: 8,
-                    background: '#0f1b3a',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 10,
-                  },
-                  thumb: { borderColor: 'var(--accent)', background: 'var(--accent)' },
-                }}
+                value={speed}
+                onChange={(e) => handleSpeedInput(Number(e.currentTarget.value))}
+                style={{ width: 160 }}
               />
-
               <ActionIcon
                 variant="default"
                 aria-label="速度を一段階速く"
@@ -420,8 +396,8 @@ const App: React.FC = () => {
             </Group>
           </Box>
 
-          {/* 再生・一時停止・シャッフル（折り返し禁止） */}
-          <Box flex="0 0 auto">
+          {/* 再生・一時停止・シャッフル（折り返し禁止 / iPadは次行） */}
+          <Box flex={{ base: '1 1 100%', sm: '0 0 100%', md: '0 0 auto' }}>
             <Group gap="sm" align="center" wrap="nowrap">
               <Button onClick={handleStart} disabled={playing} style={primaryBtnStyle}>
                 ▶ 再生
@@ -441,82 +417,63 @@ const App: React.FC = () => {
           </Box>
         </Flex>
 
-        {/* 折り畳み（トグルは左） */}
-        <Accordion
-          multiple
-          defaultValue={['bubble', 'quick']}
-          mt="md"
-          radius="md"
-          variant="separated"
-          chevronPosition="left"
-        >
-          <Accordion.Item value="bubble" style={boardStyle}>
-            <Accordion.Control style={boardSummaryStyle}>
-              <Group justify="space-between" w="100%">
-                <Group gap={10} align="center">
-                  <Text style={{ margin: 0, fontSize: 16, color: '#cbd5ff', fontWeight: 600 }}>
-                    バブルソート
-                  </Text>
-                </Group>
-                <Text size="xs" c="#cbd5ff">
-                  ステップ: {stepsBubble}
-                </Text>
-              </Group>
-            </Accordion.Control>
-            <Accordion.Panel>
-              <Bars board={bubble} />
-              <Group gap="xs" mt="xs">
-                <Badge variant="light" leftSection={<span className="legend-box legend-swap" />}>
-                  入れ替え/比較（赤）
-                </Badge>
-                <Badge variant="light" leftSection={<span className="legend-box legend-sorted" />}>
-                  ソート完了
-                </Badge>
-              </Group>
-            </Accordion.Panel>
-          </Accordion.Item>
+        {/* ==== details版（テスト互換） ==== */}
+        <details className="board" id="board-bubble" open>
+          <summary>
+            <div className="summary-title">
+              <span className="caret"></span>
+              <h2 style={{ margin: 0, fontSize: '16px', color: '#cbd5ff' }}>バブルソート</h2>
+            </div>
+            <div className="summary-meta">
+              ステップ: <span id="steps-bubble">{stepsBubble}</span>
+            </div>
+          </summary>
+          <Bars board={bubble} />
+          <div className="legend">
+            <span className="chip">
+              <span className="box swap"></span>入れ替え/比較（赤）
+            </span>
+            <span className="chip">
+              <span className="box sorted"></span>ソート完了
+            </span>
+          </div>
+          <div className="footer" />
+        </details>
 
-          <Accordion.Item value="quick" style={boardStyle}>
-            <Accordion.Control style={boardSummaryStyle}>
-              <Group justify="space-between" w="100%">
-                <Group gap={10} align="center">
-                  <Text style={{ margin: 0, fontSize: 16, color: '#cbd5ff', fontWeight: 600 }}>
-                    クイックソート
-                  </Text>
-                </Group>
-                <Text size="xs" c="#cbd5ff">
-                  ステップ: {stepsQuick}
-                </Text>
-              </Group>
-            </Accordion.Control>
-            <Accordion.Panel>
-              <Bars board={quick} />
-              <Group gap="xs" mt="xs" wrap="wrap">
-                <Badge variant="light" leftSection={<span className="legend-box legend-swap" />}>
-                  入れ替え/比較（赤）
-                </Badge>
-                <Badge variant="light" leftSection={<span className="legend-box legend-pivot" />}>
-                  ピボット
-                </Badge>
-                <Badge
-                  variant="light"
-                  leftSection={<span className="legend-box legend-boundary" />}
-                >
-                  境界（グループ分け）
-                </Badge>
-                <Badge
-                  variant="light"
-                  leftSection={<span className="legend-box legend-pivotline" />}
-                >
-                  ピボット高（横線）
-                </Badge>
-                <Badge variant="light" leftSection={<span className="legend-box legend-sorted" />}>
-                  ソート完了
-                </Badge>
-              </Group>
-            </Accordion.Panel>
-          </Accordion.Item>
-        </Accordion>
+        <details className="board" id="board-quick" open>
+          <summary>
+            <div className="summary-title">
+              <span className="caret"></span>
+              <h2 style={{ margin: 0, fontSize: '16px', color: '#cbd5ff' }}>クイックソート</h2>
+            </div>
+            <div className="summary-meta">
+              ステップ:{' '}
+              <span className="mono" id="steps-quick">
+                {stepsQuick}
+              </span>
+            </div>
+          </summary>
+          <Bars board={quick} />
+          <div className="legend">
+            <span className="chip">
+              <span className="box swap"></span>入れ替え/比較（赤）
+            </span>
+            <span className="chip">
+              <span className="box pivot"></span>ピボット
+            </span>
+            <span className="chip">
+              <span className="box boundary"></span>境界（グループ分け）
+            </span>
+            <span className="chip">
+              <span className="box" style={{ background: 'var(--pivotLine)' }}></span>
+              ピボット高（横線）
+            </span>
+            <span className="chip">
+              <span className="box sorted"></span>ソート完了
+            </span>
+          </div>
+          <div className="footer" />
+        </details>
       </Paper>
     </Container>
   );
@@ -559,19 +516,6 @@ const ghostBtnStyle: React.CSSProperties = {
   padding: '10px 14px',
   fontWeight: 600,
   whiteSpace: 'nowrap',
-};
-
-const boardStyle: React.CSSProperties = {
-  marginTop: 14,
-  padding: 0,
-  borderRadius: 14,
-  background: '#0a1330',
-  border: '1px dashed rgba(255, 255, 255, 0.08)',
-  boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
-};
-
-const boardSummaryStyle: React.CSSProperties = {
-  padding: '12px 14px',
 };
 
 export default App;
