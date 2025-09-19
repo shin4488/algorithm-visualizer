@@ -262,9 +262,17 @@ const App: React.FC = () => {
 
   React.useEffect(() => {
     if (playing && bubble.finished)
-      ReactGA.event('sort_finish', { animation_speed: speed, bar_size: size, sort_type: 'bubble' });
+      ReactGA.event('sort_finish', {
+        animation_speed: speed,
+        bar_size: size,
+        algorithm_type: 'bubble',
+      });
     if (playing && quick.finished)
-      ReactGA.event('sort_finish', { animation_speed: speed, bar_size: size, sort_type: 'quick' });
+      ReactGA.event('sort_finish', {
+        animation_speed: speed,
+        bar_size: size,
+        algorithm_type: 'quick',
+      });
     // 両方終われば自動停止
     if (playing && bubble.finished && quick.finished) setPlaying(false);
   }, [playing, bubble.finished, quick.finished]);
