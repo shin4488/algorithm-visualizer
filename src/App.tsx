@@ -265,13 +265,13 @@ const App: React.FC = () => {
       ReactGA.event('sort_finish', {
         animation_speed: speed,
         bar_size: size,
-        algorithm_type: 'bubble',
+        algorithm_type: 'bubble_sort',
       });
     if (playing && quick.finished)
       ReactGA.event('sort_finish', {
         animation_speed: speed,
         bar_size: size,
-        algorithm_type: 'quick',
+        algorithm_type: 'quick_sort',
       });
     // 両方終われば自動停止
     if (playing && bubble.finished && quick.finished) setPlaying(false);
