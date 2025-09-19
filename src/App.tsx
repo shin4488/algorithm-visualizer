@@ -260,8 +260,12 @@ const App: React.FC = () => {
     return () => window.clearInterval(id);
   }, [playing, speed]);
 
-  // 両方終われば自動停止
   React.useEffect(() => {
+    if (playing && bubble.finished)
+      ReactGA.event('sort_finish', { animation_speed: speed, bar_size: size, sort_type: 'bubble' });
+    if (playing && quick.finished)
+      ReactGA.event('sort_finish', { animation_speed: speed, bar_size: size, sort_type: 'quick' });
+    // 両方終われば自動停止
     if (playing && bubble.finished && quick.finished) setPlaying(false);
   }, [playing, bubble.finished, quick.finished]);
 
@@ -315,10 +319,9 @@ const App: React.FC = () => {
           order={1}
           style={{ margin: 0, fontWeight: 700, fontSize: 'clamp(20px, 2.4vw, 28px)' }}
         >
-          アルゴリズム可視化
+          アルゴリズムを学ぼう
         </Title>
         <Text c="var(--muted)" size="sm">
-          {/* ▼ ここを変更：文言をサイト旧仕様に合わせる */}
           ソートアルゴリズムの比較アニメーション
         </Text>
       </Stack>
