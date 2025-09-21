@@ -24,6 +24,7 @@ import {
   Badge,
   Stack,
   Box,
+  Anchor,
 } from '@mantine/core';
 
 import { useTranslation } from 'react-i18next';
@@ -330,12 +331,14 @@ const App: React.FC = () => {
     <Container size={1280} px="md" py="md" style={rootStyle}>
       <Group justify="space-between" align="flex-start" wrap="nowrap" mb="xs" gap={3}>
         <Stack gap="xs" mb="xs">
-          <Title
-            order={1}
-            style={{ margin: 0, fontWeight: 700, fontSize: 'clamp(20px, 2.4vw, 28px)' }}
-          >
-            {t('app_title')}
-          </Title>
+          <Anchor href="/" underline="never">
+            <Title
+              order={1}
+              style={{ margin: 0, fontWeight: 700, fontSize: 'clamp(20px, 2.4vw, 28px)' }}
+            >
+              {t('app_title')}
+            </Title>
+          </Anchor>
 
           <Text c="var(--muted)" size="sm">
             {t('app_desc')}

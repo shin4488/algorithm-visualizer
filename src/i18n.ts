@@ -5,6 +5,13 @@ import en from './locales/en.json';
 import ja from './locales/ja.json';
 
 function detectInitialLng(): 'en' | 'ja' {
+  // URL の指定言語を優先 (/ja/... or /en/...)
+  const language = (
+    typeof location !== 'undefined' ? location.pathname.split('/')[1] : ''
+  ).toLowerCase();
+  if (language === 'ja' || language === 'en') return language;
+
+  // ブラウザ言語をみて言語設定する
   const nav = (navigator.language || '').toLowerCase();
   // default: english
   return nav.startsWith('ja') ? 'ja' : 'en';

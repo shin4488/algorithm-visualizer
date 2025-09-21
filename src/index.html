@@ -1,32 +1,21 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      property="og:description"
-      content="見て理解するアルゴリズム入門！コードを読めなくてもOK。図形とアニメメーションで簡単的にアルゴリズムを学べます！視覚的に学ぶことで、アルゴリズムの仕組みがより早く・正確に理解できます。"
-    />
-    <meta property="og:image" content="./static/og-image.png" />
-    <meta property="og:title" content="Algorithm Visualizer | 視覚的にアルゴリズムを学ぼう" />
-    <meta property="og:url" content="https://algorithm-visualizer-6w68.onrender.com/" />
-    <!-- Twitterカード -->
-    <meta name="twitter:card" content="summary" />
-    <meta
-      name="twitter:image"
-      content="https://algorithm-visualizer-6w68.onrender.com/static/og-image.png"
-    />
-    <meta
-      property="twitter:description"
-      content="見て理解するアルゴリズム入門！コードを読めなくてもOK。図形とアニメメーションで簡単的にアルゴリズムを学べます！視覚的に学ぶことで、アルゴリズムの仕組みがより早く・正確に理解できます。"
-    />
-    <link rel="icon" href="./static/favicon.ico" />
-    <title>Algorithm Visualizer | 視覚的にアルゴリズムを学ぼう</title>
+    <title>Redirecting…</title>
+    <meta name="robots" content="noindex" />
+    <script>
+      (function () {
+        // ブラウザの言語設定に応じてリダイレクト
+        // すでに /ja or /en 配下なら何もしない
+        if (/^\/(ja|en)(\/|$)/.test(location.pathname)) return;
+
+        var lang = (navigator.language || '').toLowerCase();
+        var target = lang.startsWith('ja') ? '/ja/' : '/en/';
+        location.replace(target);
+      })();
+    </script>
   </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3W9LXS29S2"></script>
-  </body>
+  <body></body>
 </html>
