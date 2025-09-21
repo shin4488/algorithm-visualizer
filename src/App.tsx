@@ -231,7 +231,9 @@ function QuickOverlay({ board }: { board: BoardState }) {
 }
 
 const App: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const browserLanguage = i18n.language;
+  const translatedLanguage = browserLanguage.startsWith('ja') ? 'ja' : 'en';
 
   const [size, setSize] = React.useState<number>(20);
   const [speed, setSpeed] = React.useState<number>(1.0);
@@ -273,12 +275,16 @@ const App: React.FC = () => {
         animation_speed: speed,
         bar_size: size,
         algorithm_type: 'bubble_sort',
+        browser_language: browserLanguage,
+        translated_language: translatedLanguage,
       });
     if (playing && quick.finished)
       ReactGA.event('sort_finish', {
         animation_speed: speed,
         bar_size: size,
         algorithm_type: 'quick_sort',
+        browser_language: browserLanguage,
+        translated_language: translatedLanguage,
       });
     // 両方終われば自動停止
     if (playing && bubble.finished && quick.finished) setPlaying(false);
@@ -293,7 +299,12 @@ const App: React.FC = () => {
 
   const handleStart = () => {
     // number型で送る（toFixedしない）
-    ReactGA.event('play_click', { animation_speed: speed, bar_size: size });
+    ReactGA.event('play_click', {
+      animation_speed: speed,
+      bar_size: size,
+      browser_language: browserLanguage,
+      translated_language: translatedLanguage,
+    });
 
     setBubble((prev) =>
       prev.steps.length ? prev : { ...prev, steps: buildBubbleSteps(prev.data) },
@@ -303,12 +314,22 @@ const App: React.FC = () => {
   };
   const handlePause = () => {
     // number型で送る（toFixedしない）
-    ReactGA.event('pause_click', { animation_speed: speed, bar_size: size });
+    ReactGA.event('pause_click', {
+      animation_speed: speed,
+      bar_size: size,
+      browser_language: browserLanguage,
+      translated_language: translatedLanguage,
+    });
     setPlaying(false);
   };
   const handleShuffle = () => {
     // number型で送る（toFixedしない）
-    ReactGA.event('shuffle_click', { animation_speed: speed, bar_size: size });
+    ReactGA.event('shuffle_click', {
+      animation_speed: speed,
+      bar_size: size,
+      browser_language: browserLanguage,
+      translated_language: translatedLanguage,
+    });
     resetFrom(genArray(size));
   };
 
