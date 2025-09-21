@@ -7,10 +7,14 @@ const LanguageSwitcher: React.FC = () => {
   const { i18n: inst, t } = useTranslation();
   const value = inst.language?.startsWith('ja') ? 'ja' : 'en';
 
-  const onChange = (v: string | null) => {
-    if (v !== 'ja' && v !== 'en') return;
+  const onChange = (value: string | null) => {
+    if (value !== 'ja' && value !== 'en') return;
     // Promise を無視して良いので void を付与（no-floating-promises 回避）
-    void i18n.changeLanguage(v);
+    void i18n.changeLanguage(value);
+
+    // URL も言語ごとのエントリへ移動（クエリ/ハッシュは温存）
+    const { origin, search, hash } = window.location;
+    window.location.assign(`${origin}/${value}/${search}${hash}`);
   };
 
   return (
