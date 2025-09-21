@@ -4,6 +4,7 @@ import { MantineProvider, createTheme } from '@mantine/core';
 import '@mantine/core/styles.css';
 import ReactGA from 'react-ga4';
 import App from './App';
+import './i18n';
 
 ReactGA.initialize('G-3W9LXS29S2');
 const theme = createTheme({

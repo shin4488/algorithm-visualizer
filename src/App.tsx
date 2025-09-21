@@ -26,6 +26,9 @@ import {
   Box,
 } from '@mantine/core';
 
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
+
 type Kind = 'bubble' | 'quick';
 type Range = { lo: number; hi: number } | null;
 
@@ -124,6 +127,7 @@ function applyStep(b: BoardState, step: Step): BoardState {
 }
 
 function Bars({ board }: { board: BoardState }) {
+  const { t } = useTranslation();
   const max = Math.max(...board.data, 1);
   const n = board.data.length;
 
@@ -138,7 +142,7 @@ function Bars({ board }: { board: BoardState }) {
   return (
     <div
       className="bars"
-      aria-label={`${board.kind === 'bubble' ? 'バブル' : 'クイック'}ソートのバー表示`}
+      aria-label={board.kind === 'bubble' ? t('bars_aria_bubble') : t('bars_aria_quick')}
     >
       {board.kind === 'quick' && <QuickOverlay board={board} />}
 
@@ -226,6 +230,8 @@ function QuickOverlay({ board }: { board: BoardState }) {
 }
 
 const App: React.FC = () => {
+  const { t } = useTranslation();
+
   const [size, setSize] = React.useState<number>(20);
   const [speed, setSpeed] = React.useState<number>(1.0);
   const [playing, setPlaying] = React.useState<boolean>(false);
@@ -322,17 +328,24 @@ const App: React.FC = () => {
 
   return (
     <Container size={1280} px="md" py="md" style={rootStyle}>
-      <Stack gap="xs">
-        <Title
-          order={1}
-          style={{ margin: 0, fontWeight: 700, fontSize: 'clamp(20px, 2.4vw, 28px)' }}
-        >
-          アルゴリズムを学ぼう
-        </Title>
-        <Text c="var(--muted)" size="sm">
-          ソートアルゴリズムの比較アニメーション。左から小さい順にソートします。
-        </Text>
-      </Stack>
+      <Group justify="space-between" align="flex-start" wrap="nowrap" mb="xs" gap={3}>
+        <Stack gap="xs" mb="xs">
+          <Title
+            order={1}
+            style={{ margin: 0, fontWeight: 700, fontSize: 'clamp(20px, 2.4vw, 28px)' }}
+          >
+            {t('app_title')}
+          </Title>
+
+          <Text c="var(--muted)" size="sm">
+            {t('app_desc')}
+          </Text>
+        </Stack>
+
+        <Stack flex="auto" align="flex-end">
+          <LanguageSwitcher />
+        </Stack>
+      </Group>
 
       <Paper
         p="md"
@@ -359,12 +372,12 @@ const App: React.FC = () => {
             }}
           >
             <Text size="xs" c="var(--muted)">
-              本数: {size}
+              {t('count_label')} {size}
             </Text>
             <Group gap="xs" align="center">
               <ActionIcon
                 variant="default"
-                aria-label="本数を1減らす"
+                aria-label={t('count_dec_aria')}
                 onClick={() => handleSizeInput(size - 1)}
                 style={stepperBtnStyle}
               >
@@ -390,7 +403,7 @@ const App: React.FC = () => {
               />
               <ActionIcon
                 variant="default"
-                aria-label="本数を1増やす"
+                aria-label={t('count_inc_aria')}
                 onClick={() => handleSizeInput(size + 1)}
                 style={stepperBtnStyle}
               >
@@ -411,12 +424,12 @@ const App: React.FC = () => {
             }}
           >
             <Text size="xs" c="var(--muted)">
-              アニメ速度: {speed.toFixed(2)}
+              {t('speed_label')} {speed.toFixed(2)}
             </Text>
             <Group gap="xs" align="center">
               <ActionIcon
                 variant="default"
-                aria-label="速度を一段階遅く"
+                aria-label={t('speed_down_aria')}
                 onClick={() => handleSpeedInput(Number((speed - 0.05).toFixed(2)))}
                 style={stepperBtnStyle}
               >
@@ -442,7 +455,7 @@ const App: React.FC = () => {
               />
               <ActionIcon
                 variant="default"
-                aria-label="速度を一段階速く"
+                aria-label={t('speed_up_aria')}
                 onClick={() => handleSpeedInput(Number((speed + 0.05).toFixed(2)))}
                 style={stepperBtnStyle}
               >
@@ -454,8 +467,13 @@ const App: React.FC = () => {
           <Box style={{ flex: '0 0 auto', marginLeft: 'auto' }}>
             <Group gap="sm" align="center" wrap="nowrap">
               {/* 再生：従来のプライマリ */}
-              <Button onClick={handleStart} disabled={playing} style={primaryBtnStyle}>
-                ▶ 再生
+              <Button
+                onClick={handleStart}
+                disabled={playing}
+                style={primaryBtnStyle}
+                leftSection={<span style={{ fontWeight: 700 }}>▶</span>}
+              >
+                {t('play')}
               </Button>
 
               {/* 一時停止：ゴースト風 */}
@@ -466,12 +484,12 @@ const App: React.FC = () => {
                 leftSection={<span style={{ fontWeight: 700 }}>⏸</span>}
                 styles={{ root: pauseBtnStyle }}
               >
-                一時停止
+                {t('pause')}
               </Button>
 
               {/* シャッフル */}
               <Button variant="default" onClick={handleShuffle} style={ghostBtnStyle}>
-                シャッフル
+                {t('shuffle')}
               </Button>
             </Group>
           </Box>
@@ -491,11 +509,11 @@ const App: React.FC = () => {
               <Group justify="space-between" w="100%">
                 <Group gap={10} align="center">
                   <Text style={{ margin: 0, fontSize: 16, color: '#cbd5ff', fontWeight: 600 }}>
-                    バブルソート
+                    {t('bubble')}
                   </Text>
                 </Group>
                 <Text size="xs" c="#cbd5ff">
-                  ステップ: {stepsBubble}
+                  {t('steps', { n: stepsBubble })}
                 </Text>
               </Group>
             </Accordion.Control>
@@ -503,10 +521,10 @@ const App: React.FC = () => {
               <Bars board={bubble} />
               <Group gap="xs" mt="xs">
                 <Badge variant="light" leftSection={<span className="legend-box legend-swap" />}>
-                  入れ替え/比較（赤）
+                  {t('badge_swap')}
                 </Badge>
                 <Badge variant="light" leftSection={<span className="legend-box legend-sorted" />}>
-                  ソート完了
+                  {t('badge_sorted')}
                 </Badge>
               </Group>
             </Accordion.Panel>
@@ -517,11 +535,11 @@ const App: React.FC = () => {
               <Group justify="space-between" w="100%">
                 <Group gap={10} align="center">
                   <Text style={{ margin: 0, fontSize: 16, color: '#cbd5ff', fontWeight: 600 }}>
-                    クイックソート
+                    {t('quick')}
                   </Text>
                 </Group>
                 <Text size="xs" c="#cbd5ff">
-                  ステップ: {stepsQuick}
+                  {t('steps', { n: stepsQuick })}
                 </Text>
               </Group>
             </Accordion.Control>
@@ -529,25 +547,25 @@ const App: React.FC = () => {
               <Bars board={quick} />
               <Group gap="xs" mt="xs" wrap="wrap">
                 <Badge variant="light" leftSection={<span className="legend-box legend-swap" />}>
-                  入れ替え/比較（赤）
+                  {t('badge_swap')}
                 </Badge>
                 <Badge variant="light" leftSection={<span className="legend-box legend-pivot" />}>
-                  ピボット
+                  {t('badge_pivot')}
                 </Badge>
                 <Badge
                   variant="light"
                   leftSection={<span className="legend-box legend-boundary" />}
                 >
-                  境界（グループ分け）
+                  {t('badge_boundary')}
                 </Badge>
                 <Badge
                   variant="light"
                   leftSection={<span className="legend-box legend-pivotline" />}
                 >
-                  ピボット高（横線）
+                  {t('badge_pivotline')}
                 </Badge>
                 <Badge variant="light" leftSection={<span className="legend-box legend-sorted" />}>
-                  ソート完了
+                  {t('badge_sorted')}
                 </Badge>
               </Group>
             </Accordion.Panel>
