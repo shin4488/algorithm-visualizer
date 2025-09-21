@@ -1,15 +1,9 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# devコンテナが起動中なら、その中で実行（-T: no-TTY）
+# dev コンテナが起動中なら中で実行、ダメならホストで実行
 if command -v docker >/dev/null 2>&1 && docker compose ps >/dev/null 2>&1; then
-  docker compose exec -T app yarn lint-staged && exit 0
+  docker compose exec -T app yarn lint-staged
+else
+  yarn lint-staged
 fi
-
-# devコンテナが起動していないなら、1回限りのコンテナで実行
-if command -v docker >/dev/null 2>&1; then
-  docker compose run --rm app yarn lint-staged && exit 0
-fi
-
-# Dockerが使えない環境ではホストのyarnで実行
-yarn lint-staged

@@ -6,7 +6,18 @@ services:
       dockerfile: Dockerfile
     container_name: algorithm-visualizer-dev
     # HMR を外から使えるように host/port を渡す
-    command: ['yarn', 'dev', '--host', '0.0.0.0', '--port', '1234']
+    command:
+      - bash
+      - -lc
+      - |
+        set -euo pipefail
+        # node_modules がない or 空なら初回インストール
+        if [ ! -d node_modules ] || [ -z "$$(ls -A node_modules 2>/dev/null || true)" ]; then
+          echo "[compose] installing deps..."
+          yarn install --frozen-lockfile
+        fi
+        echo "[compose] starting dev server..."
+        exec yarn dev --host 0.0.0.0 --port 1234
     environment:
       - NODE_ENV=development
       # Docker Desktop などでファイル監視が不安定な場合はコメントアウトを外す

@@ -1,0 +1,14 @@
+{
+  "name": "algorithm-visualizer",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/app",
+  "overrideCommand": false,
+  "postCreateCommand": "",
+  "forwardPorts": [1234],
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint"]
+    }
+  }
+}
