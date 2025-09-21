@@ -1,8 +1,8 @@
 import i18n, { Resource } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-import en from './locales/en.json';
-import ja from './locales/ja.json';
+import en from './en/locale.json';
+import ja from './ja/locale.json';
 
 function detectInitialLng(): 'en' | 'ja' {
   // URL の指定言語を優先 (/ja/... or /en/...)
