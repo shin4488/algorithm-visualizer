@@ -1,0 +1,8 @@
+.git
+.gitignore
+node_modules
+public
+.DS_Store
+*.log
+public
+.parcel-cache
