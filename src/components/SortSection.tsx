@@ -1,7 +1,7 @@
 import React from 'react';
 import { Accordion, Group, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import type { Step } from '../plugins/visualizer';
+import type { Step } from '@/plugins/visualizer';
 
 export type Kind = 'bubble' | 'quick';
 export type Range = { lo: number; hi: number } | null;
