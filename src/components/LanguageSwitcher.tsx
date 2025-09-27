@@ -1,7 +1,7 @@
 import React from 'react';
 import { Select } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import i18n from './i18n';
+import i18n from '../plugins/i18n';
 
 const LanguageSwitcher: React.FC = () => {
   const { i18n: inst, t } = useTranslation();
