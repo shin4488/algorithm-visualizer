@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { buildBubbleSteps, buildQuickSteps, genArray, type Step } from '../plugins/visualizer';
+import { buildBubbleSteps, buildQuickSteps, genArray, type Step } from '@/plugins/visualizer';
 
 afterEach(() => {
   vi.restoreAllMocks();

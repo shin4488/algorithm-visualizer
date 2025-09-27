@@ -3,7 +3,7 @@ import '@mantine/core/styles.css';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import App from '../App';
+import App from '@/App';
 
 // MantineProvider でラップして描画
 const renderApp = () =>

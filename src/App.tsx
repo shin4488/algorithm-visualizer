@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactGA from 'react-ga4';
-import './styles.css';
+import '@/styles.css';
 import {
   genArray,
   buildBubbleSteps,
@@ -8,17 +8,17 @@ import {
   computeInterval,
   SWAP_TRANS_MS,
   type Step,
-} from './plugins/visualizer';
+} from '@/plugins/visualizer';
 
 /* Mantine */
 import { Container, Paper, Accordion } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 
-import HeaderBar from './components/HeaderBar';
-import ControlBar from './components/ControlBar';
-import SortSection, { BoardState } from './components/SortSection';
-import { BubbleLegend } from './components/algorithms/Bubble';
-import { QuickLegend, QuickOverlay } from './components/algorithms/Quick';
+import HeaderBar from '@/components/HeaderBar';
+import ControlBar from '@/components/ControlBar';
+import SortSection, { BoardState } from '@/components/SortSection';
+import { BubbleLegend } from '@/components/algorithms/Bubble';
+import { QuickLegend, QuickOverlay } from '@/components/algorithms/Quick';
 
 type Kind = 'bubble' | 'quick';
 

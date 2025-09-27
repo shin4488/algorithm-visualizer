@@ -34,7 +34,7 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
 }
 
 // ===== i18n: テストは日本語UIで固定 =====
-import i18n from '../plugins/i18n';
+import i18n from '@/plugins/i18n';
 
 // 非同期を「無視」して初期化（eslint no-floating-promises 対策に void）
 void i18n.changeLanguage('ja');

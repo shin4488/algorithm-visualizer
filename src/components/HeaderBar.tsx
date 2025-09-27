@@ -1,7 +1,7 @@
 import React from 'react';
 import { Group, Stack, Title, Text, Anchor } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from './LanguageSwitcher';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const HeaderBar: React.FC = () => {
   const { t } = useTranslation();
