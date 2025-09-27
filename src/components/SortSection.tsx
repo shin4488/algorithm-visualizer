@@ -24,8 +24,8 @@ export type BoardState = {
 };
 
 type Props = {
-  value: 'bubble' | 'quick';
-  titleKey: 'bubble' | 'quick';
+  value: Kind;
+  titleKey: Kind;
   stepsCount: number;
   board: BoardState;
 };
