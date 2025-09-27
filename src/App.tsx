@@ -10,45 +10,15 @@ import {
   type Step,
 } from './visualizer';
 
-/* === Mantine UI === */
-import {
-  Container,
-  Paper,
-  Group,
-  Button,
-  Title,
-  Text,
-  Slider,
-  ActionIcon,
-  Accordion,
-  Badge,
-  Stack,
-  Box,
-  Anchor,
-} from '@mantine/core';
-
+/* Mantine */
+import { Container, Paper, Accordion } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from './LanguageSwitcher';
+
+import HeaderBar from './components/HeaderBar';
+import ControlBar from './components/ControlBar';
+import SortSection, { BoardState } from './components/SortSection';
 
 type Kind = 'bubble' | 'quick';
-type Range = { lo: number; hi: number } | null;
-
-type BoardState = {
-  kind: Kind;
-  data: number[];
-  ids: number[];
-  steps: Step[];
-  stepIndex: number;
-  finished: boolean;
-  compare?: [number, number] | null;
-  swapPair?: [number, number] | null;
-  candL?: number | null;
-  candR?: number | null;
-  pivotIndex: number | null;
-  range: Range;
-  boundaryIndex: number | null;
-  boundaryVisible: boolean;
-};
 
 function makeBoard(kind: Kind, base: number[]): BoardState {
   const n = base.length;
@@ -127,111 +97,8 @@ function applyStep(b: BoardState, step: Step): BoardState {
   }
 }
 
-function Bars({ board }: { board: BoardState }) {
-  const { t } = useTranslation();
-  const max = Math.max(...board.data, 1);
-  const n = board.data.length;
-
-  const isCompare = (idx: number) =>
-    !!board.compare && (idx === board.compare[0] || idx === board.compare[1]);
-  const isSwap = (idx: number) =>
-    !!board.swapPair && (idx === board.swapPair[0] || idx === board.swapPair[1]);
-  const isPivot = (idx: number) => board.pivotIndex === idx;
-  const isCandL = (idx: number) => board.candL === idx;
-  const isCandR = (idx: number) => board.candR === idx;
-
-  return (
-    <div
-      className="bars"
-      aria-label={board.kind === 'bubble' ? t('bars_aria_bubble') : t('bars_aria_quick')}
-    >
-      {board.kind === 'quick' && <QuickOverlay board={board} />}
-
-      {Array.from({ length: n }, (_, i) => {
-        const h = (board.data[i] / max) * 100;
-        const classes = [
-          'bar',
-          isPivot(i) ? 'pivot' : '',
-          isCompare(i) ? 'compare' : '',
-          isSwap(i) ? 'swap' : '',
-          isCandL(i) ? 'candL' : '',
-          isCandR(i) ? 'candR' : '',
-          board.finished ? 'sorted' : '',
-        ]
-          .filter(Boolean)
-          .join(' ');
-        return (
-          <div key={i} className={classes} style={{ height: `${h}%` }} data-label={board.ids[i]} />
-        );
-      })}
-    </div>
-  );
-}
-
-function QuickOverlay({ board }: { board: BoardState }) {
-  const n = Math.max(board.data.length, 1);
-  const range = board.range;
-  const lo = range?.lo ?? 0;
-  const hi = range?.hi ?? n - 1;
-
-  const showRange = range != null;
-  const leftPct = (lo / n) * 100;
-  const rightPct = ((hi + 1) / n) * 100;
-  const boundaryPct = ((board.boundaryIndex ?? lo) / n) * 100;
-
-  const pivotHeightPct =
-    board.pivotIndex != null && board.data.length
-      ? (board.data[board.pivotIndex] / Math.max(...board.data, 1)) * 100
-      : null;
-
-  return (
-    <div className="partition-overlay" aria-hidden="true">
-      <div
-        className="zone"
-        style={{
-          left: `${leftPct}%`,
-          right: `${100 - boundaryPct}%`,
-          display: showRange ? 'block' : 'none',
-        }}
-      />
-      <div
-        className="zone"
-        style={{
-          left: `${boundaryPct}%`,
-          right: `${100 - rightPct}%`,
-          display: showRange ? 'block' : 'none',
-        }}
-      />
-      <div
-        className="subrange"
-        style={{
-          left: `${leftPct}%`,
-          right: `${100 - rightPct}%`,
-          display: showRange ? 'block' : 'none',
-        }}
-      />
-      <div
-        className="boundary"
-        style={{
-          left: `${boundaryPct}%`,
-          display: showRange && board.boundaryVisible ? 'block' : 'none',
-        }}
-      />
-      <div
-        className="pivot-hline"
-        style={{
-          left: `${leftPct}%`,
-          right: `${100 - rightPct}%`,
-          bottom: pivotHeightPct != null ? `${pivotHeightPct}%` : undefined,
-          display: showRange && pivotHeightPct != null ? 'block' : 'none',
-        }}
-      />
-    </div>
-  );
-}
-
 const App: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const browserLanguage = i18n.language;
   const translatedLanguage = browserLanguage.startsWith('ja') ? 'ja' : 'en';
 
@@ -246,7 +113,7 @@ const App: React.FC = () => {
   const stepsBubble = bubble.steps.length;
   const stepsQuick = quick.steps.length;
 
-  // タイマー（speed / playing の変更で再スケジュール）
+  // タイマー
   React.useEffect(() => {
     if (!playing) return;
     const iv = computeInterval(speed);
@@ -286,7 +153,6 @@ const App: React.FC = () => {
         browser_language: browserLanguage,
         translated_language: translatedLanguage,
       });
-    // 両方終われば自動停止
     if (playing && bubble.finished && quick.finished) setPlaying(false);
   }, [playing, bubble.finished, quick.finished]);
 
@@ -298,14 +164,12 @@ const App: React.FC = () => {
   };
 
   const handleStart = () => {
-    // number型で送る（toFixedしない）
     ReactGA.event('play_click', {
       animation_speed: speed,
       bar_size: size,
       browser_language: browserLanguage,
       translated_language: translatedLanguage,
     });
-
     setBubble((prev) =>
       prev.steps.length ? prev : { ...prev, steps: buildBubbleSteps(prev.data) },
     );
@@ -313,7 +177,6 @@ const App: React.FC = () => {
     setPlaying(true);
   };
   const handlePause = () => {
-    // number型で送る（toFixedしない）
     ReactGA.event('pause_click', {
       animation_speed: speed,
       bar_size: size,
@@ -323,7 +186,6 @@ const App: React.FC = () => {
     setPlaying(false);
   };
   const handleShuffle = () => {
-    // number型で送る（toFixedしない）
     ReactGA.event('shuffle_click', {
       animation_speed: speed,
       bar_size: size,
@@ -332,7 +194,6 @@ const App: React.FC = () => {
     });
     resetFrom(genArray(size));
   };
-
   const handleSizeInput = (n: number) => {
     const nn = Math.max(5, Math.min(50, Math.floor(n)));
     setSize(nn);
@@ -343,33 +204,13 @@ const App: React.FC = () => {
     setSpeed(ss);
   };
 
-  // CSS カスタムプロパティを型安全に
   const rootStyle: React.CSSProperties & Record<'--transMs', string> = {
     '--transMs': `${SWAP_TRANS_MS}ms`,
   };
 
   return (
     <Container size={1280} px="md" py="md" style={rootStyle}>
-      <Group justify="space-between" align="flex-start" wrap="nowrap" mb="xs" gap={3}>
-        <Stack gap="xs" mb="xs">
-          <Anchor href="/" underline="never">
-            <Title
-              order={1}
-              style={{ margin: 0, fontWeight: 700, fontSize: 'clamp(20px, 2.4vw, 28px)' }}
-            >
-              {t('app_title')}
-            </Title>
-          </Anchor>
-
-          <Text c="var(--muted)" size="sm">
-            {t('app_desc')}
-          </Text>
-        </Stack>
-
-        <Stack flex="auto" align="flex-end">
-          <LanguageSwitcher />
-        </Stack>
-      </Group>
+      <HeaderBar />
 
       <Paper
         p="md"
@@ -382,144 +223,17 @@ const App: React.FC = () => {
           boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
         }}
       >
-        {/* ツールバー */}
-        <Group wrap="wrap" gap="md" align="center">
-          {/* 本数 */}
-          <Group
-            gap="xs"
-            align="center"
-            style={{
-              padding: '1px 1px',
-              background: '#0c1530',
-              borderRadius: 12,
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}
-          >
-            <Text size="xs" c="var(--muted)">
-              {t('count_label')} {size}
-            </Text>
-            <Group gap="xs" align="center">
-              <ActionIcon
-                variant="default"
-                aria-label={t('count_dec_aria')}
-                onClick={() => handleSizeInput(size - 1)}
-                style={stepperBtnStyle}
-              >
-                −
-              </ActionIcon>
-              <Slider
-                value={size}
-                onChange={(v) => handleSizeInput(v)}
-                min={5}
-                max={50}
-                step={1}
-                w={220}
-                styles={{
-                  root: {
-                    paddingTop: 8,
-                    paddingBottom: 8,
-                    background: '#0f1b3a',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 10,
-                  },
-                  thumb: { borderColor: 'var(--accent)', background: 'var(--accent)' },
-                }}
-              />
-              <ActionIcon
-                variant="default"
-                aria-label={t('count_inc_aria')}
-                onClick={() => handleSizeInput(size + 1)}
-                style={stepperBtnStyle}
-              >
-                ＋
-              </ActionIcon>
-            </Group>
-          </Group>
+        <ControlBar
+          size={size}
+          speed={speed}
+          playing={playing}
+          onSizeChange={handleSizeInput}
+          onSpeedChange={handleSpeedInput}
+          onStart={handleStart}
+          onPause={handlePause}
+          onShuffle={handleShuffle}
+        />
 
-          {/* 速度 */}
-          <Group
-            gap="xs"
-            align="center"
-            style={{
-              padding: '1px 1px',
-              background: '#0c1530',
-              borderRadius: 12,
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}
-          >
-            <Text size="xs" c="var(--muted)">
-              {t('speed_label')} {speed.toFixed(2)}
-            </Text>
-            <Group gap="xs" align="center">
-              <ActionIcon
-                variant="default"
-                aria-label={t('speed_down_aria')}
-                onClick={() => handleSpeedInput(Number((speed - 0.05).toFixed(2)))}
-                style={stepperBtnStyle}
-              >
-                −
-              </ActionIcon>
-              <Slider
-                value={speed}
-                onChange={(v) => handleSpeedInput(v)}
-                min={0.2}
-                max={10}
-                step={0.05}
-                w={220}
-                styles={{
-                  root: {
-                    paddingTop: 8,
-                    paddingBottom: 8,
-                    background: '#0f1b3a',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 10,
-                  },
-                  thumb: { borderColor: 'var(--accent)', background: 'var(--accent)' },
-                }}
-              />
-              <ActionIcon
-                variant="default"
-                aria-label={t('speed_up_aria')}
-                onClick={() => handleSpeedInput(Number((speed + 0.05).toFixed(2)))}
-                style={stepperBtnStyle}
-              >
-                ＋
-              </ActionIcon>
-            </Group>
-          </Group>
-
-          <Box style={{ flex: '0 0 auto', marginLeft: 'auto' }}>
-            <Group gap="sm" align="center" wrap="nowrap">
-              {/* 再生：従来のプライマリ */}
-              <Button
-                onClick={handleStart}
-                disabled={playing}
-                style={primaryBtnStyle}
-                leftSection={<span style={{ fontWeight: 700 }}>▶</span>}
-              >
-                {t('play')}
-              </Button>
-
-              {/* 一時停止：ゴースト風 */}
-              <Button
-                variant="default"
-                onClick={handlePause}
-                disabled={!playing}
-                leftSection={<span style={{ fontWeight: 700 }}>⏸</span>}
-                styles={{ root: pauseBtnStyle }}
-              >
-                {t('pause')}
-              </Button>
-
-              {/* シャッフル */}
-              <Button variant="default" onClick={handleShuffle} style={ghostBtnStyle}>
-                {t('shuffle')}
-              </Button>
-            </Group>
-          </Box>
-        </Group>
-
-        {/* ▼ トグルアイコンを左に */}
         <Accordion
           multiple
           defaultValue={['bubble', 'quick']}
@@ -528,127 +242,12 @@ const App: React.FC = () => {
           variant="separated"
           chevronPosition="left"
         >
-          <Accordion.Item value="bubble" style={boardStyle}>
-            <Accordion.Control style={boardSummaryStyle}>
-              <Group justify="space-between" w="100%">
-                <Group gap={10} align="center">
-                  <Text style={{ margin: 0, fontSize: 16, color: '#cbd5ff', fontWeight: 600 }}>
-                    {t('bubble')}
-                  </Text>
-                </Group>
-                <Text size="xs" c="#cbd5ff">
-                  {t('steps', { n: stepsBubble })}
-                </Text>
-              </Group>
-            </Accordion.Control>
-            <Accordion.Panel>
-              <Bars board={bubble} />
-              <Group gap="xs" mt="xs">
-                <Badge variant="light" leftSection={<span className="legend-box legend-swap" />}>
-                  {t('badge_swap')}
-                </Badge>
-                <Badge variant="light" leftSection={<span className="legend-box legend-sorted" />}>
-                  {t('badge_sorted')}
-                </Badge>
-              </Group>
-            </Accordion.Panel>
-          </Accordion.Item>
-
-          <Accordion.Item value="quick" style={boardStyle}>
-            <Accordion.Control style={boardSummaryStyle}>
-              <Group justify="space-between" w="100%">
-                <Group gap={10} align="center">
-                  <Text style={{ margin: 0, fontSize: 16, color: '#cbd5ff', fontWeight: 600 }}>
-                    {t('quick')}
-                  </Text>
-                </Group>
-                <Text size="xs" c="#cbd5ff">
-                  {t('steps', { n: stepsQuick })}
-                </Text>
-              </Group>
-            </Accordion.Control>
-            <Accordion.Panel>
-              <Bars board={quick} />
-              <Group gap="xs" mt="xs" wrap="wrap">
-                <Badge variant="light" leftSection={<span className="legend-box legend-swap" />}>
-                  {t('badge_swap')}
-                </Badge>
-                <Badge variant="light" leftSection={<span className="legend-box legend-pivot" />}>
-                  {t('badge_pivot')}
-                </Badge>
-                <Badge
-                  variant="light"
-                  leftSection={<span className="legend-box legend-boundary" />}
-                >
-                  {t('badge_boundary')}
-                </Badge>
-                <Badge
-                  variant="light"
-                  leftSection={<span className="legend-box legend-pivotline" />}
-                >
-                  {t('badge_pivotline')}
-                </Badge>
-                <Badge variant="light" leftSection={<span className="legend-box legend-sorted" />}>
-                  {t('badge_sorted')}
-                </Badge>
-              </Group>
-            </Accordion.Panel>
-          </Accordion.Item>
+          <SortSection value="bubble" titleKey="bubble" stepsCount={stepsBubble} board={bubble} />
+          <SortSection value="quick" titleKey="quick" stepsCount={stepsQuick} board={quick} />
         </Accordion>
       </Paper>
     </Container>
   );
-};
-
-/* ---- 見た目を旧サイトに寄せるための最小インライン style ---- */
-const stepperBtnStyle: React.CSSProperties = {
-  width: 28,
-  height: 28,
-  borderRadius: 8,
-  border: '1px solid rgba(255, 255, 255, 0.15)',
-  background: 'linear-gradient(180deg, #1a2552 0%, #131d40 100%)',
-  color: '#e6ebff',
-  fontWeight: 700,
-  lineHeight: 1,
-};
-
-const primaryBtnStyle: React.CSSProperties = {
-  background: 'linear-gradient(180deg, #2854ff 0%, #1d36a8 100%)',
-  border: '1px solid #4062ff',
-  borderRadius: 12,
-  padding: '10px 14px',
-  fontWeight: 600,
-};
-
-/* ▼ 一時停止（ゴースト風） */
-const pauseBtnStyle: React.CSSProperties = {
-  background: 'transparent',
-  border: '1px solid rgba(255, 255, 255, 0.35)',
-  color: 'var(--text)',
-  borderRadius: 12,
-  padding: '10px 14px',
-  fontWeight: 600,
-};
-
-const ghostBtnStyle: React.CSSProperties = {
-  background: 'linear-gradient(180deg, #1a2552 0%, #131d40 100%)',
-  border: '1px solid rgba(255, 255, 255, 0.12)',
-  borderRadius: 12,
-  padding: '10px 14px',
-  fontWeight: 600,
-};
-
-const boardStyle: React.CSSProperties = {
-  marginTop: 14,
-  padding: 0,
-  borderRadius: 14,
-  background: '#0a1330',
-  border: '1px dashed rgba(255, 255, 255, 0.08)',
-  boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
-};
-
-const boardSummaryStyle: React.CSSProperties = {
-  padding: '12px 14px',
 };
 
 export default App;
