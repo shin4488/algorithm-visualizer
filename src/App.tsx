@@ -17,6 +17,8 @@ import { useTranslation } from 'react-i18next';
 import HeaderBar from './components/HeaderBar';
 import ControlBar from './components/ControlBar';
 import SortSection, { BoardState } from './components/SortSection';
+import { BubbleLegend } from './components/algorithms/Bubble';
+import { QuickLegend, QuickOverlay } from './components/algorithms/Quick';
 
 type Kind = 'bubble' | 'quick';
 
@@ -242,8 +244,21 @@ const App: React.FC = () => {
           variant="separated"
           chevronPosition="left"
         >
-          <SortSection value="bubble" titleKey="bubble" stepsCount={stepsBubble} board={bubble} />
-          <SortSection value="quick" titleKey="quick" stepsCount={stepsQuick} board={quick} />
+          <SortSection
+            value="bubble"
+            titleKey="bubble"
+            stepsCount={stepsBubble}
+            board={bubble}
+            Legend={BubbleLegend}
+          />
+          <SortSection
+            value="quick"
+            titleKey="quick"
+            stepsCount={stepsQuick}
+            board={quick}
+            Legend={QuickLegend}
+            Overlay={QuickOverlay}
+          />
         </Accordion>
       </Paper>
     </Container>

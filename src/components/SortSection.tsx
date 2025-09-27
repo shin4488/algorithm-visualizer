@@ -1,5 +1,5 @@
 import React from 'react';
-import { Accordion, Group, Text, Badge } from '@mantine/core';
+import { Accordion, Group, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import type { Step } from '../plugins/visualizer';
 
@@ -25,12 +25,17 @@ export type BoardState = {
 
 type Props = {
   value: Kind;
+  // i18n キー
   titleKey: Kind;
   stepsCount: number;
   board: BoardState;
+  // アルゴリズム固有の凡例（必須）
+  Legend: React.ComponentType;
+  // アルゴリズム固有のオーバレイ（任意）
+  Overlay?: React.ComponentType<{ board: BoardState }>;
 };
 
-const SortSection: React.FC<Props> = ({ value, titleKey, stepsCount, board }) => {
+const SortSection: React.FC<Props> = ({ value, titleKey, stepsCount, board, Legend, Overlay }) => {
   const { t } = useTranslation();
 
   return (
@@ -49,46 +54,19 @@ const SortSection: React.FC<Props> = ({ value, titleKey, stepsCount, board }) =>
       </Accordion.Control>
 
       <Accordion.Panel>
-        <Bars board={board} />
-
-        {/* 凡例（アルゴリズム別） */}
-        {board.kind === 'bubble' ? (
-          <Group gap="xs" mt="xs">
-            <Badge variant="light" leftSection={<span className="legend-box legend-swap" />}>
-              {t('badge_swap')}
-            </Badge>
-            <Badge variant="light" leftSection={<span className="legend-box legend-sorted" />}>
-              {t('badge_sorted')}
-            </Badge>
-          </Group>
-        ) : (
-          <Group gap="xs" mt="xs" wrap="wrap">
-            <Badge variant="light" leftSection={<span className="legend-box legend-swap" />}>
-              {t('badge_swap')}
-            </Badge>
-            <Badge variant="light" leftSection={<span className="legend-box legend-pivot" />}>
-              {t('badge_pivot')}
-            </Badge>
-            <Badge variant="light" leftSection={<span className="legend-box legend-boundary" />}>
-              {t('badge_boundary')}
-            </Badge>
-            <Badge variant="light" leftSection={<span className="legend-box legend-pivotline" />}>
-              {t('badge_pivotline')}
-            </Badge>
-            <Badge variant="light" leftSection={<span className="legend-box legend-sorted" />}>
-              {t('badge_sorted')}
-            </Badge>
-          </Group>
-        )}
+        <Bars board={board} ariaLabel={t(`bars_aria_${titleKey}`)} Overlay={Overlay} />
+        <Legend />
       </Accordion.Panel>
     </Accordion.Item>
   );
 };
 
-/* ============= 内部：Bars / QuickOverlay ============= */
-
-const Bars: React.FC<{ board: BoardState }> = ({ board }) => {
-  const { t } = useTranslation();
+/* ============= 内部：Bars（共通） ============= */
+const Bars: React.FC<{
+  board: BoardState;
+  ariaLabel: string;
+  Overlay?: React.ComponentType<{ board: BoardState }>;
+}> = ({ board, ariaLabel, Overlay }) => {
   const max = Math.max(...board.data, 1);
   const n = board.data.length;
 
@@ -101,11 +79,8 @@ const Bars: React.FC<{ board: BoardState }> = ({ board }) => {
   const isCandR = (idx: number) => board.candR === idx;
 
   return (
-    <div
-      className="bars"
-      aria-label={board.kind === 'bubble' ? t('bars_aria_bubble') : t('bars_aria_quick')}
-    >
-      {board.kind === 'quick' && <QuickOverlay board={board} />}
+    <div className="bars" aria-label={ariaLabel}>
+      {Overlay ? <Overlay board={board} /> : null}
 
       {Array.from({ length: n }, (_, i) => {
         const h = (board.data[i] / max) * 100;
@@ -124,68 +99,6 @@ const Bars: React.FC<{ board: BoardState }> = ({ board }) => {
           <div key={i} className={classes} style={{ height: `${h}%` }} data-label={board.ids[i]} />
         );
       })}
-    </div>
-  );
-};
-
-const QuickOverlay: React.FC<{ board: BoardState }> = ({ board }) => {
-  const n = Math.max(board.data.length, 1);
-  const range = board.range;
-  const lo = range?.lo ?? 0;
-  const hi = range?.hi ?? n - 1;
-
-  const showRange = range != null;
-  const leftPct = (lo / n) * 100;
-  const rightPct = ((hi + 1) / n) * 100;
-  const boundaryPct = ((board.boundaryIndex ?? lo) / n) * 100;
-
-  const pivotHeightPct =
-    board.pivotIndex != null && board.data.length
-      ? (board.data[board.pivotIndex] / Math.max(...board.data, 1)) * 100
-      : null;
-
-  return (
-    <div className="partition-overlay" aria-hidden="true">
-      <div
-        className="zone"
-        style={{
-          left: `${leftPct}%`,
-          right: `${100 - boundaryPct}%`,
-          display: showRange ? 'block' : 'none',
-        }}
-      />
-      <div
-        className="zone"
-        style={{
-          left: `${boundaryPct}%`,
-          right: `${100 - rightPct}%`,
-          display: showRange ? 'block' : 'none',
-        }}
-      />
-      <div
-        className="subrange"
-        style={{
-          left: `${leftPct}%`,
-          right: `${100 - rightPct}%`,
-          display: showRange ? 'block' : 'none',
-        }}
-      />
-      <div
-        className="boundary"
-        style={{
-          left: `${boundaryPct}%`,
-          display: showRange && board.boundaryVisible ? 'block' : 'none',
-        }}
-      />
-      <div
-        className="pivot-hline"
-        style={{
-          left: `${leftPct}%`,
-          right: `${100 - rightPct}%`,
-          bottom: pivotHeightPct != null ? `${pivotHeightPct}%` : undefined,
-          display: showRange && pivotHeightPct != null ? 'block' : 'none',
-        }}
-      />
     </div>
   );
 };
