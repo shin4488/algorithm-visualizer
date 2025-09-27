@@ -2,6 +2,9 @@
   "name": "algorithm-visualizer",
   "version": "1.0.0",
   "private": true,
+  "alias": {
+    "@/*": "./src/$1"
+  },
   "scripts": {
     "dev": "parcel src/ja/index.html src/en/index.html src/index.html --dist-dir public",
     "build": "parcel build src/ja/index.html src/en/index.html src/index.html --dist-dir public",
@@ -35,6 +38,7 @@
     "@testing-library/jest-dom": "^6.4.5",
     "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",
+    "@types/node": "^24.5.2",
     "@types/react": "^18.2.24",
     "@types/react-dom": "^18.2.9",
     "eslint": "^9.35.0",
