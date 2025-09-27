@@ -8,7 +8,7 @@ import {
   computeInterval,
   SWAP_TRANS_MS,
   type Step,
-} from './visualizer';
+} from './plugins/visualizer';
 
 /* Mantine */
 import { Container, Paper, Accordion } from '@mantine/core';
