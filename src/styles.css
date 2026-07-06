@@ -133,6 +133,10 @@ body {
 .legend-pivotline {
   background: var(--pivotLine);
 }
+/* 選択ソート: 最小値候補（バーの candL リングと同じ色） */
+.legend-min {
+  background: var(--markL);
+}
 
 /* ====== クイックソート: グループ境界オーバーレイ ====== */
 .partition-overlay {

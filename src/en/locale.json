@@ -12,6 +12,7 @@
   "pause": "Pause",
   "shuffle": "Shuffle",
   "bubble": "Bubble Sort",
+  "selection": "Selection Sort",
   "quick": "Quick Sort",
   "steps": "Steps: {{n}}",
   "badge_swap": "Swap/Compare (red)",
@@ -19,6 +20,8 @@
   "badge_pivot": "Pivot",
   "badge_boundary": "Boundary (partition)",
   "badge_pivotline": "Pivot height (line)",
+  "badge_min": "Minimum candidate",
   "bars_aria_bubble": "Bars for Bubble sort",
+  "bars_aria_selection": "Bars for Selection sort",
   "bars_aria_quick": "Bars for Quick sort"
 }

@@ -4,6 +4,7 @@ import '@/styles.css';
 import {
   genArray,
   buildBubbleSteps,
+  buildSelectionSteps,
   buildQuickSteps,
   computeInterval,
   SWAP_TRANS_MS,
@@ -18,9 +19,10 @@ import HeaderBar from '@/components/HeaderBar';
 import ControlBar from '@/components/ControlBar';
 import SortSection, { BoardState } from '@/components/SortSection';
 import { BubbleLegend } from '@/components/algorithms/Bubble';
+import { SelectionLegend } from '@/components/algorithms/Selection';
 import { QuickLegend, QuickOverlay } from '@/components/algorithms/Quick';
 
-type Kind = 'bubble' | 'quick';
+type Kind = 'bubble' | 'selection' | 'quick';
 
 function makeBoard(kind: Kind, base: number[]): BoardState {
   const n = base.length;
@@ -42,6 +44,10 @@ function makeBoard(kind: Kind, base: number[]): BoardState {
   };
 }
 
+/**
+ * ステップ 1 件をボード状態へ適用する純粋関数。
+ * compare / swap のハイライトは 1 ステップ限りなので、毎回いったんクリアしてから適用する
+ */
 function applyStep(b: BoardState, step: Step): BoardState {
   const next: BoardState = { ...b, compare: null, swapPair: null };
   switch (step.t) {
@@ -53,6 +59,7 @@ function applyStep(b: BoardState, step: Step): BoardState {
       const { i, j } = step;
       [data[i], data[j]] = [data[j], data[i]];
       [ids[i], ids[j]] = [ids[j], ids[i]];
+      // ピボット自体が入れ替え対象だった場合、ハイライト位置を移動先へ追従させる
       let pivotIndex = next.pivotIndex;
       if (pivotIndex != null) {
         if (pivotIndex === i) pivotIndex = j;
@@ -88,12 +95,15 @@ function applyStep(b: BoardState, step: Step): BoardState {
       return next.kind === 'quick'
         ? { ...next, boundaryIndex: step.k, boundaryVisible: step.show !== false }
         : next;
+    // markL はクイックソートの「左候補」と選択ソートの「最小値候補」で共用する
     case 'markL':
-      return next.kind === 'quick' ? { ...next, candL: step.i } : next;
+      return next.kind === 'quick' || next.kind === 'selection' ? { ...next, candL: step.i } : next;
     case 'markR':
       return next.kind === 'quick' ? { ...next, candR: step.i } : next;
     case 'clearMarks':
-      return next.kind === 'quick' ? { ...next, candL: null, candR: null } : next;
+      return next.kind === 'quick' || next.kind === 'selection'
+        ? { ...next, candL: null, candR: null }
+        : next;
     default:
       return next;
   }
@@ -108,11 +118,14 @@ const App: React.FC = () => {
   const [speed, setSpeed] = React.useState<number>(1.0);
   const [playing, setPlaying] = React.useState<boolean>(false);
 
+  // 全ボードは同じ初期配列 base を共有し、アルゴリズム間で公平に比較できるようにする
   const [base, setBase] = React.useState<number[]>(() => genArray(20));
   const [bubble, setBubble] = React.useState<BoardState>(() => makeBoard('bubble', base));
+  const [selection, setSelection] = React.useState<BoardState>(() => makeBoard('selection', base));
   const [quick, setQuick] = React.useState<BoardState>(() => makeBoard('quick', base));
 
   const stepsBubble = bubble.steps.length;
+  const stepsSelection = selection.steps.length;
   const stepsQuick = quick.steps.length;
 
   // タイマー
@@ -121,6 +134,13 @@ const App: React.FC = () => {
     const iv = computeInterval(speed);
     const id = window.setInterval(() => {
       setBubble((prev) => {
+        if (prev.finished || prev.stepIndex >= prev.steps.length) return prev;
+        const step = prev.steps[prev.stepIndex];
+        const n = applyStep(prev, step);
+        const finished = prev.stepIndex + 1 >= prev.steps.length;
+        return { ...n, stepIndex: prev.stepIndex + 1, finished };
+      });
+      setSelection((prev) => {
         if (prev.finished || prev.stepIndex >= prev.steps.length) return prev;
         const step = prev.steps[prev.stepIndex];
         const n = applyStep(prev, step);
@@ -147,6 +167,14 @@ const App: React.FC = () => {
         browser_language: browserLanguage,
         translated_language: translatedLanguage,
       });
+    if (playing && selection.finished)
+      ReactGA.event('sort_finish', {
+        animation_speed: speed,
+        bar_size: size,
+        algorithm_type: 'selection_sort',
+        browser_language: browserLanguage,
+        translated_language: translatedLanguage,
+      });
     if (playing && quick.finished)
       ReactGA.event('sort_finish', {
         animation_speed: speed,
@@ -155,12 +183,13 @@ const App: React.FC = () => {
         browser_language: browserLanguage,
         translated_language: translatedLanguage,
       });
-    if (playing && bubble.finished && quick.finished) setPlaying(false);
-  }, [playing, bubble.finished, quick.finished]);
+    if (playing && bubble.finished && selection.finished && quick.finished) setPlaying(false);
+  }, [playing, bubble.finished, selection.finished, quick.finished]);
 
   const resetFrom = (arr: number[]) => {
     setBase(arr);
     setBubble(makeBoard('bubble', arr));
+    setSelection(makeBoard('selection', arr));
     setQuick(makeBoard('quick', arr));
     setPlaying(false);
   };
@@ -172,8 +201,12 @@ const App: React.FC = () => {
       browser_language: browserLanguage,
       translated_language: translatedLanguage,
     });
+    // steps は初回再生時に遅延生成する（一時停止からの再開時は生成済みのものを使い回す）
     setBubble((prev) =>
       prev.steps.length ? prev : { ...prev, steps: buildBubbleSteps(prev.data) },
+    );
+    setSelection((prev) =>
+      prev.steps.length ? prev : { ...prev, steps: buildSelectionSteps(prev.data) },
     );
     setQuick((prev) => (prev.steps.length ? prev : { ...prev, steps: buildQuickSteps(prev.data) }));
     setPlaying(true);
@@ -238,7 +271,7 @@ const App: React.FC = () => {
 
         <Accordion
           multiple
-          defaultValue={['bubble', 'quick']}
+          defaultValue={['bubble', 'selection', 'quick']}
           mt="md"
           radius="md"
           variant="separated"
@@ -250,6 +283,13 @@ const App: React.FC = () => {
             stepsCount={stepsBubble}
             board={bubble}
             Legend={BubbleLegend}
+          />
+          <SortSection
+            value="selection"
+            titleKey="selection"
+            stepsCount={stepsSelection}
+            board={selection}
+            Legend={SelectionLegend}
           />
           <SortSection
             value="quick"

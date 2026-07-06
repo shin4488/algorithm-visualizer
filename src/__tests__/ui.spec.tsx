@@ -1,7 +1,7 @@
 import { MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '@/App';
 
@@ -73,25 +73,30 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(screen.getByText(/アニメ速度:\s*1\.00/)).toBeInTheDocument();
   });
 
-  it('initializes both algorithm panels with matching bar arrangements and labels', () => {
+  it('initializes all algorithm panels with matching bar arrangements and labels', () => {
     renderApp();
 
     const bubbleRegion = screen.getByLabelText('バブルソートのバー表示');
+    const selectionRegion = screen.getByLabelText('選択ソートのバー表示');
     const quickRegion = screen.getByLabelText('クイックソートのバー表示');
 
     const bubbleBars = getBars(bubbleRegion);
+    const selectionBars = getBars(selectionRegion);
     const quickBars = getBars(quickRegion);
 
     expect(bubbleBars).toHaveLength(20);
+    expect(selectionBars).toHaveLength(20);
     expect(quickBars).toHaveLength(20);
 
     // 高さ（=データ順）一致
     const bubbleHeights = Array.from(bubbleBars, (bar) => bar.style.height);
+    const selectionHeights = Array.from(selectionBars, (bar) => bar.style.height);
     const quickHeights = Array.from(quickBars, (bar) => bar.style.height);
     expect(bubbleHeights).toEqual(quickHeights);
+    expect(selectionHeights).toEqual(quickHeights);
 
     // data-label は数字
-    [...bubbleBars, ...quickBars].forEach((bar) => {
+    [...bubbleBars, ...selectionBars, ...quickBars].forEach((bar) => {
       expect(bar.getAttribute('data-label')).toMatch(/^\d+$/);
     });
   });
@@ -99,9 +104,9 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
   it('shows both panels open and the legends/step counters visible', () => {
     renderApp();
 
-    // details/accordion どちらでも「ステップ: 0」が2つ見えることを確認
+    // details/accordion どちらでも「ステップ: 0」が3つ見えることを確認
     const stepZeros = screen.getAllByText(/ステップ:\s*0/);
-    expect(stepZeros.length).toBeGreaterThanOrEqual(2);
+    expect(stepZeros.length).toBeGreaterThanOrEqual(3);
 
     // 凡例テキストが表示されている（パネルに強く依存しない）
     expect(screen.getAllByText('入れ替え/比較（赤）').length).toBeGreaterThan(0);
@@ -109,6 +114,7 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(screen.getByText('ピボット')).toBeInTheDocument();
     expect(screen.getByText(/境界（グループ分け）/)).toBeInTheDocument();
     expect(screen.getByText(/ピボット高（横線）/)).toBeInTheDocument();
+    expect(screen.getByText('最小値候補')).toBeInTheDocument();
   });
 
   it('increments the bar count immediately when using the size stepper controls', async () => {
@@ -125,13 +131,17 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(screen.getByText(/本数:\s*21/)).toBeInTheDocument();
 
     const bubbleRegion = screen.getByLabelText('バブルソートのバー表示');
+    const selectionRegion = screen.getByLabelText('選択ソートのバー表示');
     const quickRegion = screen.getByLabelText('クイックソートのバー表示');
     expect(getBars(bubbleRegion)).toHaveLength(21);
+    expect(getBars(selectionRegion)).toHaveLength(21);
     expect(getBars(quickRegion)).toHaveLength(21);
 
     const bubbleHeights = Array.from(getBars(bubbleRegion), (bar) => bar.style.height);
+    const selectionHeights = Array.from(getBars(selectionRegion), (bar) => bar.style.height);
     const quickHeights = Array.from(getBars(quickRegion), (bar) => bar.style.height);
     expect(bubbleHeights).toEqual(quickHeights);
+    expect(selectionHeights).toEqual(quickHeights);
   });
 
   it('rebuilds both panels when the size slider value changes via keyboard (ARIA)', async () => {
@@ -148,8 +158,10 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(screen.getByText(/本数:\s*18/)).toBeInTheDocument();
 
     const bubbleRegion = screen.getByLabelText('バブルソートのバー表示');
+    const selectionRegion = screen.getByLabelText('選択ソートのバー表示');
     const quickRegion = screen.getByLabelText('クイックソートのバー表示');
     expect(getBars(bubbleRegion)).toHaveLength(18);
+    expect(getBars(selectionRegion)).toHaveLength(18);
     expect(getBars(quickRegion)).toHaveLength(18);
   });
 
@@ -176,11 +188,14 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(randomSpy.mock.calls.length).toBeGreaterThan(0);
 
     const bubbleRegion = screen.getByLabelText('バブルソートのバー表示');
+    const selectionRegion = screen.getByLabelText('選択ソートのバー表示');
     const quickRegion = screen.getByLabelText('クイックソートのバー表示');
 
     const bubbleHeights = Array.from(getBars(bubbleRegion), (bar) => bar.style.height);
+    const selectionHeights = Array.from(getBars(selectionRegion), (bar) => bar.style.height);
     const quickHeights = Array.from(getBars(quickRegion), (bar) => bar.style.height);
     expect(bubbleHeights).toEqual(quickHeights);
+    expect(selectionHeights).toEqual(quickHeights);
   });
 
   it('hides quick-sort overlay elements until a processing range exists', () => {
@@ -205,4 +220,45 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(screen.getByRole('button', { name: /一時停止/ })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'シャッフル' })).toBeEnabled();
   });
+
+  it('plays every algorithm panel to completion and stops the playback', () => {
+    // 実時間を待たずに再生完了まで進めるためフェイクタイマーを使う
+    vi.useFakeTimers();
+    try {
+      renderApp();
+
+      // userEvent はフェイクタイマー下でハングするため、同期的な fireEvent を使う
+      fireEvent.click(screen.getByRole('button', { name: /再生/ }));
+
+      // 全パネルが完了して自動停止する（=再生ボタンが復活する）まで 30 秒ずつ進める
+      const playButton = screen.getByRole('button', { name: /再生/ });
+      for (let elapsed = 0; elapsed < 20 * 60 * 1000; elapsed += 30 * 1000) {
+        if (!(playButton as HTMLButtonElement).disabled) break;
+        act(() => {
+          vi.advanceTimersByTime(30 * 1000);
+        });
+      }
+
+      const regions = [
+        screen.getByLabelText('バブルソートのバー表示'),
+        screen.getByLabelText('選択ソートのバー表示'),
+        screen.getByLabelText('クイックソートのバー表示'),
+      ];
+      regions.forEach((region) => {
+        const bars = Array.from(getBars(region));
+        // 全バーがソート完了状態（緑）になる
+        bars.forEach((bar) => expect(bar.classList.contains('sorted')).toBe(true));
+        // データ順が昇順 = 高さが単調増加
+        const heights = bars.map((bar) => parseFloat(bar.style.height));
+        const sortedHeights = [...heights].sort((a, b) => a - b);
+        expect(heights).toEqual(sortedHeights);
+      });
+
+      // 全パネル完了後は自動的に停止し、再生ボタンが再度押せる
+      expect(screen.getByRole('button', { name: /再生/ })).toBeEnabled();
+      expect(screen.getByRole('button', { name: /一時停止/ })).toBeDisabled();
+    } finally {
+      vi.useRealTimers();
+    }
+  }, 30000);
 });

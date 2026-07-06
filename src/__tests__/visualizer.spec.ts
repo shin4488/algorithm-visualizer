@@ -1,5 +1,11 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { buildBubbleSteps, buildQuickSteps, genArray, type Step } from '@/plugins/visualizer';
+import {
+  buildBubbleSteps,
+  buildSelectionSteps,
+  buildQuickSteps,
+  genArray,
+  type Step,
+} from '@/plugins/visualizer';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -47,6 +53,46 @@ describe('visualizer logic specification', () => {
         }
       }
     });
+  });
+
+  it('produces selection sort steps that track the minimum candidate and swap at most once per pass', () => {
+    const original = [5, 3, 4, 1, 2];
+    const steps = buildSelectionSteps(original);
+    const sorted = applySwaps(original, steps);
+
+    expect(sorted).toEqual([1, 2, 3, 4, 5]);
+
+    // 比較回数は必ず n(n-1)/2 回（選択ソートは入力によらず全比較する）
+    const comparisons = steps.filter((step) => step.t === 'compare');
+    const n = original.length;
+    expect(comparisons).toHaveLength((n * (n - 1)) / 2);
+
+    // 交換はパスごとに最大 1 回なので合計 n-1 回以下
+    const swaps = steps.filter((step) => step.t === 'swap');
+    expect(swaps.length).toBeLessThanOrEqual(n - 1);
+
+    // compare は常に「未ソート領域の要素 vs 現在の最小値候補（markL）」の形になっている
+    let currentMin: number | null = null;
+    steps.forEach((step) => {
+      switch (step.t) {
+        case 'markL':
+          currentMin = step.i;
+          break;
+        case 'compare':
+          expect(currentMin).not.toBeNull();
+          expect(step.j).toBe(currentMin);
+          break;
+        case 'clearMarks':
+          currentMin = null;
+          break;
+        default:
+          break;
+      }
+    });
+
+    // 各パスは markL で始まり clearMarks で終わる
+    expect(steps[0].t).toBe('markL');
+    expect(steps[steps.length - 1].t).toBe('clearMarks');
   });
 
   it('builds quick sort steps that respect the rightmost pivot and produce candidate markers', () => {

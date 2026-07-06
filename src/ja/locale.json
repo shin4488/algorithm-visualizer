@@ -12,6 +12,7 @@
   "pause": "一時停止",
   "shuffle": "シャッフル",
   "bubble": "バブルソート",
+  "selection": "選択ソート",
   "quick": "クイックソート",
   "steps": "ステップ: {{n}}",
   "badge_swap": "入れ替え/比較（赤）",
@@ -19,6 +20,8 @@
   "badge_pivot": "ピボット",
   "badge_boundary": "境界（グループ分け）",
   "badge_pivotline": "ピボット高（横線）",
+  "badge_min": "最小値候補",
   "bars_aria_bubble": "バブルソートのバー表示",
+  "bars_aria_selection": "選択ソートのバー表示",
   "bars_aria_quick": "クイックソートのバー表示"
 }
