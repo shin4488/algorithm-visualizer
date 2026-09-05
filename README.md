@@ -125,6 +125,5 @@ board state for React to render.
 
 The step-by-step guide (including pitfalls) lives in
 [`.claude/skills/add-sort-algorithm/SKILL.md`](.claude/skills/add-sort-algorithm/SKILL.md).
-It doubles as a Claude Code skill: asking Claude to "add insertion sort"
-in this repo will follow it automatically. See also [`CLAUDE.md`](CLAUDE.md)
+It is shared by Claude Code and Codex through `.agents/skills` → `.claude/skills`. See also [`CLAUDE.md`](CLAUDE.md)
 for AI-agent-oriented notes about this codebase.

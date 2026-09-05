@@ -95,3 +95,8 @@ checklist. Highlights:
 UI actions emit GA4 events (`play_click`, `pause_click`, `shuffle_click`,
 `sort_finish`). New algorithms use `algorithm_type: '<kind>_sort'` in
 `sort_finish`.
+
+## Claude Code and Codex
+
+`AGENTS.md` links to this file, and `.agents/skills` links to `.claude/skills`.
+Edit the Claude-side originals to update the shared instructions and skills.
