@@ -98,5 +98,6 @@ UI actions emit GA4 events (`play_click`, `pause_click`, `shuffle_click`,
 
 ## Claude Code and Codex
 
-`AGENTS.md` links to this file, and `.agents/skills` links to `.claude/skills`.
-Edit the Claude-side originals to update the shared instructions and skills.
+- `AGENTS.md` links to this file.
+- `.agents/skills` links to `.claude/skills`.
+- Edit the Claude-side originals to update the shared instructions and skills.
