@@ -5,58 +5,27 @@ Guidance for AI agents (Claude Code, etc.) working in this repository.
 ## What this project is
 
 A React + TypeScript web app that visualizes sorting algorithms
-(bubble / selection / quick) as animated bar charts, with a Japanese and an
+as animated bar charts, with a Japanese and an
 English UI. See [README.md](README.md) for the full overview.
 
 ## Golden rules
 
-1. **Work inside Docker.** This project is devcontainer/Docker based.
-   Run builds, checks, and tests in the container — the runtime
-   `node_modules` lives in the container's anonymous volume.
+- **Build, check, and test inside Docker/devcontainer.** Start with `docker compose up -d --build`; run commands with `docker compose exec -T app bash -c '<command>'`. Runtime dependencies live in the container's anonymous volume.
+- Host editor IntelliSense may need `COREPACK_ENABLE_AUTO_PIN=0 yarn install --frozen-lockfile`. This is for type resolution, not running builds. The variable prevents Corepack adding `packageManager` to `package.json`; revert that field if accidentally added. Do not delete host `node_modules` while the container runs; a broken mount can be recovered with `docker compose up -d --force-recreate`.
+- **Zero lint/format tolerance:** fix causes, never suppression comments. Work is complete only when all checks pass without warnings/errors:
 
-   ```bash
-   docker compose up -d --build     # first run installs deps (takes minutes)
-   docker compose exec -T app bash -c '<command>'
-   ```
+```bash
+docker compose exec -T app bash -c 'yarn typecheck && yarn lint && yarn format && yarn test'
+```
 
-   A Dev Container setup is also available for editor-based work
-   (VS Code / Cursor "open in container").
-
-   Host-side `node_modules` is still needed for editor IntelliSense when
-   the project is opened outside a devcontainer (otherwise the editor shows
-   errors like `ts(2875) react/jsx-runtime not found`). Install it with:
-
-   ```bash
-   COREPACK_ENABLE_AUTO_PIN=0 yarn install --frozen-lockfile
-   ```
-
-   The env var stops host yarn (corepack) from silently adding a
-   `packageManager` field to `package.json` — revert that field if it ever
-   appears.
-
-   Also avoid deleting `node_modules` on the host while the container is
-   running — the bind mount breaks the anonymous-volume mountpoint and
-   commands start failing with "not found". Recover with
-   `docker compose up -d --force-recreate`.
-
-2. **Zero lint/format tolerance.** Work is not done until all of the
-   following pass with no warnings or errors — and fix issues at the root
-   cause, never with suppression comments:
-
-   ```bash
-   docker compose exec -T app bash -c 'yarn typecheck && yarn lint && yarn format && yarn test'
-   ```
-
-3. **Comments explain intent ("why"), in Japanese** — match the existing
-   code style.
+- Comments explain why, in Japanese.
 
 ## Architecture in one paragraph
 
 Sorting logic and rendering are fully decoupled. Each algorithm is a pure
 function `build<Name>Steps(arr): Step[]` in
 [src/plugins/visualizer.ts](src/plugins/visualizer.ts) that pre-generates
-the entire sort as a list of `Step` objects (`compare`, `swap`, `pivot`,
-`range`, `boundary`, `markL`, `markR`, `clearMarks`). During playback,
+the entire sort as a list of `Step` objects; use the type definition for the supported steps. During playback,
 a `setInterval` in [src/App.tsx](src/App.tsx) applies one step per tick via
 `applyStep()` (pure state transition) and React re-renders. All boards share
 the same shuffled base array, and the shared panel UI is
@@ -68,16 +37,7 @@ algorithm only contributes a legend (and optionally an overlay) under
 
 Follow the skill at
 [.claude/skills/add-sort-algorithm/SKILL.md](.claude/skills/add-sort-algorithm/SKILL.md)
-— it contains the full procedure, the known pitfalls, and a completion
-checklist. Highlights:
-
-- The `Kind` union is defined in TWO files (SortSection.tsx and App.tsx).
-- `applyStep()` guards some steps by kind — reusing `markL` etc. for a new
-  algorithm requires extending the guard, or nothing renders.
-- App.tsx integration spans 6 places; forgetting the "all boards finished →
-  `setPlaying(false)`" condition breaks playback stop.
-- Update BOTH `src/ja/locale.json` and `src/en/locale.json`
-  (`<kind>`, `bars_aria_<kind>`, any new badge keys).
+— follow its procedure, pitfalls, and completion checklist. Keep algorithm-specific integration details in that skill rather than copying the checklist here.
 
 ## Testing notes
 
@@ -92,12 +52,18 @@ checklist. Highlights:
 
 ## Analytics
 
-UI actions emit GA4 events (`play_click`, `pause_click`, `shuffle_click`,
-`sort_finish`). New algorithms use `algorithm_type: '<kind>_sort'` in
-`sort_finish`.
+UI actions emit GA4 events; consult the handlers in `src/App.tsx` for current events. Preserve `algorithm_type: '<kind>_sort'` in `sort_finish` for new algorithms.
 
 ## Claude Code and Codex
 
 - `AGENTS.md` links to this file.
 - `.agents/skills` links to `.claude/skills`.
 - Edit the Claude-side originals to update the shared instructions and skills.
+
+## Focused reading and maintenance
+
+- `AGENTS.md` links to `CLAUDE.md`; read the shared text once and edit the original.
+- Scope `rg` to relevant directories and names/headings/symbols. Use `-g` to omit dependencies, build output, logs, lockfiles, and generated code; read them directly for dependency, generation, type, or failure investigations. Widen paths or relax exclusions when needed.
+- Run required checks, report failures/key results, and reuse results only with the same diff, dependencies, configuration, and execution conditions.
+- Keep lasting rules, required conditions, key commands, and references here. Progress belongs in the task or existing issues/PRs; inventories and current values belong in their original definitions. Update this guide for changed rules/conditions, moved references, or newly essential guidance.
+- Choose skills by their descriptions and follow the relevant `SKILL.md`. Preserve mandatory skill conditions here without copying catalogs or procedures.
