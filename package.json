@@ -34,7 +34,7 @@
     "react-i18next": "^15.7.3"
   },
   "devDependencies": {
-    "@parcel/resolver-default": "^2.16.0",
+    "@parcel/resolver-default": "^2.16.4",
     "@testing-library/jest-dom": "^6.4.5",
     "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",
@@ -47,10 +47,10 @@
     "husky": "^9.1.7",
     "jsdom": "^24.0.0",
     "lint-staged": "^16.1.6",
-    "parcel": "^2.12.0",
+    "parcel": "^2.16.4",
     "prettier": "^3.6.2",
     "typescript": "^5.4.5",
     "typescript-eslint": "^8.44.0",
-    "vitest": "^1.5.0"
+    "vitest": "^3.2.7"
   }
 }
