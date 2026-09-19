@@ -1,129 +1,100 @@
 # algorithm-visualizer
 
-A web app that visualizes sorting algorithms with side-by-side animations.
-All algorithms sort the same shuffled array at the same speed, so you can
-watch how their strategies and step counts differ.
+An interactive web application that visualizes and compares sorting algorithms side by side in real time.
 
-Currently implemented:
+All algorithms sort the same shuffled dataset at the same playback speed, making it intuitive to observe differences in strategy, comparisons, and swap efficiency.
 
-- **Bubble Sort** — adjacent compare & swap
-- **Selection Sort** — tracks the minimum candidate (purple ring), swaps at most once per pass
-- **Quick Sort** — rightmost pivot, with partition range / boundary overlays
+---
 
-Features:
+## Key Features
 
-- Play / pause / shuffle, adjustable bar count (5–50) and animation speed (0.2×–10×)
-- Japanese / English UI (`/ja/` and `/en/` routes, auto-detected from the browser language)
-- Every board shares the same initial array for a fair comparison
+- **Side-by-Side Comparison**: Run multiple sorting algorithms simultaneously against identical input arrays.
+- **Interactive Controls**: Play, pause, step forward, shuffle, and customize both array size (5–50 elements) and animation speed (0.2×–10×).
+- **Dual Language & Theming**: Full Japanese / English localization (auto-detected with manual override) and responsive layouts.
+- **Extensible Architecture**: Pure step-generator functions completely decoupled from the React rendering layer.
 
-## Tech stack
+---
 
-React 18 + TypeScript, Mantine UI, i18next, Parcel, Vitest + Testing Library.
+## Architecture & How It Works
 
-## Development setup
+Sorting execution and visual playback are completely separated:
 
-Development is designed to run inside a container. Two equivalent options:
+```mermaid
+flowchart LR
+    Input["Initial Shuffled Array"] --> Gen["Pure Step Generator<br>(buildSteps)"]
+    Gen -->|"Array of Step objects<br>(compare, swap, pivot, etc.)"| State["Playback Engine<br>(App State & Timer)"]
+    State -->|"Immutable Board State"| UI["React Components<br>(Bar Rendering & Overlays)"]
+```
 
-### Option A: Dev Container (recommended for editors)
+1. **Step Generation**: Each algorithm implements a pure function that precomputes the entire sorting process into an array of immutable `Step` objects (e.g., compare, swap, mark sorted).
+2. **Playback**: The React app steps through the list per tick of the animation timer, applying updates to the state without re-running sorting logic.
 
-If your editor supports Dev Containers (VS Code, Cursor, etc.):
+---
 
-1. (one time) Install the Dev Containers extension.
-2. Open the project folder "in container" (Reopen in Container).
+## Tech Stack
 
-That's all — the devcontainer reuses the `app` service from
-`docker-compose.yml` (with `overrideCommand: false`), so opening it
-automatically installs dependencies (first time takes a few minutes) and
-starts the dev server on http://localhost:1234/ja/ (port 1234 is
-forwarded). Watch startup progress with `docker compose logs -f app` from
-the host; run `yarn test` etc. directly in the editor's integrated
-terminal (it is inside the container). To restart the dev server, run
-`docker compose restart app` or "Rebuild Container".
+- **Framework**: React 18, TypeScript
+- **UI & Styling**: Mantine UI, Vanilla CSS
+- **Bundler & Tooling**: Parcel, Vitest, Testing Library, ESLint, Prettier
 
-### Option B: Docker Compose (CLI)
+---
+
+## Development Setup
+
+The project is configured to run inside Docker, so local Node.js installation is optional.
+
+### Using Docker Compose
 
 ```bash
+# Start dev server with hot reload
 docker compose up -d --build
 ```
 
-The first run installs dependencies inside the container (this takes a few
-minutes) and then starts the dev server. The app is served at:
+The application is served at:
+- **Japanese**: http://localhost:1234/ja/
+- **English**: http://localhost:1234/en/
 
-- http://localhost:1234/ja/ (Japanese)
-- http://localhost:1234/en/ (English)
+### Using Dev Containers
 
-Hot reload works through the volume mount. To run any project command, use
-`docker compose exec`:
+If your editor supports VS Code Dev Containers:
+1. Open this repository in your container-supported editor.
+2. Select **Reopen in Container**. Dependencies will be installed automatically.
+
+---
+
+## Quality Checks & Commands
+
+Run commands inside the running container:
 
 ```bash
+# Execute tests
 docker compose exec -T app bash -c 'yarn test'
-```
 
-> **Note:** the container keeps its own `node_modules` in an anonymous
-> volume. If you open the project on the host (outside a devcontainer),
-> your editor needs a host-side `node_modules` for IntelliSense — install
-> it with `COREPACK_ENABLE_AUTO_PIN=0 yarn install --frozen-lockfile`
-> (the env var prevents host yarn from adding a `packageManager` field to
-> `package.json`). Don't delete the host `node_modules` while the container
-> is running; it breaks the container's volume mountpoint
-> (recover with `docker compose up -d --force-recreate`).
-
-## Commands
-
-Run these inside the container (via `docker compose exec -T app bash -c '...'`
-or a Dev Container terminal):
-
-| Command           | Purpose                                |
-| ----------------- | -------------------------------------- |
-| `yarn dev`        | Start the Parcel dev server            |
-| `yarn build`      | Production build into `public/`        |
-| `yarn typecheck`  | TypeScript type check (`tsc --noEmit`) |
-| `yarn lint`       | ESLint                                 |
-| `yarn lint:fix`   | ESLint with auto-fix                   |
-| `yarn format`     | Prettier check                         |
-| `yarn format:fix` | Prettier write                         |
-| `yarn test`       | Vitest (logic + UI specs)              |
-
-Before committing, make sure all of these pass with zero warnings/errors:
-
-```bash
+# Type check, lint, format check, and test in one go
 docker compose exec -T app bash -c 'yarn typecheck && yarn lint && yarn format && yarn test'
 ```
 
-## Project structure
+| Command | Description |
+|---|---|
+| `yarn dev` | Starts Parcel dev server |
+| `yarn build` | Builds production bundle into `public/` |
+| `yarn typecheck` | Validates TypeScript types (`tsc --noEmit`) |
+| `yarn lint` / `yarn lint:fix` | Runs ESLint / applies auto-fixes |
+| `yarn format` / `yarn format:fix` | Checks / applies Prettier formatting |
+| `yarn test` | Runs Vitest unit and UI test suite |
 
-```
+---
+
+## Project Structure
+
+```text
 src/
-├── App.tsx                    # Board state, playback timer, layout
-├── plugins/
-│   ├── visualizer.ts          # Step types + step builders (sorting logic lives here)
-│   └── i18n.ts                # Language detection + i18next setup
-├── components/
-│   ├── SortSection.tsx        # Shared panel: accordion + bars renderer
-│   ├── ControlBar.tsx         # Size / speed / play / pause / shuffle controls
-│   ├── HeaderBar.tsx
-│   ├── LanguageSwitcher.tsx
-│   └── algorithms/            # Per-algorithm legends (and overlays)
-│       ├── Bubble.tsx
-│       ├── Selection.tsx
-│       └── Quick.tsx
-├── ja/, en/                   # Per-language entry HTML + locale.json
-├── styles.css                 # Bar/legend/overlay styles (CSS variables in :root)
-└── __tests__/                 # visualizer.spec.ts (logic), ui.spec.tsx (UI)
+├── App.tsx                    # Main layout, playback loop, and board states
+├── plugins/                   # Step types and algorithm step generators
+├── components/                # Shared UI controls, bars, and per-algorithm overlays
+│   ├── ControlBar.tsx
+│   ├── SortSection.tsx
+│   └── algorithms/            # Visual representations & legends for each algorithm
+├── ja/, en/                   # Localized HTML templates and dictionary strings
+└── __tests__/                 # Logic tests and UI component specifications
 ```
-
-### How the visualization works
-
-Sorting and rendering are fully decoupled: each algorithm has a pure
-`build<Name>Steps(arr)` function in `src/plugins/visualizer.ts` that
-pre-generates the whole sorting process as a list of `Step` objects
-(compare / swap / pivot / ...). `App.tsx` then plays the list back one step
-per timer tick through `applyStep()`, which produces the next immutable
-board state for React to render.
-
-## Adding a new sorting algorithm
-
-The step-by-step guide (including pitfalls) lives in
-[`.claude/skills/add-sort-algorithm/SKILL.md`](.claude/skills/add-sort-algorithm/SKILL.md).
-It is shared by Claude Code and Codex through `.agents/skills` → `.claude/skills`. See also [`CLAUDE.md`](CLAUDE.md)
-for AI-agent-oriented notes about this codebase.
