@@ -1,122 +1,94 @@
-/* ====== 色トークン（現行の見た目と完全一致） ====== */
+/* 役割色は可視化だけで使い、操作部はMantineのテーマに従う。 */
 :root {
-  --bg: #0b1020; /* 背景 */
-  --panel: #121a33; /* パネル */
-  --accent: #7aa2f7; /* メイン */
-  --accent2: #9ece6a; /* 成功 */
-  --text: #e5eaf5; /* 本文 */
-  --muted: #aab3d0; /* 補助 */
-  --danger: #f7768e; /* スワップ/比較（赤） */
-  --pivot: #ffd166; /* ピボット（縦） */
-  --pivotLine: #ffad5b; /* ピボット高の横ライン（オレンジ） */
-  --cyan: #6df3ff; /* 境界線 */
-  --cyanSoft: rgba(109, 243, 255, 0.12); /* ゾーン着色 */
-  --markL: #d58cff; /* 左候補マークリング */
-  --markR: #7affc6; /* 右候補マークリング */
-  --transMs: 120ms; /* 棒アニメの遷移時間（固定：1.00x相当） */
+  --bar-color: #7294bc;
+  --accent2: #48805b;
+  --danger: #bc4b4b;
+  --pivot: #cf9c36;
+  --pivotLine: #a86c24;
+  --cyan: #387d98;
+  --cyanSoft: rgba(56, 125, 152, 0.06);
+  --markL: #8b62a8;
+  --markR: #337d67;
+}
+:root[data-mantine-color-scheme='dark'] {
+  --bar-color: #85a9d6;
+  --accent2: #8cb78f;
+  --danger: #ed8886;
+  --pivot: #e4bd65;
+  --pivotLine: #e0ad68;
+  --cyan: #80b7cd;
+  --cyanSoft: rgba(128, 183, 205, 0.08);
+  --markL: #bd9bd4;
+  --markR: #8ec8b4;
 }
 
-/* ====== 背景と文字色（見た目維持） ====== */
-html,
-body {
-  height: 100%;
-}
-body {
-  margin: 0;
-  background: linear-gradient(180deg, #0b1020 0%, #0b1020 40%, #0f1730 100%);
-  color: var(--text);
-}
-
-/* ====== 棒グラフ（ここが自作CSSのコア） ====== */
 .bars {
   position: relative;
   display: flex;
   align-items: flex-end;
   gap: 4px;
-  height: 360px;
+  height: 200px;
   padding: 12px;
-  overflow: visible;
+  margin: 0 0 16px;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  background: repeating-linear-gradient(
+    to top,
+    transparent 0,
+    transparent 49px,
+    var(--mantine-color-default-border) 49px,
+    var(--mantine-color-default-border) 50px
+  );
 }
-
 .bar {
   position: relative;
-  flex: 1 1 auto;
-  background: linear-gradient(180deg, rgba(122, 162, 247, 1) 0%, rgba(84, 120, 214, 1) 100%);
-  border-radius: 10px 10px 0 0;
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--bar-color);
+  border-radius: 3px 3px 0 0;
   transition:
     height var(--transMs, 120ms) linear,
     transform var(--transMs, 120ms) linear,
     background 120ms linear,
     box-shadow 120ms linear;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
   z-index: 1;
 }
-
-/* ラベル：棒の上端近くに大きく表示（#なし） */
+/* 小さい棒でも番号が読めるよう、上端の外側に配置する。 */
 .bar::after {
   content: attr(data-label);
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -17px;
   text-align: center;
-  font-size: 15px;
-  font-weight: 700;
-  color: #fff;
+  font:
+    10px ui-monospace,
+    monospace;
+  color: var(--mantine-color-text);
   pointer-events: none;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
-
-/* 比較中：赤い枠で強調（塗りはしない） */
 .bar.compare {
-  box-shadow:
-    0 0 0 3px rgba(247, 118, 142, 0.9),
-    0 0 0 2px rgba(247, 118, 142, 0.9) inset,
-    0 6px 14px rgba(0, 0, 0, 0.25);
-  filter: saturate(1.08);
+  box-shadow: 0 0 0 3px var(--danger);
 }
-
-/* スワップ中（濃い赤の塗り） */
 .bar.swap {
-  background: linear-gradient(180deg, var(--danger) 0%, #b83b57 100%);
-  box-shadow:
-    0 0 0 2px rgba(247, 118, 142, 0.45) inset,
-    0 8px 20px rgba(247, 118, 142, 0.25);
+  background: var(--danger);
 }
-
 .bar.pivot {
-  background: linear-gradient(180deg, var(--pivot) 0%, #e4a300 100%);
-  box-shadow:
-    0 0 0 2px rgba(255, 209, 102, 0.5) inset,
-    0 8px 20px rgba(255, 209, 102, 0.25);
+  background: var(--pivot);
 }
-
 .bar.sorted {
-  background: linear-gradient(180deg, var(--accent2) 0%, #55b44a 100%);
+  background: var(--accent2);
 }
-
-/* 候補マーク（左/右） */
 .bar.candL {
-  box-shadow:
-    0 0 0 3px var(--markL),
-    0 0 0 2px var(--markL) inset,
-    0 8px 18px rgba(213, 140, 255, 0.25);
-  filter: saturate(1.08);
+  box-shadow: 0 0 0 3px var(--markL);
 }
 .bar.candR {
-  box-shadow:
-    0 0 0 3px var(--markR),
-    0 0 0 2px var(--markR) inset,
-    0 8px 18px rgba(122, 255, 198, 0.25);
-  filter: saturate(1.08);
+  box-shadow: 0 0 0 3px var(--markR);
 }
-
-/* 凡例の小さな色箱（Badge の leftSection で使用） */
 .legend-box {
   display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
 }
 .legend-swap {
   background: var(--danger);
@@ -133,9 +105,17 @@ body {
 .legend-pivotline {
   background: var(--pivotLine);
 }
-/* 選択ソート: 最小値候補（バーの candL リングと同じ色） */
 .legend-min {
   background: var(--markL);
+}
+@media (max-width: 540px) {
+  .bars {
+    height: 180px;
+    gap: 3px;
+  }
+  .bar::after {
+    font-size: 8px;
+  }
 }
 
 /* ====== クイックソート: グループ境界オーバーレイ ====== */
@@ -156,17 +136,17 @@ body {
   position: absolute;
   top: -1px;
   bottom: -1px;
-  width: 2px;
+  width: 3px;
   background: var(--cyan);
-  box-shadow: 0 0 0 2px rgba(109, 243, 255, 0.28);
+
   z-index: 21;
 }
 .partition-overlay .subrange {
   position: absolute;
   top: 0;
   bottom: 0;
-  border: 2px solid var(--cyan);
-  border-left: 2px solid var(--cyan);
+  border: 3px solid var(--cyan);
+  border-left: 3px solid var(--cyan);
   border-radius: 6px;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
@@ -176,9 +156,9 @@ body {
 }
 .partition-overlay .pivot-hline {
   position: absolute;
-  height: 2px;
+  height: 3px;
   background: var(--pivotLine);
-  box-shadow: 0 0 0 2px rgba(255, 173, 91, 0.15);
+
   z-index: 2;
   left: 0;
   right: 0;

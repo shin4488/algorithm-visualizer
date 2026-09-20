@@ -8,14 +8,17 @@ import '@/plugins/i18n';
 
 ReactGA.initialize('G-3W9LXS29S2');
 const theme = createTheme({
-  defaultRadius: 'md',
+  defaultRadius: 'sm',
+  primaryColor: 'blue',
+  primaryShade: 9,
+  autoContrast: true,
   fontFamily:
     'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"',
 });
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <MantineProvider theme={theme} defaultColorScheme="dark">
+    <MantineProvider theme={theme} defaultColorScheme="light">
       <App />
     </MantineProvider>
   </React.StrictMode>,

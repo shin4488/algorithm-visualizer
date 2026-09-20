@@ -1,5 +1,5 @@
 import React from 'react';
-import { Group, Text, ActionIcon, Slider, Button, Box } from '@mantine/core';
+import { Group, Text, ActionIcon, Slider, Button, Paper, SimpleGrid, Box } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
@@ -26,177 +26,104 @@ const ControlBar: React.FC<Props> = ({
   const { t } = useTranslation();
 
   return (
-    <Group wrap="wrap" gap="md" align="center">
-      {/* 本数 */}
-      <Group
-        gap="xs"
-        align="center"
-        style={{
-          padding: '1px 1px',
-          background: '#0c1530',
-          borderRadius: 12,
-          border: '1px solid rgba(255,255,255,0.06)',
-        }}
-      >
-        <Text size="xs" c="var(--muted)">
-          {t('count_label')} {size}
-        </Text>
-        <Group gap="xs" align="center">
-          <ActionIcon
-            variant="default"
-            aria-label={t('count_dec_aria')}
-            onClick={() => onSizeChange(size - 1)}
-            style={stepperBtnStyle}
-          >
-            −
-          </ActionIcon>
-          <Slider
-            value={size}
-            onChange={onSizeChange}
-            min={5}
-            max={50}
-            step={1}
-            w={220}
-            styles={{
-              root: {
-                paddingTop: 8,
-                paddingBottom: 8,
-                background: '#0f1b3a',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 10,
-              },
-              thumb: { borderColor: 'var(--accent)', background: 'var(--accent)' },
-            }}
-          />
-          <ActionIcon
-            variant="default"
-            aria-label={t('count_inc_aria')}
-            onClick={() => onSizeChange(size + 1)}
-            style={stepperBtnStyle}
-          >
-            ＋
-          </ActionIcon>
-        </Group>
-      </Group>
-
-      {/* 速度 */}
-      <Group
-        gap="xs"
-        align="center"
-        style={{
-          padding: '1px 1px',
-          background: '#0c1530',
-          borderRadius: 12,
-          border: '1px solid rgba(255,255,255,0.06)',
-        }}
-      >
-        <Text size="xs" c="var(--muted)">
-          {t('speed_label')} {speed.toFixed(2)}
-        </Text>
-        <Group gap="xs" align="center">
-          <ActionIcon
-            variant="default"
-            aria-label={t('speed_down_aria')}
-            onClick={() => onSpeedChange(Number((speed - 0.05).toFixed(2)))}
-            style={stepperBtnStyle}
-          >
-            −
-          </ActionIcon>
-          <Slider
-            value={speed}
-            onChange={onSpeedChange}
-            min={0.2}
-            max={10}
-            step={0.05}
-            w={220}
-            styles={{
-              root: {
-                paddingTop: 8,
-                paddingBottom: 8,
-                background: '#0f1b3a',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 10,
-              },
-              thumb: { borderColor: 'var(--accent)', background: 'var(--accent)' },
-            }}
-          />
-          <ActionIcon
-            variant="default"
-            aria-label={t('speed_up_aria')}
-            onClick={() => onSpeedChange(Number((speed + 0.05).toFixed(2)))}
-            style={stepperBtnStyle}
-          >
-            ＋
-          </ActionIcon>
-        </Group>
-      </Group>
-
-      {/* 右寄せ：操作ボタン */}
-      <Box style={{ flex: '0 0 auto', marginLeft: 'auto' }}>
-        <Group gap="sm" align="center" wrap="nowrap">
+    <Paper withBorder p={{ base: 'md', sm: 'lg' }} radius="md">
+      <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="xl">
+        <Box>
+          <Text id="count-label" c="dimmed" size="xs" fw={600} mb="sm">
+            {t('count_label')} {size}
+          </Text>
+          <Group gap="xs" wrap="nowrap">
+            <ActionIcon
+              variant="default"
+              aria-label={t('count_dec_aria')}
+              onClick={() => onSizeChange(size - 1)}
+              size={28}
+              miw={28}
+            >
+              −
+            </ActionIcon>
+            <Slider
+              value={size}
+              onChange={onSizeChange}
+              min={5}
+              max={50}
+              step={1}
+              thumbLabel={t('count_label')}
+              flex={1}
+              thumbSize={14}
+            />
+            <ActionIcon
+              variant="default"
+              aria-label={t('count_inc_aria')}
+              onClick={() => onSizeChange(size + 1)}
+              size={28}
+              miw={28}
+            >
+              ＋
+            </ActionIcon>
+          </Group>
+        </Box>
+        <Box>
+          <Text id="speed-label" c="dimmed" size="xs" fw={600} mb="sm">
+            {t('speed_label')} {speed.toFixed(2)}
+          </Text>
+          <Group gap="xs" wrap="nowrap">
+            <ActionIcon
+              variant="default"
+              aria-label={t('speed_down_aria')}
+              onClick={() => onSpeedChange(Number((speed - 0.05).toFixed(2)))}
+              size={28}
+              miw={28}
+            >
+              −
+            </ActionIcon>
+            <Slider
+              value={speed}
+              onChange={onSpeedChange}
+              min={0.2}
+              max={10}
+              step={0.05}
+              thumbLabel={t('speed_label')}
+              flex={1}
+              thumbSize={14}
+            />
+            <ActionIcon
+              variant="default"
+              aria-label={t('speed_up_aria')}
+              onClick={() => onSpeedChange(Number((speed + 0.05).toFixed(2)))}
+              size={28}
+              miw={28}
+            >
+              ＋
+            </ActionIcon>
+          </Group>
+        </Box>
+        <Group gap="xs" wrap="nowrap" align="center">
           <Button
+            px="sm"
+            autoContrast
             onClick={onStart}
             disabled={playing}
-            style={primaryBtnStyle}
-            leftSection={<span style={{ fontWeight: 700 }}>▶</span>}
+            leftSection={<span aria-hidden="true">▶</span>}
           >
             {t('play')}
           </Button>
-
           <Button
+            px="sm"
             variant="default"
             onClick={onPause}
             disabled={!playing}
-            leftSection={<span style={{ fontWeight: 700 }}>⏸</span>}
-            styles={{ root: pauseBtnStyle }}
+            leftSection={<span aria-hidden="true">Ⅱ</span>}
           >
             {t('pause')}
           </Button>
-
-          <Button variant="default" onClick={onShuffle} style={ghostBtnStyle}>
+          <Button px="sm" variant="default" onClick={onShuffle}>
             {t('shuffle')}
           </Button>
         </Group>
-      </Box>
-    </Group>
+      </SimpleGrid>
+    </Paper>
   );
-};
-
-/* ---- 局所スタイル ---- */
-const stepperBtnStyle: React.CSSProperties = {
-  width: 28,
-  height: 28,
-  borderRadius: 8,
-  border: '1px solid rgba(255, 255, 255, 0.15)',
-  background: 'linear-gradient(180deg, #1a2552 0%, #131d40 100%)',
-  color: '#e6ebff',
-  fontWeight: 700,
-  lineHeight: 1,
-};
-
-const primaryBtnStyle: React.CSSProperties = {
-  background: 'linear-gradient(180deg, #2854ff 0%, #1d36a8 100%)',
-  border: '1px solid #4062ff',
-  borderRadius: 12,
-  padding: '10px 14px',
-  fontWeight: 600,
-};
-
-const pauseBtnStyle: React.CSSProperties = {
-  background: 'transparent',
-  border: '1px solid rgba(255, 255, 255, 0.35)',
-  color: 'var(--text)',
-  borderRadius: 12,
-  padding: '10px 14px',
-  fontWeight: 600,
-};
-
-const ghostBtnStyle: React.CSSProperties = {
-  background: 'linear-gradient(180deg, #1a2552 0%, #131d40 100%)',
-  border: '1px solid rgba(255, 255, 255, 0.12)',
-  borderRadius: 12,
-  padding: '10px 14px',
-  fontWeight: 600,
 };
 
 export default ControlBar;

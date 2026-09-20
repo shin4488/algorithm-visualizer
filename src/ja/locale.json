@@ -23,5 +23,7 @@
   "badge_min": "最小値候補",
   "bars_aria_bubble": "バブルソートのバー表示",
   "bars_aria_selection": "選択ソートのバー表示",
-  "bars_aria_quick": "クイックソートのバー表示"
+  "bars_aria_quick": "クイックソートのバー表示",
+  "light_mode": "ライトモードに切り替え",
+  "dark_mode": "ダークモードに切り替え"
 }

@@ -8,19 +8,54 @@ export const QuickLegend: React.FC = () => {
   const { t } = useTranslation();
   return (
     <Group gap="xs" mt="xs" wrap="wrap">
-      <Badge variant="light" leftSection={<span className="legend-box legend-swap" />}>
+      <Badge
+        variant="transparent"
+        color="gray"
+        tt="none"
+        fw={500}
+        px={0}
+        leftSection={<span className="legend-box legend-swap" />}
+      >
         {t('badge_swap')}
       </Badge>
-      <Badge variant="light" leftSection={<span className="legend-box legend-pivot" />}>
+      <Badge
+        variant="transparent"
+        color="gray"
+        tt="none"
+        fw={500}
+        px={0}
+        leftSection={<span className="legend-box legend-pivot" />}
+      >
         {t('badge_pivot')}
       </Badge>
-      <Badge variant="light" leftSection={<span className="legend-box legend-boundary" />}>
+      <Badge
+        variant="transparent"
+        color="gray"
+        tt="none"
+        fw={500}
+        px={0}
+        leftSection={<span className="legend-box legend-boundary" />}
+      >
         {t('badge_boundary')}
       </Badge>
-      <Badge variant="light" leftSection={<span className="legend-box legend-pivotline" />}>
+      <Badge
+        variant="transparent"
+        color="gray"
+        tt="none"
+        fw={500}
+        px={0}
+        leftSection={<span className="legend-box legend-pivotline" />}
+      >
         {t('badge_pivotline')}
       </Badge>
-      <Badge variant="light" leftSection={<span className="legend-box legend-sorted" />}>
+      <Badge
+        variant="transparent"
+        color="gray"
+        tt="none"
+        fw={500}
+        px={0}
+        leftSection={<span className="legend-box legend-sorted" />}
+      >
         {t('badge_sorted')}
       </Badge>
     </Group>

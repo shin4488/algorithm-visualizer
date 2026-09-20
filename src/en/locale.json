@@ -23,5 +23,7 @@
   "badge_min": "Minimum candidate",
   "bars_aria_bubble": "Bars for Bubble sort",
   "bars_aria_selection": "Bars for Selection sort",
-  "bars_aria_quick": "Bars for Quick sort"
+  "bars_aria_quick": "Bars for Quick sort",
+  "light_mode": "Switch to light mode",
+  "dark_mode": "Switch to dark mode"
 }
