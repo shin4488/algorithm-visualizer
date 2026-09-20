@@ -33,5 +33,7 @@
   "reorder_start": "{{name}}の並べ替えを開始しました。",
   "reorder_position": "{{name}}を{{position}}番目に移動します。",
   "reorder_end": "{{name}}を{{position}}番目に移動しました。",
-  "reorder_cancel": "並べ替えをキャンセルしました。"
+  "reorder_cancel": "並べ替えをキャンセルしました。",
+  "badge_left_candidate": "左の交換候補（枠）",
+  "badge_right_candidate": "右の交換候補（枠）"
 }

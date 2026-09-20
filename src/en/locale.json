@@ -33,5 +33,7 @@
   "reorder_start": "Picked up {{name}}.",
   "reorder_position": "Moving {{name}} to position {{position}}.",
   "reorder_end": "Moved {{name}} to position {{position}}.",
-  "reorder_cancel": "Reordering canceled."
+  "reorder_cancel": "Reordering canceled.",
+  "badge_left_candidate": "Left swap candidate (outline)",
+  "badge_right_candidate": "Right swap candidate (outline)"
 }

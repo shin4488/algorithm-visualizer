@@ -1,7 +1,7 @@
 import { MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '@/App';
 
@@ -249,6 +249,9 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(screen.getByText(/境界（グループ分け）/)).toBeInTheDocument();
     expect(screen.getByText(/ピボット高（横線）/)).toBeInTheDocument();
     expect(screen.getByText('最小値候補')).toBeInTheDocument();
+    const quickLegend = within(screen.getByRole('region', { name: 'クイックソート' }));
+    expect(quickLegend.getByText('左の交換候補（枠）')).toBeInTheDocument();
+    expect(quickLegend.getByText('右の交換候補（枠）')).toBeInTheDocument();
   });
 
   it('increments the bar count immediately when using the size stepper controls', async () => {
