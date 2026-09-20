@@ -358,6 +358,41 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(screen.getByRole('button', { name: 'シャッフル' })).toBeEnabled();
   });
 
+  it('keeps comparison outlines while paused and removes them when bubble sort finishes', () => {
+    // 昇順の初期配列に固定し、最後の操作が比較になるケースを再現する。
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.999);
+    vi.useFakeTimers();
+    try {
+      renderApp();
+      for (let i = 0; i < 15; i++) {
+        fireEvent.click(screen.getByRole('button', { name: '本数を1減らす' }));
+      }
+      const region = screen.getByLabelText('バブルソートのバー表示');
+      fireEvent.click(screen.getByRole('button', { name: '再生' }));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      fireEvent.click(screen.getByRole('button', { name: '一時停止' }));
+      expect(region.querySelectorAll('.compare')).toHaveLength(2);
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(region.querySelectorAll('.compare')).toHaveLength(2);
+
+      fireEvent.click(screen.getByRole('button', { name: '再生' }));
+      act(() => {
+        vi.advanceTimersByTime(9000);
+      });
+      expect(region.querySelectorAll('.sorted')).toHaveLength(5);
+      expect(region.querySelectorAll('.compare')).toHaveLength(0);
+      // 他のアルゴリズムが再生中でも、完了したパネルの比較枠は消える。
+      expect(screen.getByRole('button', { name: '一時停止' })).toBeEnabled();
+    } finally {
+      random.mockRestore();
+      vi.useRealTimers();
+    }
+  });
+
   it('plays every algorithm panel to completion and stops the playback', () => {
     // 実時間を待たずに再生完了まで進めるためフェイクタイマーを使う
     vi.useFakeTimers();
@@ -385,6 +420,7 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
         const bars = Array.from(getBars(region));
         // 全バーがソート完了状態（緑）になる
         bars.forEach((bar) => expect(bar.classList.contains('sorted')).toBe(true));
+        expect(region.querySelectorAll('.compare')).toHaveLength(0);
         // データ順が昇順 = 高さが単調増加
         const heights = bars.map((bar) => parseFloat(bar.style.height));
         const sortedHeights = [...heights].sort((a, b) => a - b);
