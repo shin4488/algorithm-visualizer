@@ -243,7 +243,7 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(stepZeros.length).toBeGreaterThanOrEqual(3);
 
     // 凡例テキストが表示されている（パネルに強く依存しない）
-    expect(screen.getAllByText('入れ替え/比較（赤）').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('入れ替え/比較').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/ソート完了/).length).toBeGreaterThan(0);
     expect(screen.getByText('ピボット')).toBeInTheDocument();
     expect(screen.getByText(/境界（グループ分け）/)).toBeInTheDocument();

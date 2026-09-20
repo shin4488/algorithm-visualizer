@@ -15,7 +15,7 @@
   "selection": "選択ソート",
   "quick": "クイックソート",
   "steps": "ステップ: {{n}}",
-  "badge_swap": "入れ替え/比較（赤）",
+  "badge_swap": "入れ替え/比較",
   "badge_sorted": "ソート完了",
   "badge_pivot": "ピボット",
   "badge_boundary": "境界（グループ分け）",

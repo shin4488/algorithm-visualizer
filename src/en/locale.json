@@ -15,7 +15,7 @@
   "selection": "Selection Sort",
   "quick": "Quick Sort",
   "steps": "Steps: {{n}}",
-  "badge_swap": "Swap/Compare (red)",
+  "badge_swap": "Swap/Compare",
   "badge_sorted": "Sorted",
   "badge_pivot": "Pivot",
   "badge_boundary": "Boundary (partition)",
