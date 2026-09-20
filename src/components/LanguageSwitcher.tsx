@@ -27,9 +27,8 @@ const LanguageSwitcher: React.FC = () => {
         { value: 'en', label: 'English' },
         { value: 'ja', label: '日本語' },
       ]}
-      w={90}
+      w={108}
       size="xs"
-      styles={{ input: { background: '#0f1b3a', borderColor: 'rgba(255,255,255,0.18)' } }}
     />
   );
 };

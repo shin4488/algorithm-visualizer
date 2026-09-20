@@ -8,7 +8,7 @@ import App from '@/App';
 // MantineProvider でラップして描画
 const renderApp = () =>
   render(
-    <MantineProvider defaultColorScheme="dark">
+    <MantineProvider defaultColorScheme="light">
       <App />
     </MantineProvider>,
   );
@@ -31,6 +31,52 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
 
   afterEach(() => {
     cleanup();
+  });
+
+  it('switches themes without resetting the boards and restores the chosen theme', () => {
+    window.localStorage.clear();
+    const view = renderApp();
+    const before = screen.getByLabelText('バブルソートのバー表示').innerHTML;
+    fireEvent.click(screen.getByRole('button', { name: 'ダークモードに切り替え' }));
+    expect(document.documentElement).toHaveAttribute('data-mantine-color-scheme', 'dark');
+    expect(screen.getByLabelText('バブルソートのバー表示').innerHTML).toBe(before);
+    view.unmount();
+    renderApp();
+    expect(screen.getByRole('button', { name: 'ライトモードに切り替え' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'ライトモードに切り替え' }));
+    expect(document.documentElement).toHaveAttribute('data-mantine-color-scheme', 'light');
+    window.localStorage.clear();
+  });
+
+  it('pauses and resumes without losing progress, and shuffle resets all boards', () => {
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    vi.useFakeTimers();
+    try {
+      renderApp();
+      fireEvent.click(screen.getByRole('button', { name: /再生/ }));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      fireEvent.click(screen.getByRole('button', { name: /一時停止/ }));
+      const paused = screen.getByLabelText('バブルソートのバー表示').innerHTML;
+      const counters = screen.getAllByText(/ステップ:/).map((el) => el.textContent);
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(screen.getByLabelText('バブルソートのバー表示').innerHTML).toBe(paused);
+      expect(screen.getAllByText(/ステップ:/).map((el) => el.textContent)).toEqual(counters);
+      fireEvent.click(screen.getByRole('button', { name: /再生/ }));
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(screen.getByLabelText('バブルソートのバー表示').innerHTML).not.toBe(paused);
+      fireEvent.click(screen.getByRole('button', { name: 'シャッフル' }));
+      expect(screen.getAllByText('ステップ: 0')).toHaveLength(3);
+      expect(screen.getByRole('button', { name: /再生/ })).toBeEnabled();
+    } finally {
+      random.mockRestore();
+      vi.useRealTimers();
+    }
   });
 
   it('renders the size control slider with sane defaults and range (ARIA)', () => {

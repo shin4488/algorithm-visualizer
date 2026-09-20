@@ -1,5 +1,5 @@
 import React from 'react';
-import { Accordion, Group, Text } from '@mantine/core';
+import { Accordion, Group, Text, Box } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import type { Step } from '@/plugins/visualizer';
 
@@ -39,22 +39,27 @@ const SortSection: React.FC<Props> = ({ value, titleKey, stepsCount, board, Lege
   const { t } = useTranslation();
 
   return (
-    <Accordion.Item value={value} style={boardStyle}>
-      <Accordion.Control style={boardSummaryStyle}>
+    <Accordion.Item value={value} bg="var(--mantine-color-body)">
+      <Accordion.Control py="xs">
         <Group justify="space-between" w="100%">
-          <Group gap={10} align="center">
-            <Text style={{ margin: 0, fontSize: 16, color: '#cbd5ff', fontWeight: 600 }}>
+          <Group gap={12} align="center">
+            <Text component="span" c="dimmed" size="xs" ff="monospace" aria-hidden="true">
+              {{ bubble: '01', selection: '02', quick: '03' }[value]}
+            </Text>
+            <Text size="sm" fw={650}>
               {t(titleKey)}
             </Text>
           </Group>
-          <Text size="xs" c="#cbd5ff">
+          <Text c="dimmed" size="xs">
             {t('steps', { n: stepsCount })}
           </Text>
         </Group>
       </Accordion.Control>
 
       <Accordion.Panel>
-        <Bars board={board} ariaLabel={t(`bars_aria_${titleKey}`)} Overlay={Overlay} />
+        <Box style={{ overflowX: 'auto' }} pt="sm">
+          <Bars board={board} ariaLabel={t(`bars_aria_${titleKey}`)} Overlay={Overlay} />
+        </Box>
         <Legend />
       </Accordion.Panel>
     </Accordion.Item>
@@ -79,7 +84,8 @@ const Bars: React.FC<{
   const isCandR = (idx: number) => board.candR === idx;
 
   return (
-    <div className="bars" aria-label={ariaLabel}>
+    // 番号が重ならない最小幅を確保し、狭い画面では親要素内でスクロールする。
+    <div className="bars" style={{ minWidth: n * 12 + 24 }} aria-label={ariaLabel}>
       {Overlay ? <Overlay board={board} /> : null}
 
       {Array.from({ length: n }, (_, i) => {
@@ -101,20 +107,6 @@ const Bars: React.FC<{
       })}
     </div>
   );
-};
-
-/* ---- 見た目（セクション外枠） ---- */
-const boardStyle: React.CSSProperties = {
-  marginTop: 14,
-  padding: 0,
-  borderRadius: 14,
-  background: '#0a1330',
-  border: '1px dashed rgba(255, 255, 255, 0.08)',
-  boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
-};
-
-const boardSummaryStyle: React.CSSProperties = {
-  padding: '12px 14px',
 };
 
 export default SortSection;

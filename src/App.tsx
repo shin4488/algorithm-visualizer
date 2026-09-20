@@ -12,7 +12,7 @@ import {
 } from '@/plugins/visualizer';
 
 /* Mantine */
-import { Container, Paper, Accordion } from '@mantine/core';
+import { Container, Accordion } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 
 import HeaderBar from '@/components/HeaderBar';
@@ -244,20 +244,10 @@ const App: React.FC = () => {
   };
 
   return (
-    <Container size={1280} px="md" py="md" style={rootStyle}>
+    <Container component="main" size={1200} px={{ base: 'md', sm: 36 }} pb="xl" style={rootStyle}>
       <HeaderBar />
 
-      <Paper
-        p="md"
-        radius={16}
-        mt="md"
-        withBorder
-        style={{
-          background: 'var(--panel)',
-          borderColor: 'rgba(255,255,255,0.06)',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
-        }}
-      >
+      <div className="workspace">
         <ControlBar
           size={size}
           speed={speed}
@@ -275,7 +265,7 @@ const App: React.FC = () => {
           mt="md"
           radius="md"
           variant="separated"
-          chevronPosition="left"
+          chevronPosition="right"
         >
           <SortSection
             value="bubble"
@@ -300,7 +290,7 @@ const App: React.FC = () => {
             Overlay={QuickOverlay}
           />
         </Accordion>
-      </Paper>
+      </div>
     </Container>
   );
 };
