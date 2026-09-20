@@ -65,7 +65,7 @@ const Bars: React.FC<{
   const n = board.data.length;
 
   const isCompare = (idx: number) =>
-    !!board.compare && (idx === board.compare[0] || idx === board.compare[1]);
+    !board.finished && !!board.compare && (idx === board.compare[0] || idx === board.compare[1]);
   const isSwap = (idx: number) =>
     !!board.swapPair && (idx === board.swapPair[0] || idx === board.swapPair[1]);
   const isPivot = (idx: number) => board.pivotIndex === idx;
