@@ -1,7 +1,7 @@
 import { MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '@/App';
 
@@ -31,6 +31,94 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
 
   afterEach(() => {
     cleanup();
+  });
+
+  it('toggles panels from the selector and can recover from hiding every algorithm', async () => {
+    renderApp();
+    const user = userEvent.setup();
+    const names = ['バブルソート', '選択ソート', 'クイックソート'];
+    for (const name of names) {
+      expect(screen.getByRole('checkbox', { name })).toBeChecked();
+      await user.click(screen.getByRole('checkbox', { name }));
+      expect(screen.queryByRole('region', { name })).not.toBeInTheDocument();
+    }
+    expect(
+      screen.getByText('上の一覧から表示するアルゴリズムを選んでください。'),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('checkbox', { name: '選択ソート' }));
+    expect(screen.getByRole('region', { name: '選択ソート' })).toBeInTheDocument();
+    expect(
+      screen.queryByText('上の一覧から表示するアルゴリズムを選んでください。'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { expanded: true })).not.toBeInTheDocument();
+  });
+
+  it('keeps hidden boards progressing and restores them without resetting playback', () => {
+    vi.useFakeTimers();
+    try {
+      renderApp();
+      fireEvent.click(screen.getByRole('button', { name: /再生/ }));
+      fireEvent.click(screen.getByRole('checkbox', { name: 'バブルソート' }));
+      act(() => {
+        vi.advanceTimersByTime(20 * 60 * 1000);
+      });
+      fireEvent.click(screen.getByRole('checkbox', { name: 'バブルソート' }));
+      const bars = Array.from(getBars(screen.getByLabelText('バブルソートのバー表示')));
+      expect(bars.every((bar) => bar.classList.contains('sorted'))).toBe(true);
+      const heights = bars.map((bar) => parseFloat(bar.style.height));
+      expect(heights).toEqual([...heights].sort((a, b) => a - b));
+      expect(screen.getByRole('button', { name: /再生/ })).toBeEnabled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('reorders panels by keyboard, preserves hidden choices, and cancels without reordering', async () => {
+    renderApp();
+    const user = userEvent.setup();
+    const group = screen.getByRole('group', { name: '表示するアルゴリズム:' });
+    // jsdomには配置計算がないため、選択チップの横並びだけを再現する。
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        const index = Array.from(group.children).indexOf(this);
+        return new DOMRect(Math.max(0, index) * 180, 0, 170, 40);
+      });
+    try {
+      const before = screen.getByLabelText('バブルソートのバー表示').innerHTML;
+      await user.click(screen.getByRole('checkbox', { name: '選択ソート' }));
+      screen.getByRole('button', { name: 'バブルソートの表示順を変更' }).focus();
+      await user.keyboard(' {ArrowRight} ');
+      expect(
+        screen.getAllByRole('checkbox').map((el) => el.nextElementSibling?.textContent),
+      ).toEqual(['選択ソート', 'バブルソート', 'クイックソート']);
+      expect(screen.getByRole('checkbox', { name: '選択ソート' })).not.toBeChecked();
+      await user.click(screen.getByRole('checkbox', { name: '選択ソート' }));
+      expect(screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent)).toEqual([
+        '選択ソート',
+        'バブルソート',
+        'クイックソート',
+      ]);
+      expect(screen.getByLabelText('バブルソートのバー表示').innerHTML).toBe(before);
+      screen.getByRole('button', { name: 'バブルソートの表示順を変更' }).focus();
+      await user.keyboard(' {ArrowLeft}{Escape}');
+      expect(screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent)).toEqual([
+        '選択ソート',
+        'バブルソート',
+        'クイックソート',
+      ]);
+      await user.click(screen.getByRole('checkbox', { name: 'クイックソート' }));
+      await user.click(screen.getByRole('button', { name: 'シャッフル' }));
+      await user.click(screen.getByRole('button', { name: '本数を1増やす' }));
+      expect(screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent)).toEqual([
+        '選択ソート',
+        'バブルソート',
+      ]);
+      expect(screen.getByRole('checkbox', { name: 'クイックソート' })).not.toBeChecked();
+      expect(getBars(screen.getByLabelText('バブルソートのバー表示'))).toHaveLength(21);
+    } finally {
+      rect.mockRestore();
+    }
   });
 
   it('switches themes without resetting the boards and restores the chosen theme', () => {
@@ -155,12 +243,15 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(stepZeros.length).toBeGreaterThanOrEqual(3);
 
     // 凡例テキストが表示されている（パネルに強く依存しない）
-    expect(screen.getAllByText('入れ替え/比較（赤）').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('入れ替え/比較').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/ソート完了/).length).toBeGreaterThan(0);
     expect(screen.getByText('ピボット')).toBeInTheDocument();
     expect(screen.getByText(/境界（グループ分け）/)).toBeInTheDocument();
     expect(screen.getByText(/ピボット高（横線）/)).toBeInTheDocument();
     expect(screen.getByText('最小値候補')).toBeInTheDocument();
+    const quickLegend = within(screen.getByRole('region', { name: 'クイックソート' }));
+    expect(quickLegend.getByText('左の交換候補（枠）')).toBeInTheDocument();
+    expect(quickLegend.getByText('右の交換候補（枠）')).toBeInTheDocument();
   });
 
   it('increments the bar count immediately when using the size stepper controls', async () => {

@@ -20,10 +20,17 @@ const HeaderBar: React.FC = () => {
   const dark = useComputedColorScheme('light') === 'dark';
   return (
     <Box component="header">
-      <Group justify="space-between" py="lg" gap="sm">
-        <Anchor href="/" underline="never" c="var(--mantine-color-text)" fw={650} size="sm">
-          Algorithm Visualizer
-        </Anchor>
+      <Group justify="space-between" align="flex-start" py="xl" gap="lg">
+        <Stack gap="xs" flex={1} miw={240}>
+          <Title order={1} size="h2" fw={650}>
+            <Anchor href="/" underline="never" c="inherit" inherit>
+              {t('app_title')}
+            </Anchor>
+          </Title>
+          <Text c="dimmed" size="sm" lh={1.8}>
+            {t('app_desc')}
+          </Text>
+        </Stack>
         <Group gap="sm" align="flex-end" wrap="nowrap">
           <ActionIcon
             variant="default"
@@ -55,14 +62,6 @@ const HeaderBar: React.FC = () => {
         </Group>
       </Group>
       <Divider />
-      <Stack gap="sm" py={{ base: 'xl', sm: 36 }}>
-        <Title order={1} size="h2" fw={650}>
-          {t('app_title')}
-        </Title>
-        <Text c="dimmed" size="sm" lh={1.8}>
-          {t('app_desc')}
-        </Text>
-      </Stack>
     </Box>
   );
 };

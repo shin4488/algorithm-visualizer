@@ -15,7 +15,7 @@
   "selection": "Selection Sort",
   "quick": "Quick Sort",
   "steps": "Steps: {{n}}",
-  "badge_swap": "Swap/Compare (red)",
+  "badge_swap": "Swap/Compare",
   "badge_sorted": "Sorted",
   "badge_pivot": "Pivot",
   "badge_boundary": "Boundary (partition)",
@@ -25,5 +25,15 @@
   "bars_aria_selection": "Bars for Selection sort",
   "bars_aria_quick": "Bars for Quick sort",
   "light_mode": "Switch to light mode",
-  "dark_mode": "Switch to dark mode"
+  "dark_mode": "Switch to dark mode",
+  "visible_algorithms": "Show algorithms:",
+  "no_algorithms": "Choose an algorithm above to display it.",
+  "reorder_algorithm": "Reorder {{name}}",
+  "reorder_instructions": "Press Space to pick up an algorithm, use arrow keys to move, then press Space again to drop. Press Escape to cancel.",
+  "reorder_start": "Picked up {{name}}.",
+  "reorder_position": "Moving {{name}} to position {{position}}.",
+  "reorder_end": "Moved {{name}} to position {{position}}.",
+  "reorder_cancel": "Reordering canceled.",
+  "badge_left_candidate": "Left swap candidate (outline)",
+  "badge_right_candidate": "Right swap candidate (outline)"
 }

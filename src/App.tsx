@@ -12,9 +12,10 @@ import {
 } from '@/plugins/visualizer';
 
 /* Mantine */
-import { Container, Accordion } from '@mantine/core';
+import { Container, Stack, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 
+import AlgorithmSelector from '@/components/AlgorithmSelector';
 import HeaderBar from '@/components/HeaderBar';
 import ControlBar from '@/components/ControlBar';
 import SortSection, { BoardState } from '@/components/SortSection';
@@ -110,7 +111,7 @@ function applyStep(b: BoardState, step: Step): BoardState {
 }
 
 const App: React.FC = () => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const browserLanguage = i18n.language;
   const translatedLanguage = browserLanguage.startsWith('ja') ? 'ja' : 'en';
 
@@ -118,15 +119,22 @@ const App: React.FC = () => {
   const [speed, setSpeed] = React.useState<number>(1.0);
   const [playing, setPlaying] = React.useState<boolean>(false);
 
+  const [algorithmOrder, setAlgorithmOrder] = React.useState<Kind[]>([
+    'bubble',
+    'selection',
+    'quick',
+  ]);
+  const [visibleAlgorithms, setVisibleAlgorithms] = React.useState<Kind[]>([
+    'bubble',
+    'selection',
+    'quick',
+  ]);
+
   // 全ボードは同じ初期配列 base を共有し、アルゴリズム間で公平に比較できるようにする
   const [base, setBase] = React.useState<number[]>(() => genArray(20));
   const [bubble, setBubble] = React.useState<BoardState>(() => makeBoard('bubble', base));
   const [selection, setSelection] = React.useState<BoardState>(() => makeBoard('selection', base));
   const [quick, setQuick] = React.useState<BoardState>(() => makeBoard('quick', base));
-
-  const stepsBubble = bubble.steps.length;
-  const stepsSelection = selection.steps.length;
-  const stepsQuick = quick.steps.length;
 
   // タイマー
   React.useEffect(() => {
@@ -248,6 +256,16 @@ const App: React.FC = () => {
       <HeaderBar />
 
       <div className="workspace">
+        <AlgorithmSelector
+          order={algorithmOrder}
+          visible={visibleAlgorithms}
+          onOrderChange={setAlgorithmOrder}
+          onToggle={(kind) =>
+            setVisibleAlgorithms((current) =>
+              current.includes(kind) ? current.filter((item) => item !== kind) : [...current, kind],
+            )
+          }
+        />
         <ControlBar
           size={size}
           speed={speed}
@@ -259,37 +277,34 @@ const App: React.FC = () => {
           onShuffle={handleShuffle}
         />
 
-        <Accordion
-          multiple
-          defaultValue={['bubble', 'selection', 'quick']}
-          mt="md"
-          radius="md"
-          variant="separated"
-          chevronPosition="right"
-        >
-          <SortSection
-            value="bubble"
-            titleKey="bubble"
-            stepsCount={stepsBubble}
-            board={bubble}
-            Legend={BubbleLegend}
-          />
-          <SortSection
-            value="selection"
-            titleKey="selection"
-            stepsCount={stepsSelection}
-            board={selection}
-            Legend={SelectionLegend}
-          />
-          <SortSection
-            value="quick"
-            titleKey="quick"
-            stepsCount={stepsQuick}
-            board={quick}
-            Legend={QuickLegend}
-            Overlay={QuickOverlay}
-          />
-        </Accordion>
+        <Stack gap="md" mt="md">
+          {algorithmOrder
+            .filter((kind) => visibleAlgorithms.includes(kind))
+            .map((kind) => {
+              // 表示設定だけを変え、各ボードの再生状態は親に保持する。
+              const board = { bubble, selection, quick }[kind];
+              const Legend = {
+                bubble: BubbleLegend,
+                selection: SelectionLegend,
+                quick: QuickLegend,
+              }[kind];
+              return (
+                <SortSection
+                  key={kind}
+                  titleKey={kind}
+                  stepsCount={board.steps.length}
+                  board={board}
+                  Legend={Legend}
+                  Overlay={kind === 'quick' ? QuickOverlay : undefined}
+                />
+              );
+            })}
+          {visibleAlgorithms.length === 0 && (
+            <Text c="dimmed" size="sm" py="xl" ta="center">
+              {t('no_algorithms')}
+            </Text>
+          )}
+        </Stack>
       </div>
     </Container>
   );

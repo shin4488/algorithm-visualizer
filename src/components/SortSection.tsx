@@ -1,5 +1,5 @@
 import React from 'react';
-import { Accordion, Group, Text, Box } from '@mantine/core';
+import { Paper, Group, Text, Box, Title } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import type { Step } from '@/plugins/visualizer';
 
@@ -24,7 +24,6 @@ export type BoardState = {
 };
 
 type Props = {
-  value: Kind;
   // i18n キー
   titleKey: Kind;
   stepsCount: number;
@@ -35,34 +34,24 @@ type Props = {
   Overlay?: React.ComponentType<{ board: BoardState }>;
 };
 
-const SortSection: React.FC<Props> = ({ value, titleKey, stepsCount, board, Legend, Overlay }) => {
+const SortSection: React.FC<Props> = ({ titleKey, stepsCount, board, Legend, Overlay }) => {
   const { t } = useTranslation();
 
   return (
-    <Accordion.Item value={value} bg="var(--mantine-color-body)">
-      <Accordion.Control py="xs">
-        <Group justify="space-between" w="100%">
-          <Group gap={12} align="center">
-            <Text component="span" c="dimmed" size="xs" ff="monospace" aria-hidden="true">
-              {{ bubble: '01', selection: '02', quick: '03' }[value]}
-            </Text>
-            <Text size="sm" fw={650}>
-              {t(titleKey)}
-            </Text>
-          </Group>
-          <Text c="dimmed" size="xs">
-            {t('steps', { n: stepsCount })}
-          </Text>
-        </Group>
-      </Accordion.Control>
-
-      <Accordion.Panel>
-        <Box style={{ overflowX: 'auto' }} pt="sm">
-          <Bars board={board} ariaLabel={t(`bars_aria_${titleKey}`)} Overlay={Overlay} />
-        </Box>
-        <Legend />
-      </Accordion.Panel>
-    </Accordion.Item>
+    <Paper component="section" aria-labelledby={`${titleKey}-title`} withBorder radius="md" p="md">
+      <Group justify="space-between" mb="sm">
+        <Title order={2} id={`${titleKey}-title`} size="sm" fw={650}>
+          {t(titleKey)}
+        </Title>
+        <Text c="dimmed" size="xs">
+          {t('steps', { n: stepsCount })}
+        </Text>
+      </Group>
+      <Box style={{ overflowX: 'auto' }} pt="sm">
+        <Bars board={board} ariaLabel={t(`bars_aria_${titleKey}`)} Overlay={Overlay} />
+      </Box>
+      <Legend />
+    </Paper>
   );
 };
 

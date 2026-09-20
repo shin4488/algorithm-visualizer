@@ -24,6 +24,26 @@ export const QuickLegend: React.FC = () => {
         tt="none"
         fw={500}
         px={0}
+        leftSection={<span className="legend-box" style={{ background: 'var(--markL)' }} />}
+      >
+        {t('badge_left_candidate')}
+      </Badge>
+      <Badge
+        variant="transparent"
+        color="gray"
+        tt="none"
+        fw={500}
+        px={0}
+        leftSection={<span className="legend-box" style={{ background: 'var(--markR)' }} />}
+      >
+        {t('badge_right_candidate')}
+      </Badge>
+      <Badge
+        variant="transparent"
+        color="gray"
+        tt="none"
+        fw={500}
+        px={0}
         leftSection={<span className="legend-box legend-pivot" />}
       >
         {t('badge_pivot')}
