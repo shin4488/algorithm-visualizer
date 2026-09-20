@@ -33,6 +33,94 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     cleanup();
   });
 
+  it('toggles panels from the selector and can recover from hiding every algorithm', async () => {
+    renderApp();
+    const user = userEvent.setup();
+    const names = ['バブルソート', '選択ソート', 'クイックソート'];
+    for (const name of names) {
+      expect(screen.getByRole('checkbox', { name })).toBeChecked();
+      await user.click(screen.getByRole('checkbox', { name }));
+      expect(screen.queryByRole('region', { name })).not.toBeInTheDocument();
+    }
+    expect(
+      screen.getByText('上の一覧から表示するアルゴリズムを選んでください。'),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('checkbox', { name: '選択ソート' }));
+    expect(screen.getByRole('region', { name: '選択ソート' })).toBeInTheDocument();
+    expect(
+      screen.queryByText('上の一覧から表示するアルゴリズムを選んでください。'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { expanded: true })).not.toBeInTheDocument();
+  });
+
+  it('keeps hidden boards progressing and restores them without resetting playback', () => {
+    vi.useFakeTimers();
+    try {
+      renderApp();
+      fireEvent.click(screen.getByRole('button', { name: /再生/ }));
+      fireEvent.click(screen.getByRole('checkbox', { name: 'バブルソート' }));
+      act(() => {
+        vi.advanceTimersByTime(20 * 60 * 1000);
+      });
+      fireEvent.click(screen.getByRole('checkbox', { name: 'バブルソート' }));
+      const bars = Array.from(getBars(screen.getByLabelText('バブルソートのバー表示')));
+      expect(bars.every((bar) => bar.classList.contains('sorted'))).toBe(true);
+      const heights = bars.map((bar) => parseFloat(bar.style.height));
+      expect(heights).toEqual([...heights].sort((a, b) => a - b));
+      expect(screen.getByRole('button', { name: /再生/ })).toBeEnabled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('reorders panels by keyboard, preserves hidden choices, and cancels without reordering', async () => {
+    renderApp();
+    const user = userEvent.setup();
+    const group = screen.getByRole('group', { name: '表示するアルゴリズム:' });
+    // jsdomには配置計算がないため、選択チップの横並びだけを再現する。
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        const index = Array.from(group.children).indexOf(this);
+        return new DOMRect(Math.max(0, index) * 180, 0, 170, 40);
+      });
+    try {
+      const before = screen.getByLabelText('バブルソートのバー表示').innerHTML;
+      await user.click(screen.getByRole('checkbox', { name: '選択ソート' }));
+      screen.getByRole('button', { name: 'バブルソートの表示順を変更' }).focus();
+      await user.keyboard(' {ArrowRight} ');
+      expect(
+        screen.getAllByRole('checkbox').map((el) => el.nextElementSibling?.textContent),
+      ).toEqual(['選択ソート', 'バブルソート', 'クイックソート']);
+      expect(screen.getByRole('checkbox', { name: '選択ソート' })).not.toBeChecked();
+      await user.click(screen.getByRole('checkbox', { name: '選択ソート' }));
+      expect(screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent)).toEqual([
+        '選択ソート',
+        'バブルソート',
+        'クイックソート',
+      ]);
+      expect(screen.getByLabelText('バブルソートのバー表示').innerHTML).toBe(before);
+      screen.getByRole('button', { name: 'バブルソートの表示順を変更' }).focus();
+      await user.keyboard(' {ArrowLeft}{Escape}');
+      expect(screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent)).toEqual([
+        '選択ソート',
+        'バブルソート',
+        'クイックソート',
+      ]);
+      await user.click(screen.getByRole('checkbox', { name: 'クイックソート' }));
+      await user.click(screen.getByRole('button', { name: 'シャッフル' }));
+      await user.click(screen.getByRole('button', { name: '本数を1増やす' }));
+      expect(screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent)).toEqual([
+        '選択ソート',
+        'バブルソート',
+      ]);
+      expect(screen.getByRole('checkbox', { name: 'クイックソート' })).not.toBeChecked();
+      expect(getBars(screen.getByLabelText('バブルソートのバー表示'))).toHaveLength(21);
+    } finally {
+      rect.mockRestore();
+    }
+  });
+
   it('switches themes without resetting the boards and restores the chosen theme', () => {
     window.localStorage.clear();
     const view = renderApp();

@@ -17,7 +17,7 @@ Reuse existing `Step` variants where their visual meaning fits. If a new variant
 
 - Extend `Kind` in both `src/components/SortSection.tsx` and `src/App.tsx`.
 - Add a legend under `src/components/algorithms/`. Add an overlay only when the shared bars cannot express the visualization; use existing color tokens for new badges in `src/styles.css`.
-- Search `src/App.tsx` for the existing algorithm and cover its integration points: imports, board state, timer updates, completion handling, reset/start, and the accordion panel/default visibility.
+- Search `src/App.tsx` for the existing algorithm and cover its integration points: imports, board state, timer updates, completion handling, reset/start, the `algorithmOrder` and `visibleAlgorithms` defaults, and the board/legend mappings used to render panels.
 - Include the board in the all-finished condition that stops playback, and emit `sort_finish` with `algorithm_type: '<kind>_sort'`.
 - Unless requested otherwise, place simple algorithms before faster ones.
 - Add the title, `bars_aria_<kind>`, and any legend keys to both `src/ja/locale.json` and `src/en/locale.json`.

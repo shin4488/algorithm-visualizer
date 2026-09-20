@@ -9,6 +9,7 @@ All algorithms sort the same shuffled dataset at the same playback speed, making
 ## Key Features
 
 - **Side-by-Side Comparison**: Run multiple sorting algorithms simultaneously against identical input arrays.
+- **Display Selection & Order**: Toggle algorithms above the playback controls and drag their handles to reorder panels. Keyboard users can press Space, move with arrow keys, and press Space to drop or Escape to cancel. Hidden algorithms keep their playback state.
 - **Interactive Controls**: Play, pause, step forward, shuffle, and customize both array size (5–50 elements) and animation speed (0.2×–10×).
 - **Dual Language & Theming**: Full Japanese / English localization (auto-detected with manual override) and responsive layouts.
 - **Extensible Architecture**: Pure step-generator functions completely decoupled from the React rendering layer.

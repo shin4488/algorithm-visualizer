@@ -25,5 +25,13 @@
   "bars_aria_selection": "選択ソートのバー表示",
   "bars_aria_quick": "クイックソートのバー表示",
   "light_mode": "ライトモードに切り替え",
-  "dark_mode": "ダークモードに切り替え"
+  "dark_mode": "ダークモードに切り替え",
+  "visible_algorithms": "表示するアルゴリズム:",
+  "no_algorithms": "上の一覧から表示するアルゴリズムを選んでください。",
+  "reorder_algorithm": "{{name}}の表示順を変更",
+  "reorder_instructions": "スペースキーで並べ替えを開始し、矢印キーで移動、もう一度スペースキーで確定します。Escapeキーでキャンセルできます。",
+  "reorder_start": "{{name}}の並べ替えを開始しました。",
+  "reorder_position": "{{name}}を{{position}}番目に移動します。",
+  "reorder_end": "{{name}}を{{position}}番目に移動しました。",
+  "reorder_cancel": "並べ替えをキャンセルしました。"
 }
