@@ -1,4 +1,3 @@
-// src/components/algorithms/Quick.tsx
 import React from 'react';
 import { Group, Badge } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
