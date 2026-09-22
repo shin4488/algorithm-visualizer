@@ -104,13 +104,11 @@ export function buildSelectionSteps(arr: number[]): Step[] {
   const steps: Step[] = [];
   const n = a.length;
   for (let i = 0; i < n - 1; i++) {
-    // 未ソート領域の先頭を最小値候補としてマークする
     let minIdx = i;
     steps.push({ t: 'markL', i: minIdx });
     for (let j = i + 1; j < n; j++) {
       steps.push({ t: 'compare', i: j, j: minIdx });
       if (a[j] < a[minIdx]) {
-        // より小さい値が見つかったので候補マークを移動する
         minIdx = j;
         steps.push({ t: 'markL', i: minIdx });
       }

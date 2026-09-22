@@ -209,7 +209,7 @@ const App: React.FC = () => {
       browser_language: browserLanguage,
       translated_language: translatedLanguage,
     });
-    // steps は初回再生時に遅延生成する（一時停止からの再開時は生成済みのものを使い回す）
+    // 一時停止後の配列からステップを作り直すと保存済みの再生位置とずれるため、再開時は既存の列を使う。
     setBubble((prev) =>
       prev.steps.length ? prev : { ...prev, steps: buildBubbleSteps(prev.data) },
     );
