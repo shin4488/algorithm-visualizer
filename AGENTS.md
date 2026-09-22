@@ -24,8 +24,8 @@ docker compose exec -T app bash -c 'yarn typecheck && yarn lint && yarn format &
 
 ## Working approach
 
-- Start with the relevant files, headings, or symbols; expand the search as needed. Load only the documentation and skills that apply to the task.
-- Ask about unresolved questions before proceeding with work that depends on the answer. Do not reconfirm decisions already made.
-- Preserve each document's language. Write natural Japanese for Japanese readers and idiomatic English for English-speaking readers.
-- Run mandatory checks when their conditions apply. Reuse results while the diff, dependencies, configuration, and execution conditions remain unchanged. Fix issues and briefly report results and anything unverified.
-- Keep lasting rules and useful references here. Do not duplicate progress notes, configuration values, or procedures maintained in other documents or skills.
+- Read relevant code, docs, and skills first; expand the search when evidence is insufficient.
+- Resolve uncertainties from existing sources; ask before dependent work if they remain. Do not reconfirm agreed decisions.
+- Preserve each document's language and use idiomatic wording.
+- Run applicable required checks and fix failures. Reuse results only while the diff, dependencies, configuration, and execution conditions are unchanged; report results and gaps briefly.
+- Keep durable rules and references here; do not duplicate progress, configuration values, or procedures from docs or skills.
