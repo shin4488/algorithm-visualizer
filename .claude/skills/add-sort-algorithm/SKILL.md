@@ -27,6 +27,6 @@ Reuse existing `Step` variants where their visual meaning fits. If a new variant
 - In `src/__tests__/visualizer.spec.ts`, check ascending output, an algorithm-specific property, and step consistency such as mark pairing. Use `applySwaps` when the algorithm is expressed as swaps.
 - In `src/__tests__/ui.spec.tsx`, include the new panel in initialization, legend, size-change, shuffle, and completion checks. Review assertions that depend on the number of panels; loose lower bounds can hide omissions.
 - Use synchronous `fireEvent` with fake timers; `userEvent` can hang. Hidden browser tabs throttle playback, so use the fake-timer test to verify completion.
-- Run the required Docker checks in [CLAUDE.md](../../../CLAUDE.md#golden-rules). Fix formatting with `yarn format:fix` in the container, then check again. Inspect the new panel at `/ja/` and `/en/` on the development server.
+- Run the required Docker checks in [AGENTS.md](../../../AGENTS.md#golden-rules). Fix formatting with `yarn format:fix` in the container, then check again. Inspect the new panel at `/ja/` and `/en/` on the development server.
 
 Complete the integration, translations, and checks before reporting the result. Preserve Japanese comments that explain intent.
