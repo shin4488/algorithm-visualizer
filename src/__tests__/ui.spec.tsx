@@ -53,6 +53,35 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(screen.queryByRole('button', { expanded: true })).not.toBeInTheDocument();
   });
 
+  it('selects every algorithm from a partial or empty selection without resetting the boards', async () => {
+    renderApp();
+    const user = userEvent.setup();
+    const selectAll = screen.getByRole('button', { name: '全選択' });
+    const initialOrder = screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent);
+    const initialBars = screen.getByLabelText('バブルソートのバー表示').innerHTML;
+    expect(selectAll).toBeDisabled();
+
+    await user.click(screen.getAllByRole('checkbox')[0]);
+    expect(selectAll).toBeEnabled();
+    await user.click(selectAll);
+    expect(screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent)).toEqual(
+      initialOrder,
+    );
+    expect(screen.getByLabelText('バブルソートのバー表示').innerHTML).toBe(initialBars);
+
+    for (const checkbox of screen.getAllByRole('checkbox')) await user.click(checkbox);
+    expect(screen.queryAllByRole('heading', { level: 2 })).toHaveLength(0);
+    expect(
+      screen.getByText('上の一覧から表示するアルゴリズムを選んでください。'),
+    ).toBeInTheDocument();
+    await user.click(selectAll);
+    for (const checkbox of screen.getAllByRole('checkbox')) expect(checkbox).toBeChecked();
+    expect(screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent)).toEqual(
+      initialOrder,
+    );
+    expect(selectAll).toBeDisabled();
+  });
+
   it('keeps hidden boards progressing and restores them without resetting playback', () => {
     vi.useFakeTimers();
     try {
