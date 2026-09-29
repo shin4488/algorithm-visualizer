@@ -32,6 +32,7 @@ function makeBoard(kind: Kind, base: number[]): BoardState {
   return {
     kind,
     data: base.slice(),
+    maxValue: Math.max(...base, 1),
     ids: Array.from({ length: n }, (_, i) => i + 1),
     steps: [],
     stepIndex: 0,
@@ -44,18 +45,25 @@ function makeBoard(kind: Kind, base: number[]): BoardState {
     range: null,
     boundaryIndex: null,
     boundaryVisible: false,
+    mergeProgress: null,
   };
 }
 
 /**
  * ステップ 1 件をボード状態へ適用する純粋関数。
- * 比較・交換・書き込みのハイライトは 1 ステップ限りなので、毎回いったんクリアしてから適用する
+ * 比較・交換・選択・書き込みのハイライトは 1 ステップ限りなので、毎回いったんクリアしてから適用する
  */
 function applyStep(b: BoardState, step: Step): BoardState {
   const next: BoardState = { ...b, compare: null, swapPair: null };
   switch (step.t) {
     case 'compare':
-      return { ...next, compare: [step.i, step.j] };
+      return {
+        ...next,
+        compare: [step.i, step.j],
+        mergeProgress: next.mergeProgress
+          ? { ...next.mergeProgress, selected: null }
+          : next.mergeProgress,
+      };
     case 'swap': {
       const data = next.data.slice();
       const ids = next.ids.slice();
@@ -75,7 +83,43 @@ function applyStep(b: BoardState, step: Step): BoardState {
       const ids = next.ids.slice();
       data[step.i] = step.value;
       ids[step.i] = step.id;
-      return { ...next, data, ids, swapPair: [step.i, step.i] };
+      return {
+        ...next,
+        data,
+        ids,
+        swapPair: [step.i, step.i],
+        mergeProgress: next.mergeProgress
+          ? { ...next.mergeProgress, selected: null, writing: true }
+          : null,
+      };
+    }
+    case 'mergeStart':
+      return {
+        ...next,
+        mergeProgress: {
+          left: step.left,
+          right: step.right,
+          leftCursor: 0,
+          rightCursor: 0,
+          output: [],
+          selected: null,
+          writing: false,
+        },
+      };
+    case 'mergeTake': {
+      if (!next.mergeProgress) return next;
+      const progress = next.mergeProgress;
+      return {
+        ...next,
+        swapPair: [step.source, step.source],
+        mergeProgress: {
+          ...progress,
+          leftCursor: progress.leftCursor + (step.side === 'left' ? 1 : 0),
+          rightCursor: progress.rightCursor + (step.side === 'right' ? 1 : 0),
+          output: [...progress.output, step.value],
+          selected: { side: step.side, value: step.value },
+        },
+      };
     }
     case 'pivot':
       return { ...next, pivotIndex: step.i ?? null };
@@ -90,6 +134,7 @@ function applyStep(b: BoardState, step: Step): BoardState {
           pivotIndex: null,
           candL: null,
           candR: null,
+          mergeProgress: null,
         };
       }
       return {

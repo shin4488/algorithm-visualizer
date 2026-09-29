@@ -1,5 +1,5 @@
 import React from 'react';
-import { Group, Badge } from '@mantine/core';
+import { Group, Badge, Box, Code, Stack, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import type { BoardState } from '@/components/SortSection';
 
@@ -38,6 +38,49 @@ export const MergeLegend: React.FC = () => {
         {t('badge_sorted')}
       </Badge>
     </Group>
+  );
+};
+
+export const MergeGuide: React.FC<{ board: BoardState }> = ({ board }) => {
+  const { t } = useTranslation();
+  const progress = board.mergeProgress;
+  const message = board.finished
+    ? t('merge_finished')
+    : progress?.writing
+      ? t('merge_writing')
+      : progress?.selected
+        ? t('merge_choice', {
+            side: t(`merge_${progress.selected.side}`),
+            value: progress.selected.value,
+          })
+        : progress
+          ? t('merge_comparing')
+          : board.range
+            ? t('merge_splitting')
+            : t('merge_ready');
+
+  const rows = progress
+    ? [
+        { key: 'merge_left_remaining', values: progress.left.slice(progress.leftCursor) },
+        { key: 'merge_right_remaining', values: progress.right.slice(progress.rightCursor) },
+        { key: 'merge_output', values: progress.output },
+      ]
+    : [];
+
+  return (
+    <Stack gap={4} mt="xs">
+      <Text size="sm">{message}</Text>
+      {rows.map(({ key, values }) => (
+        <Box key={key} style={{ overflowX: 'auto' }}>
+          <Group gap="xs" wrap="nowrap">
+            <Text size="sm" fw={600} style={{ flexShrink: 0 }}>
+              {t(key)}:
+            </Text>
+            <Code>{`[${values.join(', ')}]`}</Code>
+          </Group>
+        </Box>
+      ))}
+    </Stack>
   );
 };
 

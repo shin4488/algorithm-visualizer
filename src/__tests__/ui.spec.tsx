@@ -4,6 +4,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '@/App';
+import { computeInterval } from '@/plugins/visualizer';
 
 // MantineProvider でラップして描画
 const renderApp = () =>
@@ -237,9 +238,11 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(selectionHeights).toEqual(quickHeights);
     expect(mergeHeights).toEqual(quickHeights);
 
-    // data-label は数字
+    // 棒の数字は元の位置番号ではなく、高さに対応する値を示す
     [...bubbleBars, ...selectionBars, ...mergeBars, ...quickBars].forEach((bar) => {
-      expect(bar.getAttribute('data-label')).toMatch(/^\d+$/);
+      expect(Number(bar.getAttribute('data-label'))).toBeCloseTo(
+        (parseFloat(bar.style.height) / 100) * 20,
+      );
     });
   });
 
@@ -258,8 +261,11 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(screen.getByText(/ピボット高（横線）/)).toBeInTheDocument();
     expect(screen.getByText('最小値候補')).toBeInTheDocument();
     const mergeLegend = within(screen.getByRole('region', { name: 'マージソート' }));
-    expect(mergeLegend.getByText('比較・書き込み')).toBeInTheDocument();
+    expect(mergeLegend.getByText('比較・選択・書き込み')).toBeInTheDocument();
     expect(mergeLegend.getByText('併合範囲・分割線')).toBeInTheDocument();
+    expect(
+      mergeLegend.getByText('再生すると分割と併合の途中経過が表示されます。'),
+    ).toBeInTheDocument();
     const quickLegend = within(screen.getByRole('region', { name: 'クイックソート' }));
     expect(quickLegend.getByText('左の交換候補（枠）')).toBeInTheDocument();
     expect(quickLegend.getByText('右の交換候補（枠）')).toBeInTheDocument();
@@ -388,6 +394,74 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
       expect(range?.style.display).toBe('block');
       expect(split?.style.display).toBe('block');
     } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('shows which side contributes each value to the merge result before writing it back', () => {
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.999);
+    vi.useFakeTimers();
+    try {
+      renderApp();
+      for (let i = 0; i < 15; i++) {
+        fireEvent.click(screen.getByRole('button', { name: '本数を1減らす' }));
+      }
+      const merge = within(screen.getByRole('region', { name: 'マージソート' }));
+      fireEvent.click(screen.getByRole('button', { name: '再生' }));
+      const interval = computeInterval(1);
+
+      act(() => {
+        vi.advanceTimersByTime(interval * 9);
+      });
+      expect(merge.getByText('左に残る数:').parentElement).toHaveTextContent('[1]');
+      expect(merge.getByText('右に残る数:').parentElement).toHaveTextContent('[2]');
+      expect(merge.getByText('結果:').parentElement).toHaveTextContent('[]');
+
+      act(() => {
+        vi.advanceTimersByTime(interval * 2);
+      });
+      expect(merge.getByText('左から1を結果に移しました。')).toBeInTheDocument();
+      expect(merge.getByText('左に残る数:').parentElement).toHaveTextContent('[]');
+      expect(merge.getByText('右に残る数:').parentElement).toHaveTextContent('[2]');
+      expect(merge.getByText('結果:').parentElement).toHaveTextContent('[1]');
+
+      act(() => {
+        vi.advanceTimersByTime(interval * 2);
+      });
+      expect(merge.getByText('完成した結果を棒に書き戻しています。')).toBeInTheDocument();
+      expect(merge.getByText('結果:').parentElement).toHaveTextContent('[1, 2]');
+    } finally {
+      random.mockRestore();
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps bar heights on the original scale while merge writes temporarily duplicate values', () => {
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0);
+    vi.useFakeTimers();
+    try {
+      renderApp();
+      for (let i = 0; i < 15; i++) {
+        fireEvent.click(screen.getByRole('button', { name: '本数を1減らす' }));
+      }
+      const region = screen.getByLabelText('マージソートのバー表示');
+      const bars = () => Array.from(getBars(region));
+      expect(bars().map((bar) => bar.dataset.label)).toEqual(['2', '3', '4', '5', '1']);
+
+      fireEvent.click(screen.getByRole('button', { name: '再生' }));
+      let labels: (string | undefined)[] = [];
+      for (let tick = 0; tick < 40; tick++) {
+        act(() => {
+          vi.advanceTimersByTime(computeInterval(1));
+        });
+        labels = bars().map((bar) => bar.dataset.label);
+        if (!labels.includes('5')) break;
+      }
+
+      expect(labels).not.toContain('5');
+      expect(Math.max(...bars().map((bar) => parseFloat(bar.style.height)))).toBe(80);
+    } finally {
+      random.mockRestore();
       vi.useRealTimers();
     }
   });
