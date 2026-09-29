@@ -36,7 +36,7 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
   it('toggles panels from the selector and can recover from hiding every algorithm', async () => {
     renderApp();
     const user = userEvent.setup();
-    const names = ['バブルソート', '選択ソート', 'クイックソート'];
+    const names = ['バブルソート', '選択ソート', 'マージソート', 'クイックソート'];
     for (const name of names) {
       expect(screen.getByRole('checkbox', { name })).toBeChecked();
       await user.click(screen.getByRole('checkbox', { name }));
@@ -58,12 +58,12 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     try {
       renderApp();
       fireEvent.click(screen.getByRole('button', { name: /再生/ }));
-      fireEvent.click(screen.getByRole('checkbox', { name: 'バブルソート' }));
+      fireEvent.click(screen.getByRole('checkbox', { name: 'マージソート' }));
       act(() => {
         vi.advanceTimersByTime(20 * 60 * 1000);
       });
-      fireEvent.click(screen.getByRole('checkbox', { name: 'バブルソート' }));
-      const bars = Array.from(getBars(screen.getByLabelText('バブルソートのバー表示')));
+      fireEvent.click(screen.getByRole('checkbox', { name: 'マージソート' }));
+      const bars = Array.from(getBars(screen.getByLabelText('マージソートのバー表示')));
       expect(bars.every((bar) => bar.classList.contains('sorted'))).toBe(true);
       const heights = bars.map((bar) => parseFloat(bar.style.height));
       expect(heights).toEqual([...heights].sort((a, b) => a - b));
@@ -91,12 +91,13 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
       await user.keyboard(' {ArrowRight} ');
       expect(
         screen.getAllByRole('checkbox').map((el) => el.nextElementSibling?.textContent),
-      ).toEqual(['選択ソート', 'バブルソート', 'クイックソート']);
+      ).toEqual(['選択ソート', 'バブルソート', 'マージソート', 'クイックソート']);
       expect(screen.getByRole('checkbox', { name: '選択ソート' })).not.toBeChecked();
       await user.click(screen.getByRole('checkbox', { name: '選択ソート' }));
       expect(screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent)).toEqual([
         '選択ソート',
         'バブルソート',
+        'マージソート',
         'クイックソート',
       ]);
       expect(screen.getByLabelText('バブルソートのバー表示').innerHTML).toBe(before);
@@ -105,6 +106,7 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
       expect(screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent)).toEqual([
         '選択ソート',
         'バブルソート',
+        'マージソート',
         'クイックソート',
       ]);
       await user.click(screen.getByRole('checkbox', { name: 'クイックソート' }));
@@ -113,6 +115,7 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
       expect(screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent)).toEqual([
         '選択ソート',
         'バブルソート',
+        'マージソート',
       ]);
       expect(screen.getByRole('checkbox', { name: 'クイックソート' })).not.toBeChecked();
       expect(getBars(screen.getByLabelText('バブルソートのバー表示'))).toHaveLength(21);
@@ -159,7 +162,7 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
       });
       expect(screen.getByLabelText('バブルソートのバー表示').innerHTML).not.toBe(paused);
       fireEvent.click(screen.getByRole('button', { name: 'シャッフル' }));
-      expect(screen.getAllByText('ステップ: 0')).toHaveLength(3);
+      expect(screen.getAllByText('ステップ: 0')).toHaveLength(4);
       expect(screen.getByRole('button', { name: /再生/ })).toBeEnabled();
     } finally {
       random.mockRestore();
@@ -212,35 +215,40 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
 
     const bubbleRegion = screen.getByLabelText('バブルソートのバー表示');
     const selectionRegion = screen.getByLabelText('選択ソートのバー表示');
+    const mergeRegion = screen.getByLabelText('マージソートのバー表示');
     const quickRegion = screen.getByLabelText('クイックソートのバー表示');
 
     const bubbleBars = getBars(bubbleRegion);
     const selectionBars = getBars(selectionRegion);
+    const mergeBars = getBars(mergeRegion);
     const quickBars = getBars(quickRegion);
 
     expect(bubbleBars).toHaveLength(20);
     expect(selectionBars).toHaveLength(20);
+    expect(mergeBars).toHaveLength(20);
     expect(quickBars).toHaveLength(20);
 
     // 高さ（=データ順）一致
     const bubbleHeights = Array.from(bubbleBars, (bar) => bar.style.height);
     const selectionHeights = Array.from(selectionBars, (bar) => bar.style.height);
+    const mergeHeights = Array.from(mergeBars, (bar) => bar.style.height);
     const quickHeights = Array.from(quickBars, (bar) => bar.style.height);
     expect(bubbleHeights).toEqual(quickHeights);
     expect(selectionHeights).toEqual(quickHeights);
+    expect(mergeHeights).toEqual(quickHeights);
 
     // data-label は数字
-    [...bubbleBars, ...selectionBars, ...quickBars].forEach((bar) => {
+    [...bubbleBars, ...selectionBars, ...mergeBars, ...quickBars].forEach((bar) => {
       expect(bar.getAttribute('data-label')).toMatch(/^\d+$/);
     });
   });
 
-  it('shows both panels open and the legends/step counters visible', () => {
+  it('shows every panel and its legend and step counter', () => {
     renderApp();
 
-    // details/accordion どちらでも「ステップ: 0」が3つ見えることを確認
+    // 各パネルに開始前のステップ数が表示される
     const stepZeros = screen.getAllByText(/ステップ:\s*0/);
-    expect(stepZeros.length).toBeGreaterThanOrEqual(3);
+    expect(stepZeros).toHaveLength(4);
 
     // 凡例テキストが表示されている（パネルに強く依存しない）
     expect(screen.getAllByText('入れ替え/比較').length).toBeGreaterThan(0);
@@ -249,6 +257,9 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(screen.getByText(/境界（グループ分け）/)).toBeInTheDocument();
     expect(screen.getByText(/ピボット高（横線）/)).toBeInTheDocument();
     expect(screen.getByText('最小値候補')).toBeInTheDocument();
+    const mergeLegend = within(screen.getByRole('region', { name: 'マージソート' }));
+    expect(mergeLegend.getByText('比較・書き込み')).toBeInTheDocument();
+    expect(mergeLegend.getByText('併合範囲・分割線')).toBeInTheDocument();
     const quickLegend = within(screen.getByRole('region', { name: 'クイックソート' }));
     expect(quickLegend.getByText('左の交換候補（枠）')).toBeInTheDocument();
     expect(quickLegend.getByText('右の交換候補（枠）')).toBeInTheDocument();
@@ -269,19 +280,23 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
 
     const bubbleRegion = screen.getByLabelText('バブルソートのバー表示');
     const selectionRegion = screen.getByLabelText('選択ソートのバー表示');
+    const mergeRegion = screen.getByLabelText('マージソートのバー表示');
     const quickRegion = screen.getByLabelText('クイックソートのバー表示');
     expect(getBars(bubbleRegion)).toHaveLength(21);
     expect(getBars(selectionRegion)).toHaveLength(21);
+    expect(getBars(mergeRegion)).toHaveLength(21);
     expect(getBars(quickRegion)).toHaveLength(21);
 
     const bubbleHeights = Array.from(getBars(bubbleRegion), (bar) => bar.style.height);
     const selectionHeights = Array.from(getBars(selectionRegion), (bar) => bar.style.height);
+    const mergeHeights = Array.from(getBars(mergeRegion), (bar) => bar.style.height);
     const quickHeights = Array.from(getBars(quickRegion), (bar) => bar.style.height);
     expect(bubbleHeights).toEqual(quickHeights);
     expect(selectionHeights).toEqual(quickHeights);
+    expect(mergeHeights).toEqual(quickHeights);
   });
 
-  it('rebuilds both panels when the size slider value changes via keyboard (ARIA)', async () => {
+  it('rebuilds every panel when the size slider value changes via keyboard (ARIA)', async () => {
     renderApp();
 
     const user = userEvent.setup();
@@ -296,9 +311,11 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
 
     const bubbleRegion = screen.getByLabelText('バブルソートのバー表示');
     const selectionRegion = screen.getByLabelText('選択ソートのバー表示');
+    const mergeRegion = screen.getByLabelText('マージソートのバー表示');
     const quickRegion = screen.getByLabelText('クイックソートのバー表示');
     expect(getBars(bubbleRegion)).toHaveLength(18);
     expect(getBars(selectionRegion)).toHaveLength(18);
+    expect(getBars(mergeRegion)).toHaveLength(18);
     expect(getBars(quickRegion)).toHaveLength(18);
   });
 
@@ -315,7 +332,7 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(screen.getByText(/アニメ速度:\s*1\.25/)).toBeInTheDocument();
   });
 
-  it('shuffles with the current bar count and keeps both panels synchronized', async () => {
+  it('shuffles with the current bar count and keeps every panel synchronized', async () => {
     renderApp();
 
     const user = userEvent.setup();
@@ -326,13 +343,16 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
 
     const bubbleRegion = screen.getByLabelText('バブルソートのバー表示');
     const selectionRegion = screen.getByLabelText('選択ソートのバー表示');
+    const mergeRegion = screen.getByLabelText('マージソートのバー表示');
     const quickRegion = screen.getByLabelText('クイックソートのバー表示');
 
     const bubbleHeights = Array.from(getBars(bubbleRegion), (bar) => bar.style.height);
     const selectionHeights = Array.from(getBars(selectionRegion), (bar) => bar.style.height);
+    const mergeHeights = Array.from(getBars(mergeRegion), (bar) => bar.style.height);
     const quickHeights = Array.from(getBars(quickRegion), (bar) => bar.style.height);
     expect(bubbleHeights).toEqual(quickHeights);
     expect(selectionHeights).toEqual(quickHeights);
+    expect(mergeHeights).toEqual(quickHeights);
   });
 
   it('hides quick-sort overlay elements until a processing range exists', () => {
@@ -349,6 +369,27 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(pivotLine?.style.display).toBe('none');
     expect(zones[0]?.style.display).toBe('none');
     expect(zones[1]?.style.display).toBe('none');
+  });
+
+  it('shows the merge range and split line during playback', () => {
+    vi.useFakeTimers();
+    try {
+      renderApp();
+      const region = screen.getByLabelText('マージソートのバー表示');
+      const range = region.querySelector<HTMLElement>('.subrange');
+      const split = region.querySelector<HTMLElement>('.boundary');
+      expect(range?.style.display).toBe('none');
+      expect(split?.style.display).toBe('none');
+
+      fireEvent.click(screen.getByRole('button', { name: /再生/ }));
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(range?.style.display).toBe('block');
+      expect(split?.style.display).toBe('block');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('sets initial playback controls according to the specification', () => {
@@ -414,6 +455,7 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
       const regions = [
         screen.getByLabelText('バブルソートのバー表示'),
         screen.getByLabelText('選択ソートのバー表示'),
+        screen.getByLabelText('マージソートのバー表示'),
         screen.getByLabelText('クイックソートのバー表示'),
       ];
       regions.forEach((region) => {

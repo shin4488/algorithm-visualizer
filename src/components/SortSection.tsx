@@ -3,7 +3,7 @@ import { Paper, Group, Text, Box, Title } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import type { Step } from '@/plugins/visualizer';
 
-export type Kind = 'bubble' | 'selection' | 'quick';
+export type Kind = 'bubble' | 'selection' | 'merge' | 'quick';
 export type Range = { lo: number; hi: number } | null;
 
 export type BoardState = {

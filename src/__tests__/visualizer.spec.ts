@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
   buildBubbleSteps,
   buildSelectionSteps,
+  buildMergeSteps,
   buildQuickSteps,
   genArray,
   type Step,
@@ -93,6 +94,55 @@ describe('visualizer logic specification', () => {
     // 各パスは markL で始まり clearMarks で終わる
     expect(steps[0].t).toBe('markL');
     expect(steps[steps.length - 1].t).toBe('clearMarks');
+  });
+
+  it('merges in ascending stable order and compares each source range before writing it', () => {
+    const original = [4, 2, 4, 1, 2];
+    const values = original.slice();
+    const ids = original.map((_, index) => index + 1);
+    const steps = buildMergeSteps(original);
+    let activeRange: { lo: number; hi: number } | null = null;
+    let writing = false;
+
+    steps.forEach((step) => {
+      switch (step.t) {
+        case 'range':
+          activeRange = step.lo == null || step.hi == null ? null : { lo: step.lo, hi: step.hi };
+          writing = false;
+          break;
+        case 'boundary':
+          expect(activeRange).not.toBeNull();
+          expect(step.k).toBeGreaterThan(activeRange!.lo);
+          expect(step.k).toBeLessThanOrEqual(activeRange!.hi);
+          break;
+        case 'compare':
+          expect(activeRange).not.toBeNull();
+          expect(writing).toBe(false);
+          expect(step.i).toBeGreaterThanOrEqual(activeRange!.lo);
+          expect(step.j).toBeLessThanOrEqual(activeRange!.hi);
+          break;
+        case 'write':
+          expect(activeRange).not.toBeNull();
+          expect(step.i).toBeGreaterThanOrEqual(activeRange!.lo);
+          expect(step.i).toBeLessThanOrEqual(activeRange!.hi);
+          expect(step.value).toBe(original[step.id - 1]);
+          values[step.i] = step.value;
+          ids[step.i] = step.id;
+          writing = true;
+          break;
+        default:
+          break;
+      }
+    });
+
+    expect(original).toEqual([4, 2, 4, 1, 2]);
+    expect(values).toEqual([1, 2, 2, 4, 4]);
+    expect(ids).toEqual([4, 2, 5, 1, 3]);
+    expect(activeRange).toBeNull();
+    expect(steps.some((step) => step.t === 'compare')).toBe(true);
+    expect(steps.some((step) => step.t === 'write')).toBe(true);
+    expect(buildMergeSteps([])).toEqual([]);
+    expect(buildMergeSteps([1])).toEqual([]);
   });
 
   it('builds quick sort steps that respect the rightmost pivot and produce candidate markers', () => {

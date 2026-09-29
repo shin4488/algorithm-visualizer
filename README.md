@@ -2,7 +2,7 @@
 
 An interactive web application that visualizes and compares sorting algorithms side by side in real time.
 
-All algorithms sort the same shuffled dataset at the same playback speed, making it intuitive to observe differences in strategy, comparisons, and swap efficiency.
+All algorithms sort the same shuffled dataset at the same playback speed, making it intuitive to observe differences in strategy, comparisons, and data movement.
 
 ---
 
@@ -27,7 +27,7 @@ flowchart LR
     State -->|"Immutable Board State"| UI["React Components<br>(Bar Rendering & Overlays)"]
 ```
 
-1. **Step Generation**: Each algorithm implements a pure function that precomputes the entire sorting process into an array of immutable `Step` objects (e.g., compare, swap, mark sorted).
+1. **Step Generation**: Each algorithm implements a pure function that precomputes the entire sorting process into an array of immutable `Step` objects (e.g., compare, swap, write).
 2. **Playback**: The React app steps through the list per tick of the animation timer, applying updates to the state without re-running sorting logic.
 
 ---
