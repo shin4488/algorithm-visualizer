@@ -87,7 +87,7 @@ const Bars: React.FC<{
 
   return (
     // 番号が重ならない最小幅を確保し、狭い画面では親要素内でスクロールする。
-    <div className="bars" style={{ minWidth: n * 12 + 24 }} aria-label={ariaLabel}>
+    <div className="bars" style={{ minWidth: n * 16 + 24 }} aria-label={ariaLabel}>
       {Overlay ? <Overlay board={board} /> : null}
 
       {Array.from({ length: n }, (_, i) => {
