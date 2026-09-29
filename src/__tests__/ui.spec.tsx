@@ -261,11 +261,9 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(screen.getByText(/ピボット高（横線）/)).toBeInTheDocument();
     expect(screen.getByText('最小値候補')).toBeInTheDocument();
     const mergeLegend = within(screen.getByRole('region', { name: 'マージソート' }));
-    expect(mergeLegend.getByText('比較・選択・書き込み')).toBeInTheDocument();
-    expect(mergeLegend.getByText('併合範囲・分割線')).toBeInTheDocument();
-    expect(
-      mergeLegend.getByText('再生すると分割と併合の途中経過が表示されます。'),
-    ).toBeInTheDocument();
+    expect(mergeLegend.getByText('比べて並べる')).toBeInTheDocument();
+    expect(mergeLegend.getByText('範囲と分け目')).toBeInTheDocument();
+    expect(mergeLegend.getByText('1個ずつに分けて、小さい順にまとめます。')).toBeInTheDocument();
     const quickLegend = within(screen.getByRole('region', { name: 'クイックソート' }));
     expect(quickLegend.getByText('左の交換候補（枠）')).toBeInTheDocument();
     expect(quickLegend.getByText('右の交換候補（枠）')).toBeInTheDocument();
@@ -413,22 +411,22 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
       act(() => {
         vi.advanceTimersByTime(interval * 9);
       });
-      expect(merge.getByText('左に残る数:').parentElement).toHaveTextContent('[1]');
-      expect(merge.getByText('右に残る数:').parentElement).toHaveTextContent('[2]');
+      expect(merge.getByText('左の残り:').parentElement).toHaveTextContent('[1]');
+      expect(merge.getByText('右の残り:').parentElement).toHaveTextContent('[2]');
       expect(merge.getByText('結果:').parentElement).toHaveTextContent('[]');
 
       act(() => {
         vi.advanceTimersByTime(interval * 2);
       });
-      expect(merge.getByText('左から1を結果に移しました。')).toBeInTheDocument();
-      expect(merge.getByText('左に残る数:').parentElement).toHaveTextContent('[]');
-      expect(merge.getByText('右に残る数:').parentElement).toHaveTextContent('[2]');
+      expect(merge.getByText('左の1を結果に入れました。')).toBeInTheDocument();
+      expect(merge.getByText('左の残り:').parentElement).toHaveTextContent('[]');
+      expect(merge.getByText('右の残り:').parentElement).toHaveTextContent('[2]');
       expect(merge.getByText('結果:').parentElement).toHaveTextContent('[1]');
 
       act(() => {
         vi.advanceTimersByTime(interval * 2);
       });
-      expect(merge.getByText('完成した結果を棒に書き戻しています。')).toBeInTheDocument();
+      expect(merge.getByText('結果に合わせて棒を並べ直しています。')).toBeInTheDocument();
       expect(merge.getByText('結果:').parentElement).toHaveTextContent('[1, 2]');
     } finally {
       random.mockRestore();
