@@ -87,7 +87,6 @@ const AlgorithmSelector: React.FC<Props> = ({
               />
             ))}
             <Button
-              ml="auto"
               size="compact-sm"
               variant="subtle"
               disabled={order.every((kind) => visible.includes(kind))}
