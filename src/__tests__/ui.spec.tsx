@@ -169,16 +169,22 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     window.localStorage.clear();
   });
 
-  it('pauses and resumes without losing progress, and shuffle resets all boards', () => {
+  it('toggles playback with one button without losing progress, and shuffle resets all boards', () => {
     const random = vi.spyOn(Math, 'random').mockReturnValue(0.5);
     vi.useFakeTimers();
     try {
       renderApp();
-      fireEvent.click(screen.getByRole('button', { name: /再生/ }));
+      const playbackButton = screen.getByRole('button', { name: '再生' });
+      fireEvent.click(playbackButton);
+      expect(playbackButton).toHaveAccessibleName('一時停止');
+      expect(playbackButton).toBeEnabled();
+      expect(screen.queryByRole('button', { name: '再生' })).not.toBeInTheDocument();
       act(() => {
         vi.advanceTimersByTime(1000);
       });
-      fireEvent.click(screen.getByRole('button', { name: /一時停止/ }));
+      fireEvent.click(playbackButton);
+      expect(playbackButton).toHaveAccessibleName('再生');
+      expect(screen.queryByRole('button', { name: '一時停止' })).not.toBeInTheDocument();
       const paused = screen.getByLabelText('バブルソートのバー表示').innerHTML;
       const counters = screen.getAllByText(/ステップ:/).map((el) => el.textContent);
       act(() => {
@@ -186,14 +192,16 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
       });
       expect(screen.getByLabelText('バブルソートのバー表示').innerHTML).toBe(paused);
       expect(screen.getAllByText(/ステップ:/).map((el) => el.textContent)).toEqual(counters);
-      fireEvent.click(screen.getByRole('button', { name: /再生/ }));
+      fireEvent.click(playbackButton);
+      expect(playbackButton).toHaveAccessibleName('一時停止');
       act(() => {
         vi.advanceTimersByTime(1000);
       });
       expect(screen.getByLabelText('バブルソートのバー表示').innerHTML).not.toBe(paused);
       fireEvent.click(screen.getByRole('button', { name: 'シャッフル' }));
       expect(screen.getAllByText('ステップ: 0')).toHaveLength(4);
-      expect(screen.getByRole('button', { name: /再生/ })).toBeEnabled();
+      expect(playbackButton).toHaveAccessibleName('再生');
+      expect(playbackButton).toBeEnabled();
     } finally {
       random.mockRestore();
       vi.useRealTimers();
@@ -493,10 +501,10 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     }
   });
 
-  it('sets initial playback controls according to the specification', () => {
+  it('initially shows one enabled playback button and the shuffle button', () => {
     renderApp();
     expect(screen.getByRole('button', { name: /再生/ })).toBeEnabled();
-    expect(screen.getByRole('button', { name: /一時停止/ })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: /一時停止/ })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'シャッフル' })).toBeEnabled();
   });
 
@@ -544,10 +552,9 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
       // userEvent はフェイクタイマー下でハングするため、同期的な fireEvent を使う
       fireEvent.click(screen.getByRole('button', { name: /再生/ }));
 
-      // 全パネルが完了して自動停止する（=再生ボタンが復活する）まで 30 秒ずつ進める
-      const playButton = screen.getByRole('button', { name: /再生/ });
+      // 全パネルが完了し、ボタンが再生表示に戻るまで 30 秒ずつ進める。
       for (let elapsed = 0; elapsed < 20 * 60 * 1000; elapsed += 30 * 1000) {
-        if (!(playButton as HTMLButtonElement).disabled) break;
+        if (screen.queryByRole('button', { name: '再生' })) break;
         act(() => {
           vi.advanceTimersByTime(30 * 1000);
         });
@@ -572,7 +579,7 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
 
       // 全パネル完了後は自動的に停止し、再生ボタンが再度押せる
       expect(screen.getByRole('button', { name: /再生/ })).toBeEnabled();
-      expect(screen.getByRole('button', { name: /一時停止/ })).toBeDisabled();
+      expect(screen.queryByRole('button', { name: /一時停止/ })).not.toBeInTheDocument();
     } finally {
       vi.useRealTimers();
     }

@@ -102,20 +102,10 @@ const ControlBar: React.FC<Props> = ({
           <Button
             px="sm"
             autoContrast
-            onClick={onStart}
-            disabled={playing}
-            leftSection={<span aria-hidden="true">▶</span>}
+            onClick={playing ? onPause : onStart}
+            leftSection={<span aria-hidden="true">{playing ? 'Ⅱ' : '▶'}</span>}
           >
-            {t('play')}
-          </Button>
-          <Button
-            px="sm"
-            variant="default"
-            onClick={onPause}
-            disabled={!playing}
-            leftSection={<span aria-hidden="true">Ⅱ</span>}
-          >
-            {t('pause')}
+            {t(playing ? 'pause' : 'play')}
           </Button>
           <Button px="sm" variant="default" onClick={onShuffle}>
             {t('shuffle')}
