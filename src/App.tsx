@@ -5,6 +5,7 @@ import {
   genArray,
   buildBubbleSteps,
   buildSelectionSteps,
+  buildMergeSteps,
   buildQuickSteps,
   computeInterval,
   SWAP_TRANS_MS,
@@ -21,15 +22,17 @@ import ControlBar from '@/components/ControlBar';
 import SortSection, { BoardState } from '@/components/SortSection';
 import { BubbleLegend } from '@/components/algorithms/Bubble';
 import { SelectionLegend } from '@/components/algorithms/Selection';
+import { MergeLegend, MergeOverlay } from '@/components/algorithms/Merge';
 import { QuickLegend, QuickOverlay } from '@/components/algorithms/Quick';
 
-type Kind = 'bubble' | 'selection' | 'quick';
+type Kind = 'bubble' | 'selection' | 'merge' | 'quick';
 
 function makeBoard(kind: Kind, base: number[]): BoardState {
   const n = base.length;
   return {
     kind,
     data: base.slice(),
+    maxValue: Math.max(...base, 1),
     ids: Array.from({ length: n }, (_, i) => i + 1),
     steps: [],
     stepIndex: 0,
@@ -42,18 +45,25 @@ function makeBoard(kind: Kind, base: number[]): BoardState {
     range: null,
     boundaryIndex: null,
     boundaryVisible: false,
+    mergeProgress: null,
   };
 }
 
 /**
  * ステップ 1 件をボード状態へ適用する純粋関数。
- * compare / swap のハイライトは 1 ステップ限りなので、毎回いったんクリアしてから適用する
+ * 比較・交換・選択・書き込みのハイライトは 1 ステップ限りなので、毎回いったんクリアしてから適用する
  */
 function applyStep(b: BoardState, step: Step): BoardState {
   const next: BoardState = { ...b, compare: null, swapPair: null };
   switch (step.t) {
     case 'compare':
-      return { ...next, compare: [step.i, step.j] };
+      return {
+        ...next,
+        compare: [step.i, step.j],
+        mergeProgress: next.mergeProgress
+          ? { ...next.mergeProgress, selected: null }
+          : next.mergeProgress,
+      };
     case 'swap': {
       const data = next.data.slice();
       const ids = next.ids.slice();
@@ -68,10 +78,53 @@ function applyStep(b: BoardState, step: Step): BoardState {
       }
       return { ...next, data, ids, swapPair: [i, j], candL: null, candR: null, pivotIndex };
     }
+    case 'write': {
+      const data = next.data.slice();
+      const ids = next.ids.slice();
+      data[step.i] = step.value;
+      ids[step.i] = step.id;
+      return {
+        ...next,
+        data,
+        ids,
+        swapPair: [step.i, step.i],
+        mergeProgress: next.mergeProgress
+          ? { ...next.mergeProgress, selected: null, writing: true }
+          : null,
+      };
+    }
+    case 'mergeStart':
+      return {
+        ...next,
+        mergeProgress: {
+          left: step.left,
+          right: step.right,
+          leftCursor: 0,
+          rightCursor: 0,
+          output: [],
+          selected: null,
+          writing: false,
+        },
+      };
+    case 'mergeTake': {
+      if (!next.mergeProgress) return next;
+      const progress = next.mergeProgress;
+      return {
+        ...next,
+        swapPair: [step.source, step.source],
+        mergeProgress: {
+          ...progress,
+          leftCursor: progress.leftCursor + (step.side === 'left' ? 1 : 0),
+          rightCursor: progress.rightCursor + (step.side === 'right' ? 1 : 0),
+          output: [...progress.output, step.value],
+          selected: { side: step.side, value: step.value },
+        },
+      };
+    }
     case 'pivot':
       return { ...next, pivotIndex: step.i ?? null };
     case 'range':
-      if (next.kind !== 'quick') return next;
+      if (next.kind !== 'quick' && next.kind !== 'merge') return next;
       if (step.lo == null || step.hi == null) {
         return {
           ...next,
@@ -81,19 +134,20 @@ function applyStep(b: BoardState, step: Step): BoardState {
           pivotIndex: null,
           candL: null,
           candR: null,
+          mergeProgress: null,
         };
       }
       return {
         ...next,
         range: { lo: step.lo, hi: step.hi },
         boundaryIndex: step.lo,
-        boundaryVisible: true,
+        boundaryVisible: next.kind === 'quick',
         pivotIndex: null,
         candL: null,
         candR: null,
       };
     case 'boundary':
-      return next.kind === 'quick'
+      return next.kind === 'quick' || next.kind === 'merge'
         ? { ...next, boundaryIndex: step.k, boundaryVisible: step.show !== false }
         : next;
     // markL はクイックソートの「左候補」と選択ソートの「最小値候補」で共用する
@@ -122,11 +176,13 @@ const App: React.FC = () => {
   const [algorithmOrder, setAlgorithmOrder] = React.useState<Kind[]>([
     'bubble',
     'selection',
+    'merge',
     'quick',
   ]);
   const [visibleAlgorithms, setVisibleAlgorithms] = React.useState<Kind[]>([
     'bubble',
     'selection',
+    'merge',
     'quick',
   ]);
 
@@ -134,6 +190,7 @@ const App: React.FC = () => {
   const [base, setBase] = React.useState<number[]>(() => genArray(20));
   const [bubble, setBubble] = React.useState<BoardState>(() => makeBoard('bubble', base));
   const [selection, setSelection] = React.useState<BoardState>(() => makeBoard('selection', base));
+  const [merge, setMerge] = React.useState<BoardState>(() => makeBoard('merge', base));
   const [quick, setQuick] = React.useState<BoardState>(() => makeBoard('quick', base));
 
   // タイマー
@@ -149,6 +206,13 @@ const App: React.FC = () => {
         return { ...n, stepIndex: prev.stepIndex + 1, finished };
       });
       setSelection((prev) => {
+        if (prev.finished || prev.stepIndex >= prev.steps.length) return prev;
+        const step = prev.steps[prev.stepIndex];
+        const n = applyStep(prev, step);
+        const finished = prev.stepIndex + 1 >= prev.steps.length;
+        return { ...n, stepIndex: prev.stepIndex + 1, finished };
+      });
+      setMerge((prev) => {
         if (prev.finished || prev.stepIndex >= prev.steps.length) return prev;
         const step = prev.steps[prev.stepIndex];
         const n = applyStep(prev, step);
@@ -183,6 +247,14 @@ const App: React.FC = () => {
         browser_language: browserLanguage,
         translated_language: translatedLanguage,
       });
+    if (playing && merge.finished)
+      ReactGA.event('sort_finish', {
+        animation_speed: speed,
+        bar_size: size,
+        algorithm_type: 'merge_sort',
+        browser_language: browserLanguage,
+        translated_language: translatedLanguage,
+      });
     if (playing && quick.finished)
       ReactGA.event('sort_finish', {
         animation_speed: speed,
@@ -191,13 +263,15 @@ const App: React.FC = () => {
         browser_language: browserLanguage,
         translated_language: translatedLanguage,
       });
-    if (playing && bubble.finished && selection.finished && quick.finished) setPlaying(false);
-  }, [playing, bubble.finished, selection.finished, quick.finished]);
+    if (playing && bubble.finished && selection.finished && merge.finished && quick.finished)
+      setPlaying(false);
+  }, [playing, bubble.finished, selection.finished, merge.finished, quick.finished]);
 
   const resetFrom = (arr: number[]) => {
     setBase(arr);
     setBubble(makeBoard('bubble', arr));
     setSelection(makeBoard('selection', arr));
+    setMerge(makeBoard('merge', arr));
     setQuick(makeBoard('quick', arr));
     setPlaying(false);
   };
@@ -216,6 +290,7 @@ const App: React.FC = () => {
     setSelection((prev) =>
       prev.steps.length ? prev : { ...prev, steps: buildSelectionSteps(prev.data) },
     );
+    setMerge((prev) => (prev.steps.length ? prev : { ...prev, steps: buildMergeSteps(prev.data) }));
     setQuick((prev) => (prev.steps.length ? prev : { ...prev, steps: buildQuickSteps(prev.data) }));
     setPlaying(true);
   };
@@ -282,10 +357,11 @@ const App: React.FC = () => {
             .filter((kind) => visibleAlgorithms.includes(kind))
             .map((kind) => {
               // 表示設定だけを変え、各ボードの再生状態は親に保持する。
-              const board = { bubble, selection, quick }[kind];
+              const board = { bubble, selection, merge, quick }[kind];
               const Legend = {
                 bubble: BubbleLegend,
                 selection: SelectionLegend,
+                merge: MergeLegend,
                 quick: QuickLegend,
               }[kind];
               return (
@@ -295,7 +371,9 @@ const App: React.FC = () => {
                   stepsCount={board.steps.length}
                   board={board}
                   Legend={Legend}
-                  Overlay={kind === 'quick' ? QuickOverlay : undefined}
+                  Overlay={
+                    kind === 'quick' ? QuickOverlay : kind === 'merge' ? MergeOverlay : undefined
+                  }
                 />
               );
             })}

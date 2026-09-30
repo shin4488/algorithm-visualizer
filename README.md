@@ -2,13 +2,14 @@
 
 An interactive web application that visualizes and compares sorting algorithms side by side in real time.
 
-All algorithms sort the same shuffled dataset at the same playback speed, making it intuitive to observe differences in strategy, comparisons, and swap efficiency.
+All algorithms sort the same shuffled dataset at the same playback speed, making it intuitive to observe differences in strategy, comparisons, and data movement.
 
 ---
 
 ## Key Features
 
 - **Side-by-Side Comparison**: Run multiple sorting algorithms simultaneously against identical input arrays.
+- **Merge Sort Walkthrough**: See the remaining values on each side, the selected value, and the result as it is built. Bar labels show values rather than original positions.
 - **Display Selection & Order**: Toggle algorithms above the playback controls and drag their handles to reorder panels. Keyboard users can press Space, move with arrow keys, and press Space to drop or Escape to cancel. Hidden algorithms keep their playback state.
 - **Interactive Controls**: Play, pause, step forward, shuffle, and customize both array size (5–50 elements) and animation speed (0.2×–10×).
 - **Dual Language & Theming**: Full Japanese / English localization (auto-detected with manual override) and responsive layouts.
@@ -27,7 +28,7 @@ flowchart LR
     State -->|"Immutable Board State"| UI["React Components<br>(Bar Rendering & Overlays)"]
 ```
 
-1. **Step Generation**: Each algorithm implements a pure function that precomputes the entire sorting process into an array of immutable `Step` objects (e.g., compare, swap, mark sorted).
+1. **Step Generation**: Each algorithm implements a pure function that precomputes the entire sorting process into an array of immutable `Step` objects (e.g., compare, swap, write).
 2. **Playback**: The React app steps through the list per tick of the animation timer, applying updates to the state without re-running sorting logic.
 
 ---

@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
   buildBubbleSteps,
   buildSelectionSteps,
+  buildMergeSteps,
   buildQuickSteps,
   genArray,
   type Step,
@@ -93,6 +94,96 @@ describe('visualizer logic specification', () => {
     // 各パスは markL で始まり clearMarks で終わる
     expect(steps[0].t).toBe('markL');
     expect(steps[steps.length - 1].t).toBe('clearMarks');
+  });
+
+  it('merges in ascending stable order by taking from the smaller remaining head', () => {
+    const original = [4, 2, 4, 1, 2];
+    const values = original.slice();
+    const ids = original.map((_, index) => index + 1);
+    const steps = buildMergeSteps(original);
+    let activeRange: { lo: number; hi: number } | null = null;
+    let splitIndex: number | null = null;
+    let merge: {
+      left: number[];
+      right: number[];
+      leftIndex: number;
+      rightIndex: number;
+      output: number[];
+    } | null = null;
+    let writing = false;
+
+    steps.forEach((step, index) => {
+      switch (step.t) {
+        case 'range':
+          activeRange = step.lo == null || step.hi == null ? null : { lo: step.lo, hi: step.hi };
+          if (!activeRange) merge = null;
+          writing = false;
+          break;
+        case 'boundary':
+          expect(activeRange).not.toBeNull();
+          expect(step.k).toBeGreaterThan(activeRange!.lo);
+          expect(step.k).toBeLessThanOrEqual(activeRange!.hi);
+          splitIndex = step.k;
+          break;
+        case 'mergeStart':
+          expect(activeRange).not.toBeNull();
+          expect(step.left.length + step.right.length).toBe(activeRange!.hi - activeRange!.lo + 1);
+          merge = { left: step.left, right: step.right, leftIndex: 0, rightIndex: 0, output: [] };
+          break;
+        case 'compare':
+          expect(activeRange).not.toBeNull();
+          expect(merge).not.toBeNull();
+          expect(writing).toBe(false);
+          expect(step.i).toBe(activeRange!.lo + merge!.leftIndex);
+          expect(step.j).toBe(splitIndex! + merge!.rightIndex);
+          break;
+        case 'mergeTake': {
+          expect(merge).not.toBeNull();
+          expect(writing).toBe(false);
+          const left = merge!.left[merge!.leftIndex];
+          const right = merge!.right[merge!.rightIndex];
+          if (left != null && right != null) {
+            expect(steps[index - 1].t).toBe('compare');
+            expect(step.side).toBe(left <= right ? 'left' : 'right');
+          }
+          const expected = step.side === 'left' ? left : right;
+          expect(step.value).toBe(expected);
+          expect(step.source).toBe(
+            step.side === 'left'
+              ? activeRange!.lo + merge!.leftIndex
+              : splitIndex! + merge!.rightIndex,
+          );
+          merge!.output.push(step.value);
+          if (step.side === 'left') merge!.leftIndex++;
+          else merge!.rightIndex++;
+          break;
+        }
+        case 'write':
+          expect(activeRange).not.toBeNull();
+          expect(merge).not.toBeNull();
+          expect(merge!.output).toHaveLength(merge!.left.length + merge!.right.length);
+          expect(step.i).toBeGreaterThanOrEqual(activeRange!.lo);
+          expect(step.i).toBeLessThanOrEqual(activeRange!.hi);
+          expect(step.value).toBe(merge!.output[step.i - activeRange!.lo]);
+          expect(step.value).toBe(original[step.id - 1]);
+          values[step.i] = step.value;
+          ids[step.i] = step.id;
+          writing = true;
+          break;
+        default:
+          break;
+      }
+    });
+
+    expect(original).toEqual([4, 2, 4, 1, 2]);
+    expect(values).toEqual([1, 2, 2, 4, 4]);
+    expect(ids).toEqual([4, 2, 5, 1, 3]);
+    expect(activeRange).toBeNull();
+    expect(steps.some((step) => step.t === 'compare')).toBe(true);
+    expect(steps.some((step) => step.t === 'mergeTake')).toBe(true);
+    expect(steps.some((step) => step.t === 'write')).toBe(true);
+    expect(buildMergeSteps([])).toEqual([]);
+    expect(buildMergeSteps([1])).toEqual([]);
   });
 
   it('builds quick sort steps that respect the rightmost pivot and produce candidate markers', () => {

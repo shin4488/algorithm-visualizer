@@ -58,10 +58,10 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  top: -17px;
+  top: -19px;
   text-align: center;
   font:
-    10px ui-monospace,
+    12px ui-monospace,
     monospace;
   color: var(--mantine-color-text);
   pointer-events: none;
@@ -114,11 +114,11 @@
     gap: 3px;
   }
   .bar::after {
-    font-size: 8px;
+    font-size: 11px;
   }
 }
 
-/* ====== クイックソート: グループ境界オーバーレイ ====== */
+/* ====== クイックソートとマージソートで共有する区間オーバーレイ ====== */
 .partition-overlay {
   position: absolute;
   inset: 12px;

@@ -2,13 +2,24 @@ import React from 'react';
 import { Paper, Group, Text, Box, Title } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import type { Step } from '@/plugins/visualizer';
+import { MergeGuide } from '@/components/algorithms/Merge';
 
-export type Kind = 'bubble' | 'selection' | 'quick';
+export type Kind = 'bubble' | 'selection' | 'merge' | 'quick';
 export type Range = { lo: number; hi: number } | null;
+export type MergeProgress = {
+  left: number[];
+  right: number[];
+  leftCursor: number;
+  rightCursor: number;
+  output: number[];
+  selected: { side: 'left' | 'right'; value: number } | null;
+  writing: boolean;
+};
 
 export type BoardState = {
   kind: Kind;
   data: number[];
+  maxValue: number;
   ids: number[];
   steps: Step[];
   stepIndex: number;
@@ -21,6 +32,7 @@ export type BoardState = {
   range: Range;
   boundaryIndex: number | null;
   boundaryVisible: boolean;
+  mergeProgress: MergeProgress | null;
 };
 
 type Props = {
@@ -50,6 +62,7 @@ const SortSection: React.FC<Props> = ({ titleKey, stepsCount, board, Legend, Ove
       <Box style={{ overflowX: 'auto' }} pt="sm">
         <Bars board={board} ariaLabel={t(`bars_aria_${titleKey}`)} Overlay={Overlay} />
       </Box>
+      {board.kind === 'merge' && <MergeGuide board={board} />}
       <Legend />
     </Paper>
   );
@@ -61,7 +74,7 @@ const Bars: React.FC<{
   ariaLabel: string;
   Overlay?: React.ComponentType<{ board: BoardState }>;
 }> = ({ board, ariaLabel, Overlay }) => {
-  const max = Math.max(...board.data, 1);
+  const max = board.maxValue;
   const n = board.data.length;
 
   const isCompare = (idx: number) =>
@@ -74,7 +87,7 @@ const Bars: React.FC<{
 
   return (
     // 番号が重ならない最小幅を確保し、狭い画面では親要素内でスクロールする。
-    <div className="bars" style={{ minWidth: n * 12 + 24 }} aria-label={ariaLabel}>
+    <div className="bars" style={{ minWidth: n * 16 + 24 }} aria-label={ariaLabel}>
       {Overlay ? <Overlay board={board} /> : null}
 
       {Array.from({ length: n }, (_, i) => {
@@ -91,7 +104,7 @@ const Bars: React.FC<{
           .filter(Boolean)
           .join(' ');
         return (
-          <div key={i} className={classes} style={{ height: `${h}%` }} data-label={board.ids[i]} />
+          <div key={i} className={classes} style={{ height: `${h}%` }} data-label={board.data[i]} />
         );
       })}
     </div>

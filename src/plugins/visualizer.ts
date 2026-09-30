@@ -11,6 +11,23 @@ export interface StepSwap extends StepBase {
   i: number;
   j: number;
 }
+export interface StepWrite extends StepBase {
+  t: 'write';
+  i: number;
+  value: number;
+  id: number;
+}
+export interface StepMergeStart extends StepBase {
+  t: 'mergeStart';
+  left: number[];
+  right: number[];
+}
+export interface StepMergeTake extends StepBase {
+  t: 'mergeTake';
+  side: 'left' | 'right';
+  source: number;
+  value: number;
+}
 export interface StepPivot extends StepBase {
   t: 'pivot';
   i: number | null;
@@ -40,6 +57,9 @@ export interface StepClear extends StepBase {
 export type Step =
   | StepCompare
   | StepSwap
+  | StepWrite
+  | StepMergeStart
+  | StepMergeTake
   | StepPivot
   | StepRange
   | StepBoundary
@@ -119,6 +139,73 @@ export function buildSelectionSteps(arr: number[]): Step[] {
     }
     steps.push({ t: 'clearMarks' });
   }
+  return steps;
+}
+
+/**
+ * マージソートの再生ステップ列を生成する。
+ * 比較中に元の棒を上書きすると比較対象が画面から消えるため、選択結果を一時配列に積んでから書き込む。
+ */
+export function buildMergeSteps(arr: number[]): Step[] {
+  const a = arr.map((value, index) => ({ value, id: index + 1 }));
+  const steps: Step[] = [];
+
+  const sort = (lo: number, hi: number) => {
+    if (lo >= hi) return;
+    const mid = Math.floor((lo + hi) / 2);
+
+    steps.push({ t: 'range', lo, hi });
+    steps.push({ t: 'boundary', k: mid + 1, lo, hi });
+    sort(lo, mid);
+    sort(mid + 1, hi);
+
+    steps.push({ t: 'range', lo, hi });
+    steps.push({ t: 'boundary', k: mid + 1, lo, hi });
+    const left = a.slice(lo, mid + 1);
+    const right = a.slice(mid + 1, hi + 1);
+    const merged: typeof a = [];
+    let i = 0;
+    let j = 0;
+
+    steps.push({
+      t: 'mergeStart',
+      left: left.map((item) => item.value),
+      right: right.map((item) => item.value),
+    });
+
+    const takeLeft = () => {
+      const item = left[i];
+      merged.push(item);
+      steps.push({ t: 'mergeTake', side: 'left', source: lo + i, value: item.value });
+      i++;
+    };
+    const takeRight = () => {
+      const item = right[j];
+      merged.push(item);
+      steps.push({ t: 'mergeTake', side: 'right', source: mid + 1 + j, value: item.value });
+      j++;
+    };
+
+    while (i < left.length && j < right.length) {
+      steps.push({ t: 'compare', i: lo + i, j: mid + 1 + j });
+      if (left[i].value <= right[j].value) {
+        takeLeft();
+      } else {
+        takeRight();
+      }
+    }
+    while (i < left.length) takeLeft();
+    while (j < right.length) takeRight();
+
+    merged.forEach((item, offset) => {
+      const index = lo + offset;
+      a[index] = item;
+      steps.push({ t: 'write', i: index, value: item.value, id: item.id });
+    });
+    steps.push({ t: 'range', lo: null, hi: null });
+  };
+
+  sort(0, a.length - 1);
   return steps;
 }
 
