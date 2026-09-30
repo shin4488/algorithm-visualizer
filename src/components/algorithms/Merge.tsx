@@ -1,5 +1,5 @@
 import React from 'react';
-import { Group, Badge, Box, Code, Stack, Text } from '@mantine/core';
+import { Group, Badge, Box, Code, Stack, Text, ColorSwatch } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import type { BoardState } from '@/components/SortSection';
 
@@ -13,7 +13,7 @@ export const MergeLegend: React.FC = () => {
         tt="none"
         fw={500}
         px={0}
-        leftSection={<span className="legend-box legend-swap" />}
+        leftSection={<ColorSwatch color="var(--danger)" size={8} radius={2} withShadow={false} />}
       >
         {t('badge_merge_operations')}
       </Badge>
@@ -23,7 +23,7 @@ export const MergeLegend: React.FC = () => {
         tt="none"
         fw={500}
         px={0}
-        leftSection={<span className="legend-box legend-boundary" />}
+        leftSection={<ColorSwatch color="var(--cyan)" size={8} radius={2} withShadow={false} />}
       >
         {t('badge_merge_range')}
       </Badge>
@@ -33,7 +33,7 @@ export const MergeLegend: React.FC = () => {
         tt="none"
         fw={500}
         px={0}
-        leftSection={<span className="legend-box legend-sorted" />}
+        leftSection={<ColorSwatch color="var(--accent2)" size={8} radius={2} withShadow={false} />}
       >
         {t('badge_sorted')}
       </Badge>

@@ -84,30 +84,6 @@
 .bar.candR {
   box-shadow: 0 0 0 3px var(--markR);
 }
-.legend-box {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-}
-.legend-swap {
-  background: var(--danger);
-}
-.legend-pivot {
-  background: var(--pivot);
-}
-.legend-sorted {
-  background: var(--accent2);
-}
-.legend-boundary {
-  background: var(--cyan);
-}
-.legend-pivotline {
-  background: var(--pivotLine);
-}
-.legend-min {
-  background: var(--markL);
-}
 @media (max-width: 540px) {
   .bars {
     height: 180px;

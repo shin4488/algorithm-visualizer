@@ -1,5 +1,5 @@
 import React from 'react';
-import { Group, Badge } from '@mantine/core';
+import { Group, Badge, ColorSwatch } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import type { BoardState } from '@/components/SortSection';
 
@@ -13,7 +13,7 @@ export const QuickLegend: React.FC = () => {
         tt="none"
         fw={500}
         px={0}
-        leftSection={<span className="legend-box legend-swap" />}
+        leftSection={<ColorSwatch color="var(--danger)" size={8} radius={2} withShadow={false} />}
       >
         {t('badge_swap')}
       </Badge>
@@ -23,7 +23,7 @@ export const QuickLegend: React.FC = () => {
         tt="none"
         fw={500}
         px={0}
-        leftSection={<span className="legend-box" style={{ background: 'var(--markL)' }} />}
+        leftSection={<ColorSwatch color="var(--markL)" size={8} radius={2} withShadow={false} />}
       >
         {t('badge_left_candidate')}
       </Badge>
@@ -33,7 +33,7 @@ export const QuickLegend: React.FC = () => {
         tt="none"
         fw={500}
         px={0}
-        leftSection={<span className="legend-box" style={{ background: 'var(--markR)' }} />}
+        leftSection={<ColorSwatch color="var(--markR)" size={8} radius={2} withShadow={false} />}
       >
         {t('badge_right_candidate')}
       </Badge>
@@ -43,7 +43,7 @@ export const QuickLegend: React.FC = () => {
         tt="none"
         fw={500}
         px={0}
-        leftSection={<span className="legend-box legend-pivot" />}
+        leftSection={<ColorSwatch color="var(--pivot)" size={8} radius={2} withShadow={false} />}
       >
         {t('badge_pivot')}
       </Badge>
@@ -53,7 +53,7 @@ export const QuickLegend: React.FC = () => {
         tt="none"
         fw={500}
         px={0}
-        leftSection={<span className="legend-box legend-boundary" />}
+        leftSection={<ColorSwatch color="var(--cyan)" size={8} radius={2} withShadow={false} />}
       >
         {t('badge_boundary')}
       </Badge>
@@ -63,7 +63,9 @@ export const QuickLegend: React.FC = () => {
         tt="none"
         fw={500}
         px={0}
-        leftSection={<span className="legend-box legend-pivotline" />}
+        leftSection={
+          <ColorSwatch color="var(--pivotLine)" size={8} radius={2} withShadow={false} />
+        }
       >
         {t('badge_pivotline')}
       </Badge>
@@ -73,7 +75,7 @@ export const QuickLegend: React.FC = () => {
         tt="none"
         fw={500}
         px={0}
-        leftSection={<span className="legend-box legend-sorted" />}
+        leftSection={<ColorSwatch color="var(--accent2)" size={8} radius={2} withShadow={false} />}
       >
         {t('badge_sorted')}
       </Badge>
