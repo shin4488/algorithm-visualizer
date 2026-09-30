@@ -78,14 +78,6 @@ const AlgorithmSelector: React.FC<Props> = ({
             <Text size="sm" fw={500} id="algorithm-selector-label">
               {t('visible_algorithms')}
             </Text>
-            <Button
-              size="compact-sm"
-              variant="subtle"
-              disabled={order.every((kind) => visible.includes(kind))}
-              onClick={onSelectAll}
-            >
-              {t('select_all_algorithms')}
-            </Button>
             {order.map((kind) => (
               <AlgorithmChip
                 key={kind}
@@ -94,6 +86,15 @@ const AlgorithmSelector: React.FC<Props> = ({
                 onToggle={() => onToggle(kind)}
               />
             ))}
+            <Button
+              ml="auto"
+              size="compact-sm"
+              variant="subtle"
+              disabled={order.every((kind) => visible.includes(kind))}
+              onClick={onSelectAll}
+            >
+              {t('select_all_algorithms')}
+            </Button>
           </Group>
         </SortableContext>
       </DndContext>
