@@ -340,6 +340,7 @@ const App: React.FC = () => {
               current.includes(kind) ? current.filter((item) => item !== kind) : [...current, kind],
             )
           }
+          onSelectAll={() => setVisibleAlgorithms([...algorithmOrder])}
         />
         <ControlBar
           size={size}

@@ -42,6 +42,7 @@
   "light_mode": "ライトモードに切り替え",
   "dark_mode": "ダークモードに切り替え",
   "visible_algorithms": "表示するアルゴリズム:",
+  "select_all_algorithms": "全選択",
   "no_algorithms": "上の一覧から表示するアルゴリズムを選んでください。",
   "reorder_algorithm": "{{name}}の表示順を変更",
   "reorder_instructions": "スペースキーで並べ替えを開始し、矢印キーで移動、もう一度スペースキーで確定します。Escapeキーでキャンセルできます。",

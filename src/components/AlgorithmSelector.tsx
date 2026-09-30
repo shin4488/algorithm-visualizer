@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionIcon, Box, Chip, Group, Text } from '@mantine/core';
+import { ActionIcon, Box, Button, Chip, Group, Text } from '@mantine/core';
 import {
   closestCenter,
   DndContext,
@@ -24,9 +24,16 @@ type Props = {
   visible: Kind[];
   onOrderChange: (order: Kind[]) => void;
   onToggle: (kind: Kind) => void;
+  onSelectAll: () => void;
 };
 
-const AlgorithmSelector: React.FC<Props> = ({ order, visible, onOrderChange, onToggle }) => {
+const AlgorithmSelector: React.FC<Props> = ({
+  order,
+  visible,
+  onOrderChange,
+  onToggle,
+  onSelectAll,
+}) => {
   const { t } = useTranslation();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -79,6 +86,14 @@ const AlgorithmSelector: React.FC<Props> = ({ order, visible, onOrderChange, onT
                 onToggle={() => onToggle(kind)}
               />
             ))}
+            <Button
+              size="compact-sm"
+              variant="subtle"
+              disabled={order.every((kind) => visible.includes(kind))}
+              onClick={onSelectAll}
+            >
+              {t('select_all_algorithms')}
+            </Button>
           </Group>
         </SortableContext>
       </DndContext>

@@ -42,6 +42,7 @@
   "light_mode": "Switch to light mode",
   "dark_mode": "Switch to dark mode",
   "visible_algorithms": "Show algorithms:",
+  "select_all_algorithms": "Select all",
   "no_algorithms": "Choose an algorithm above to display it.",
   "reorder_algorithm": "Reorder {{name}}",
   "reorder_instructions": "Press Space to pick up an algorithm, use arrow keys to move, then press Space again to drop. Press Escape to cancel.",
