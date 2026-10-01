@@ -1,5 +1,5 @@
 import React from 'react';
-import { Group, Badge } from '@mantine/core';
+import { Group, Badge, ColorSwatch } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 
 export const SelectionLegend: React.FC = () => {
@@ -12,7 +12,7 @@ export const SelectionLegend: React.FC = () => {
         tt="none"
         fw={500}
         px={0}
-        leftSection={<span className="legend-box legend-swap" />}
+        leftSection={<ColorSwatch color="var(--danger)" size={8} radius={2} withShadow={false} />}
       >
         {t('badge_swap')}
       </Badge>
@@ -22,7 +22,7 @@ export const SelectionLegend: React.FC = () => {
         tt="none"
         fw={500}
         px={0}
-        leftSection={<span className="legend-box legend-min" />}
+        leftSection={<ColorSwatch color="var(--markL)" size={8} radius={2} withShadow={false} />}
       >
         {t('badge_min')}
       </Badge>
@@ -32,7 +32,7 @@ export const SelectionLegend: React.FC = () => {
         tt="none"
         fw={500}
         px={0}
-        leftSection={<span className="legend-box legend-sorted" />}
+        leftSection={<ColorSwatch color="var(--accent2)" size={8} radius={2} withShadow={false} />}
       >
         {t('badge_sorted')}
       </Badge>
