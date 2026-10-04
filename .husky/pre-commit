@@ -1,8 +1,16 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+# app サービスが起動中ならコンテナ内、それ以外はホストで lint-staged を実行する。
+# git worktree などで Git ディレクトリがプロジェクト外にあると、コンテナに
+# マウントされずリポジトリとして扱えないため、常にホストで実行する。
+project_dir=$(cd "$(git rev-parse --show-toplevel)" && pwd -P)
+git_common_dir=$(cd "$(git rev-parse --git-common-dir)" && pwd -P)
 
-# dev コンテナが起動中なら中で実行、ダメならホストで実行
-if command -v docker >/dev/null 2>&1 && docker compose ps >/dev/null 2>&1; then
+case "$git_common_dir" in
+  "$project_dir"/*) git_dir_mounted=true ;;
+  *) git_dir_mounted=false ;;
+esac
+
+if [ "$git_dir_mounted" = true ] && command -v docker >/dev/null 2>&1 &&
+  docker compose ps --status running --services 2>/dev/null | grep -qx app; then
   docker compose exec -T app yarn lint-staged
 else
   yarn lint-staged
