@@ -85,6 +85,18 @@ docker compose exec -T app bash -c 'yarn typecheck && yarn lint && yarn format &
 | `yarn format` / `yarn format:fix` | Checks / applies Prettier formatting |
 | `yarn test` | Runs Vitest unit and UI test suite |
 
+### Pre-commit Hook
+
+A Husky pre-commit hook runs `lint-staged` on staged files. It runs inside the `app` container when that service is running, and on the host otherwise.
+
+In a git worktree, the container mounts only the worktree, so the shared `.git` directory is not visible inside it. The hook therefore always runs on the host there, which requires host dependencies:
+
+```bash
+COREPACK_ENABLE_AUTO_PIN=0 yarn install --frozen-lockfile
+```
+
+For the same reason, Husky's `prepare` script prints a git error during the container's install in a worktree. The error is harmless and does not stop the install.
+
 ---
 
 ## Project Structure
