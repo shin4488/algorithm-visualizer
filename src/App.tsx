@@ -330,61 +330,59 @@ const App: React.FC = () => {
     <Container component="main" size={1200} px={{ base: 'md', sm: 36 }} pb="xl" style={rootStyle}>
       <HeaderBar />
 
-      <div className="workspace">
-        <AlgorithmSelector
-          order={algorithmOrder}
-          visible={visibleAlgorithms}
-          onOrderChange={setAlgorithmOrder}
-          onToggle={(kind) =>
-            setVisibleAlgorithms((current) =>
-              current.includes(kind) ? current.filter((item) => item !== kind) : [...current, kind],
-            )
-          }
-          onSelectAll={() => setVisibleAlgorithms([...algorithmOrder])}
-        />
-        <ControlBar
-          size={size}
-          speed={speed}
-          playing={playing}
-          onSizeChange={handleSizeInput}
-          onSpeedChange={handleSpeedInput}
-          onStart={handleStart}
-          onPause={handlePause}
-          onShuffle={handleShuffle}
-        />
+      <AlgorithmSelector
+        order={algorithmOrder}
+        visible={visibleAlgorithms}
+        onOrderChange={setAlgorithmOrder}
+        onToggle={(kind) =>
+          setVisibleAlgorithms((current) =>
+            current.includes(kind) ? current.filter((item) => item !== kind) : [...current, kind],
+          )
+        }
+        onSelectAll={() => setVisibleAlgorithms([...algorithmOrder])}
+      />
+      <ControlBar
+        size={size}
+        speed={speed}
+        playing={playing}
+        onSizeChange={handleSizeInput}
+        onSpeedChange={handleSpeedInput}
+        onStart={handleStart}
+        onPause={handlePause}
+        onShuffle={handleShuffle}
+      />
 
-        <Stack gap="md" mt="md">
-          {algorithmOrder
-            .filter((kind) => visibleAlgorithms.includes(kind))
-            .map((kind) => {
-              // 表示設定だけを変え、各ボードの再生状態は親に保持する。
-              const board = { bubble, selection, merge, quick }[kind];
-              const Legend = {
-                bubble: BubbleLegend,
-                selection: SelectionLegend,
-                merge: MergeLegend,
-                quick: QuickLegend,
-              }[kind];
-              return (
-                <SortSection
-                  key={kind}
-                  titleKey={kind}
-                  stepsCount={board.steps.length}
-                  board={board}
-                  Legend={Legend}
-                  Overlay={
-                    kind === 'quick' ? QuickOverlay : kind === 'merge' ? MergeOverlay : undefined
-                  }
-                />
-              );
-            })}
-          {visibleAlgorithms.length === 0 && (
-            <Text c="dimmed" size="sm" py="xl" ta="center">
-              {t('no_algorithms')}
-            </Text>
-          )}
-        </Stack>
-      </div>
+      <Stack gap="md" mt="md">
+        {algorithmOrder
+          .filter((kind) => visibleAlgorithms.includes(kind))
+          .map((kind) => {
+            // 表示設定だけを変え、各ボードの再生状態は親に保持する。
+            const board = { bubble, selection, merge, quick }[kind];
+            const Legend = {
+              bubble: BubbleLegend,
+              selection: SelectionLegend,
+              merge: MergeLegend,
+              quick: QuickLegend,
+            }[kind];
+            return (
+              <SortSection
+                key={kind}
+                titleKey={kind}
+                stepsCount={board.steps.length}
+                board={board}
+                Legend={Legend}
+                Overlay={
+                  kind === 'quick' ? QuickOverlay : kind === 'merge' ? MergeOverlay : undefined
+                }
+              />
+            );
+          })}
+        {visibleAlgorithms.length === 0 && (
+          <Text c="dimmed" size="sm" py="xl" ta="center">
+            {t('no_algorithms')}
+          </Text>
+        )}
+      </Stack>
     </Container>
   );
 };
