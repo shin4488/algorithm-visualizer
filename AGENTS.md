@@ -4,7 +4,7 @@ React/TypeScript sorting visualizations with Japanese and English UI. See [READM
 
 ## Golden rules
 
-- Build, check, and test inside Docker/devcontainer. Start with `docker compose up -d --build`; dependencies live in the container's anonymous volume.
+- Build, check, and test inside Docker/devcontainer. Start with `docker compose up -d --build`; dependencies live in the container's anonymous volume. If another checkout already holds host port 1234, set `DEV_PORT` as described in [Using Docker Compose](README.md#using-docker-compose).
 - Code and build/test configuration changes must pass without lint or format warnings. Fix causes; do not add suppression comments.
 
 ```bash
