@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "parcel src/ja/index.html src/en/index.html src/index.html --dist-dir public",
-    "build": "parcel build src/ja/index.html src/en/index.html src/index.html --dist-dir public",
+    "build": "parcel build src/ja/index.html src/en/index.html src/index.html --dist-dir public --public-url https://algorithm-visualizer-6w68.onrender.com/",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "eslint . --ext .ts,.tsx",
