@@ -119,10 +119,10 @@ const AlgorithmChip: React.FC<{ kind: Kind; checked: boolean; onToggle: () => vo
   return (
     <Box
       ref={setNodeRef}
+      pos="relative"
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        position: 'relative',
         zIndex: isDragging ? 1 : undefined,
       }}
     >
