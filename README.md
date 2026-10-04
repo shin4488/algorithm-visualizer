@@ -79,7 +79,7 @@ docker compose exec -T app bash -c 'yarn typecheck && yarn lint && yarn format &
 | Command | Description |
 |---|---|
 | `yarn dev` | Starts Parcel dev server |
-| `yarn build` | Builds production bundle into `public/` |
+| `yarn build` | Builds the production bundle into `public/`, with asset URLs pointing to the production site so Open Graph images are absolute |
 | `yarn typecheck` | Validates TypeScript types (`tsc --noEmit`) |
 | `yarn lint` / `yarn lint:fix` | Runs ESLint / applies auto-fixes |
 | `yarn format` / `yarn format:fix` | Checks / applies Prettier formatting |
