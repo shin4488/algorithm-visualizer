@@ -12,7 +12,7 @@ docker compose exec -T app bash -c 'yarn typecheck && yarn lint && yarn format &
 ```
 
 - Host dependencies are for editor type resolution only. If needed, install with `COREPACK_ENABLE_AUTO_PIN=0 yarn install --frozen-lockfile` to avoid adding `packageManager`. Undo an accidental addition caused by that install. Do not delete host `node_modules` while the container runs; recover a broken mount with `docker compose up -d --force-recreate`.
-- Comments explain intent in Japanese. For documentation/skill-only edits, check instructions and links; application checks are needed only if behavior is affected.
+- Write comments in Japanese. For documentation/skill-only edits, check instructions and links; application checks are needed only if behavior is affected.
 
 ## Where to work
 
@@ -29,3 +29,4 @@ docker compose exec -T app bash -c 'yarn typecheck && yarn lint && yarn format &
 - Preserve each document's language. Write natural Japanese for Japanese readers and idiomatic English for English-speaking readers.
 - Run applicable required checks and fix failures. Reuse results only while the diff, dependencies, configuration, and execution conditions are unchanged; report results and gaps briefly.
 - Keep durable rules and references here; do not duplicate progress, configuration values, or procedures from docs or skills.
+- Comments state only intent and assumptions the code cannot show. Leave out anything that goes stale as the code changes, such as history, volatile values, or locations of other documents.
