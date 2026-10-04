@@ -1,5 +1,5 @@
 # 開発用（マルチプラットフォーム対応の公式 Node イメージ）
-FROM node:20-bullseye
+FROM node:20-bookworm
 
 # Dev Containers / Cursor が期待するツールを入れておく
 RUN apt-get update \
