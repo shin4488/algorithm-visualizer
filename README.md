@@ -58,6 +58,14 @@ The application is served at:
 - **Japanese**: http://localhost:1234/ja/
 - **English**: http://localhost:1234/en/
 
+Each checkout, including each git worktree, runs as its own Compose project with its own container. They all publish host port 1234 by default, though, so only one dev server can use it at a time. To run another checkout's server alongside, pick a different host port with `DEV_PORT`:
+
+```bash
+DEV_PORT=1235 docker compose up -d --build
+```
+
+That server is then at http://localhost:1235/ja/ and http://localhost:1235/en/. Pass the same `DEV_PORT` whenever you run `docker compose up` again in that checkout; `docker compose exec` does not need it.
+
 ### Using Dev Containers
 
 If your editor supports VS Code Dev Containers:
