@@ -45,6 +45,8 @@ flowchart LR
 
 The project is configured to run inside Docker, so local Node.js installation is optional.
 
+The Node.js version is set in `.nvmrc`. CI and the production build on Render read it, and the Docker image uses the same major version. Update them together.
+
 ### Using Docker Compose
 
 ```bash
@@ -89,7 +91,7 @@ docker compose exec -T app bash -c 'yarn typecheck && yarn lint && yarn format &
 
 A Husky pre-commit hook runs `lint-staged` on staged files. It runs inside the `app` container when that service is running, and on the host otherwise.
 
-In a git worktree, the container mounts only the worktree, so the shared `.git` directory is not visible inside it. The hook therefore always runs on the host there, which requires host dependencies:
+In a git worktree, the container mounts only the worktree, so the shared `.git` directory is not visible inside it. The hook therefore always runs on the host there, which requires host dependencies. Install them with the Node.js version from `.nvmrc` (for example, after `nvm use`):
 
 ```bash
 COREPACK_ENABLE_AUTO_PIN=0 yarn install --frozen-lockfile
