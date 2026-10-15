@@ -39,6 +39,8 @@ flowchart LR
 - **UI & Styling**: Mantine UI, Vanilla CSS
 - **Bundler & Tooling**: Parcel, Vitest, Testing Library, ESLint, Prettier
 
+`yarn typecheck` runs TypeScript 7 (`tsc`, installed as `@typescript/native`). The `typescript` package is an alias of `@typescript/typescript6`, which provides the TypeScript 6 API that typescript-eslint needs, because TypeScript 7 does not ship an API yet. This follows [Running side-by-side with TypeScript 6.0](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-60).
+
 ---
 
 ## Development Setup
