@@ -6,10 +6,39 @@ updates:
       interval: weekly
     cooldown:
       default-days: 7
+    # マイナー・パッチ更新は 1 つの PR にまとめ、移行作業が要るメジャー更新はパッケージごとの PR に分ける
+    # 版を揃えて上げる必要があるパッケージは、メジャー更新も同じ PR にまとめる
     groups:
-      npm:
+      npm-minor-patch:
         patterns:
           - '*'
+        update-types:
+          - minor
+          - patch
+      react-major:
+        patterns:
+          - react
+          - react-dom
+          - '@types/react'
+          - '@types/react-dom'
+        update-types:
+          - major
+      mantine-major:
+        patterns:
+          - '@mantine/*'
+        update-types:
+          - major
+      i18next-major:
+        patterns:
+          - i18next
+          - react-i18next
+        update-types:
+          - major
+      testing-library-major:
+        patterns:
+          - '@testing-library/*'
+        update-types:
+          - major
 
   - package-ecosystem: github-actions
     directory: /
