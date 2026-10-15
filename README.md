@@ -35,7 +35,7 @@ flowchart LR
 
 ## Tech Stack
 
-- **Framework**: React 18, TypeScript
+- **Framework**: React 19, TypeScript
 - **UI & Styling**: Mantine UI, Vanilla CSS
 - **Bundler & Tooling**: Parcel, Vitest, Testing Library, ESLint, Prettier
 
