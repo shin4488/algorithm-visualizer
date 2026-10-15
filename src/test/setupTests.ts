@@ -15,22 +15,21 @@ if (typeof G.ResizeObserver === 'undefined') {
     unobserve() {}
     disconnect() {}
   }
-  G.ResizeObserver = ResizeObserverPolyfill as unknown as typeof ResizeObserver;
+  G.ResizeObserver = ResizeObserverPolyfill;
 }
 
 // ===== matchMedia polyfill (Mantine が参照する場合がある) =====
 if (typeof window !== 'undefined' && !window.matchMedia) {
-  window.matchMedia = (query: string) =>
-    ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addListener: () => {}, // 互換API
-      removeListener: () => {},
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      dispatchEvent: () => false,
-    }) as unknown as MediaQueryList;
+  window.matchMedia = (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {}, // 互換API
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  });
 }
 
 // ===== i18n: テストは日本語UIで固定 =====

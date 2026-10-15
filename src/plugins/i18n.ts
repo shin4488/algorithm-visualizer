@@ -20,8 +20,8 @@ function detectInitialLng(): 'en' | 'ja' {
 const initialLng = detectInitialLng();
 
 const resources: Resource = {
-  en: { translation: en as Record<string, string> },
-  ja: { translation: ja as Record<string, string> },
+  en: { translation: en },
+  ja: { translation: ja },
 };
 
 /**
