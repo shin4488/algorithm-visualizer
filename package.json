@@ -5,6 +5,9 @@
   "alias": {
     "@/*": "./src/$1"
   },
+  "@parcel/resolver-default": {
+    "packageExports": true
+  },
   "scripts": {
     "dev": "parcel src/ja/index.html src/en/index.html src/index.html --dist-dir public",
     "build": "parcel build src/ja/index.html src/en/index.html src/index.html --dist-dir public --public-url https://algorithm-visualizer-6w68.onrender.com/",
@@ -33,7 +36,7 @@
     "i18next": "^26.4.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "react-ga4": "^2.1.0",
+    "react-ga4": "^3.0.1",
     "react-i18next": "^17.0.16"
   },
   "devDependencies": {
