@@ -39,6 +39,11 @@ updates:
           - '@testing-library/*'
         update-types:
           - major
+    ignore:
+      # Node の型定義は .nvmrc の Node と同じメジャーバージョンに揃えて上げる
+      - dependency-name: '@types/node'
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /
