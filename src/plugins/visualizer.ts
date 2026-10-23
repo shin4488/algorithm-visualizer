@@ -114,9 +114,9 @@ export function buildBubbleSteps(arr: number[]): Step[] {
 
 /**
  * 選択ソートの再生ステップ列を生成する。
- * - markL: 現在の「最小値候補」を紫リングで示す（クイックソートの左候補マークを流用）
+ * - markL: 現在の「最小値候補」を示す（クイックソートの左候補マークを流用）
  * - compare: 未ソート領域の各要素と最小値候補の比較
- * - swap: 各パスの最後に 1 回だけ発生（選択ソートは交換回数が最大 n-1 回で済むのが特徴）
+ * - swap: 最小値候補がパスの先頭と異なるときだけ、パスの最後に 1 回積む（選択ソートは交換回数が最大 n-1 回で済むのが特徴）
  * - clearMarks: パス終了時に候補マークを消す
  */
 export function buildSelectionSteps(arr: number[]): Step[] {
@@ -159,6 +159,7 @@ export function buildMergeSteps(arr: number[]): Step[] {
     sort(lo, mid);
     sort(mid + 1, hi);
 
+    // 子区間の処理で表示する範囲が切り替わるため、マージの前にこの区間の範囲と分け目を表示し直す
     steps.push({ t: 'range', lo, hi });
     steps.push({ t: 'boundary', k: mid + 1, lo, hi });
     const left = a.slice(lo, mid + 1);
@@ -209,6 +210,11 @@ export function buildMergeSteps(arr: number[]): Step[] {
   return steps;
 }
 
+/**
+ * クイックソートの再生ステップ列を生成する。
+ * ピボットは区間の右端の要素とする。
+ * 左からピボットより大きい要素（markL）、右からピボットより小さい要素（markR）を探して入れ替え、左右の走査が交差したら左の走査が止まった位置へピボットを移す。
+ */
 export function buildQuickSteps(arr: number[]): Step[] {
   const a = arr.slice();
   const steps: Step[] = [];

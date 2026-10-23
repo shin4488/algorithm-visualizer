@@ -12,7 +12,6 @@ import {
   type Step,
 } from '@/plugins/visualizer';
 
-/* Mantine */
 import { Container, Stack, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 
@@ -31,6 +30,7 @@ function makeBoard(kind: Kind, base: number[]): BoardState {
   return {
     kind,
     data: base.slice(),
+    // マージソートの書き戻し中は値が一時的に重複し、最大値が配列から消えることがあるため、棒の高さの基準は初期配列の最大値にする
     maxValue: Math.max(...base, 1),
     steps: [],
     stepIndex: 0,
@@ -186,7 +186,6 @@ const App: React.FC = () => {
   const [merge, setMerge] = React.useState<BoardState>(() => makeBoard('merge', base));
   const [quick, setQuick] = React.useState<BoardState>(() => makeBoard('quick', base));
 
-  // タイマー
   React.useEffect(() => {
     if (!playing) return;
     const iv = computeInterval(speed);

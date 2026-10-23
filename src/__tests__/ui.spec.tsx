@@ -6,7 +6,6 @@ import userEvent from '@testing-library/user-event';
 import App from '@/App';
 import { computeInterval } from '@/plugins/visualizer';
 
-// MantineProvider でラップして描画
 const renderApp = () =>
   render(
     <MantineProvider defaultColorScheme="light">
@@ -14,17 +13,15 @@ const renderApp = () =>
     </MantineProvider>,
   );
 
-// 汎用ヘルパー：バー配列取得
 function getBars(container: HTMLElement) {
   return container.querySelectorAll<HTMLElement>('.bar');
 }
 
-// 汎用ヘルパー：ページ内のスライダー（Mantine/ARIA）
 function getAllSliders() {
   return screen.getAllByRole('slider');
 }
 
-describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () => {
+describe('Algorithm visualizer UI specification', () => {
   beforeEach(() => {
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -220,7 +217,6 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     // ラベルはテキストとして表示されていればよい
     expect(screen.getByText(/本数:\s*20/)).toBeInTheDocument();
 
-    // ステッパーボタンが存在
     expect(screen.getByRole('button', { name: '本数を1減らす' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '本数を1増やす' })).toBeInTheDocument();
   });
@@ -233,7 +229,7 @@ describe('Algorithm visualizer UI specification (Mantine-friendly, robust)', () 
     expect(speedSlider).toHaveAttribute('aria-valuemax', '10');
     expect(speedSlider).toHaveAttribute('aria-valuenow', '1');
 
-    // 速度の表示は 2 桁小数（x 付き）
+    // 速度は小数 2 桁で表示する
     expect(screen.getByText(/アニメ速度:\s*1\.00/)).toBeInTheDocument();
 
     // + ボタンで 0.05 進む

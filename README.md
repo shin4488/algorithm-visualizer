@@ -2,36 +2,29 @@
 
 An interactive web application that visualizes and compares sorting algorithms side by side in real time.
 
-All algorithms sort the same shuffled dataset at the same playback speed, making it intuitive to observe differences in strategy, comparisons, and data movement.
-
----
+All algorithms sort the same shuffled dataset at the same playback speed, so you can see how they differ in strategy, comparisons, and data movement.
 
 ## Key Features
 
-- **Side-by-Side Comparison**: Run multiple sorting algorithms simultaneously against identical input arrays.
-- **Merge Sort Walkthrough**: See the remaining values on each side, the selected value, and the result as it is built. Bar labels show values rather than original positions.
-- **Display Selection & Order**: Toggle algorithms above the playback controls and drag their handles to reorder panels. Keyboard users can press Space, move with arrow keys, and press Space to drop or Escape to cancel. Hidden algorithms keep their playback state.
-- **Interactive Controls**: Play, pause, step forward, shuffle, and customize both array size (5–50 elements) and animation speed (0.2×–10×).
-- **Dual Language & Theming**: Full Japanese / English localization (auto-detected with manual override) and responsive layouts.
-- **Extensible Architecture**: Pure step-generator functions completely decoupled from the React rendering layer.
-
----
+- Bubble sort, selection sort, merge sort, and quick sort each run in their own panel. Each bar is labeled with its value.
+- The merge sort panel shows the values remaining on each side, the value just moved to the result, and the result as it is built.
+- Choose which algorithms to show above the playback controls, and drag their handles to reorder the panels. Keyboard users can press Space, move with arrow keys, and press Space to drop or Escape to cancel. Hidden algorithms keep their playback state.
+- Play, pause, and shuffle, and set the number of bars (5–50) and the animation speed (0.2×–10×).
+- Japanese and English UI (chosen from the browser language, with a manual switch), light and dark modes, and a layout that adapts to the screen width.
 
 ## Architecture & How It Works
 
-Sorting execution and visual playback are completely separated:
+Sorting and playback are separated:
 
 ```mermaid
 flowchart LR
-    Input["Initial Shuffled Array"] --> Gen["Pure Step Generator<br>(buildSteps)"]
+    Input["Initial Shuffled Array"] --> Gen["Pure Step Generator<br>(build*Steps)"]
     Gen -->|"Array of Step objects<br>(compare, swap, pivot, etc.)"| State["Playback Engine<br>(App State & Timer)"]
     State -->|"Immutable Board State"| UI["React Components<br>(Bar Rendering & Overlays)"]
 ```
 
-1. **Step Generation**: Each algorithm implements a pure function that precomputes the entire sorting process into an array of immutable `Step` objects (e.g., compare, swap, write).
-2. **Playback**: The React app steps through the list per tick of the animation timer, applying updates to the state without re-running sorting logic.
-
----
+1. Each algorithm has a pure function in `src/plugins/visualizer.ts` that sorts a copy of the input and records the whole process as an array of `Step` objects (compare, swap, write, and so on).
+2. `src/App.tsx` applies one step to each board per tick of the animation timer, without re-running the sort.
 
 ## Tech Stack
 
@@ -41,11 +34,9 @@ flowchart LR
 
 `yarn typecheck` runs TypeScript 7 (`tsc`, installed as `@typescript/native`). The `typescript` package is an alias of `@typescript/typescript6`, which provides the TypeScript 6 API that typescript-eslint needs, because TypeScript 7 does not ship an API yet. This follows [Running side-by-side with TypeScript 6.0](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-60).
 
----
-
 ## Development Setup
 
-The project is configured to run inside Docker, so local Node.js installation is optional.
+The project is configured to run inside Docker. Node.js on the host is needed only when the pre-commit hook runs there (see [Pre-commit Hook](#pre-commit-hook)).
 
 The Node.js version is set in `.nvmrc`. CI and the production build on Render read it, and the Docker image uses the same major version. Update them together.
 
@@ -73,8 +64,6 @@ That server is then at http://localhost:1235/ja/ and http://localhost:1235/en/. 
 If your editor supports VS Code Dev Containers:
 1. Open this repository in your container-supported editor.
 2. Select **Reopen in Container**. Dependencies will be installed automatically.
-
----
 
 ## Quality Checks & Commands
 
@@ -109,14 +98,12 @@ COREPACK_ENABLE_AUTO_PIN=0 yarn install --frozen-lockfile
 
 For the same reason, Husky's `prepare` script prints a git error during the container's install in a worktree. The error is harmless and does not stop the install.
 
----
-
 ## Project Structure
 
 ```text
 src/
 ├── App.tsx                    # Main layout, playback loop, and board states
-├── plugins/                   # Step types and algorithm step generators
+├── plugins/                   # Step types and step generators (visualizer.ts), i18n setup (i18n.ts)
 ├── components/                # Shared UI controls, bars, and per-algorithm overlays
 │   ├── ControlBar.tsx
 │   ├── SortSection.tsx

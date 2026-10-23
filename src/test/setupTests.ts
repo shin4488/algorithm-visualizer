@@ -35,7 +35,7 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
 // ===== i18n: テストは日本語UIで固定 =====
 import i18n from '@/plugins/i18n';
 
-// 非同期を「無視」して初期化（eslint no-floating-promises 対策に void）
+// resources を直接渡しているため言語の切り替えは同期的に終わり、返る Promise は待たない
 void i18n.changeLanguage('ja');
 if (typeof document !== 'undefined') {
   document.documentElement.lang = 'ja';

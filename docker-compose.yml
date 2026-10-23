@@ -1,4 +1,3 @@
-# first up command: docker compose up --build
 services:
   app:
     build:
@@ -11,7 +10,7 @@ services:
       - -lc
       - |
         set -euo pipefail
-        # node_modules がない or 空なら初回インストール
+        # node_modules がないか空のときだけ依存をインストールする
         if [ ! -d node_modules ] || [ -z "$$(ls -A node_modules 2>/dev/null || true)" ]; then
           echo "[compose] installing deps..."
           yarn install --frozen-lockfile

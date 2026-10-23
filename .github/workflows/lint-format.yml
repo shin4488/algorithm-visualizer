@@ -22,7 +22,7 @@ jobs:
           node-version-file: .nvmrc
           cache: 'yarn'
 
-      - name: Enable Corepack (for modern Yarn)
+      - name: Enable Corepack
         run: corepack enable
 
       - name: Install dependencies
