@@ -266,7 +266,6 @@ export function buildQuickSteps(arr: number[]): Step[] {
       steps.push({ t: 'boundary', k: i, lo, hi, show: false });
     }
 
-    if (i > hi) i = hi;
     swap(i, hi);
     steps.push({ t: 'pivot', i });
     steps.push({ t: 'boundary', k: i, lo, hi, show: false });

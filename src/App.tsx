@@ -28,12 +28,10 @@ import { QuickLegend, QuickOverlay } from '@/components/algorithms/Quick';
 type Kind = 'bubble' | 'selection' | 'merge' | 'quick';
 
 function makeBoard(kind: Kind, base: number[]): BoardState {
-  const n = base.length;
   return {
     kind,
     data: base.slice(),
     maxValue: Math.max(...base, 1),
-    ids: Array.from({ length: n }, (_, i) => i + 1),
     steps: [],
     stepIndex: 0,
     finished: false,
@@ -66,27 +64,22 @@ function applyStep(b: BoardState, step: Step): BoardState {
       };
     case 'swap': {
       const data = next.data.slice();
-      const ids = next.ids.slice();
       const { i, j } = step;
       [data[i], data[j]] = [data[j], data[i]];
-      [ids[i], ids[j]] = [ids[j], ids[i]];
       // ピボット自体が入れ替え対象だった場合、ハイライト位置を移動先へ追従させる
       let pivotIndex = next.pivotIndex;
       if (pivotIndex != null) {
         if (pivotIndex === i) pivotIndex = j;
         else if (pivotIndex === j) pivotIndex = i;
       }
-      return { ...next, data, ids, swapPair: [i, j], candL: null, candR: null, pivotIndex };
+      return { ...next, data, swapPair: [i, j], candL: null, candR: null, pivotIndex };
     }
     case 'write': {
       const data = next.data.slice();
-      const ids = next.ids.slice();
       data[step.i] = step.value;
-      ids[step.i] = step.id;
       return {
         ...next,
         data,
-        ids,
         swapPair: [step.i, step.i],
         mergeProgress: next.mergeProgress
           ? { ...next.mergeProgress, selected: null, writing: true }

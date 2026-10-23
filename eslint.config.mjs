@@ -24,13 +24,10 @@ export default defineConfig(
   {
     rules: {
       'no-console': 'warn',
-      'no-extra-semi': 'warn',
       'dot-notation': 'warn',
       'prefer-const': 'error',
       'no-unreachable-loop': 'error',
       'no-var': 'error',
-      // if 1行も波括弧必須
-      curly: ['error', 'all'],
       // (obj?.foo)?.() を要求
       'no-unsafe-optional-chaining': 'error',
     },

@@ -20,7 +20,6 @@ export type BoardState = {
   kind: Kind;
   data: number[];
   maxValue: number;
-  ids: number[];
   steps: Step[];
   stepIndex: number;
   finished: boolean;
