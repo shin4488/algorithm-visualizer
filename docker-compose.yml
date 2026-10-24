@@ -19,9 +19,6 @@ services:
         exec yarn dev --host 0.0.0.0 --port 1234
     # NODE_ENV は設定せず、Parcel の既定（dev サーバーは development、build は production）に任せる
     # ここで固定すると exec で実行する yarn build にも効き、本番と異なる開発版の React が同梱される
-    # Docker Desktop などでファイル監視が不安定な場合は次の 2 行のコメントアウトを外す
-    # environment:
-    #   - PARCEL_WATCH_INTERVAL=100
     # 別の worktree の開発サーバーと同時に動かすときは DEV_PORT でホスト側のポートだけを変える
     ports:
       - ${DEV_PORT:-1234}:1234

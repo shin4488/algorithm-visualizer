@@ -29,7 +29,7 @@ const ControlBar: React.FC<Props> = ({
     <Paper withBorder p={{ base: 'md', sm: 'lg' }} radius="md">
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="xl">
         <Box>
-          <Text id="count-label" c="dimmed" size="xs" fw={600} mb="sm">
+          <Text c="dimmed" size="xs" fw={600} mb="sm">
             {t('count_label')} {size}
           </Text>
           <Group gap="xs" wrap="nowrap">
@@ -64,7 +64,7 @@ const ControlBar: React.FC<Props> = ({
           </Group>
         </Box>
         <Box>
-          <Text id="speed-label" c="dimmed" size="xs" fw={600} mb="sm">
+          <Text c="dimmed" size="xs" fw={600} mb="sm">
             {t('speed_label')} {speed.toFixed(2)}
           </Text>
           <Group gap="xs" wrap="nowrap">
