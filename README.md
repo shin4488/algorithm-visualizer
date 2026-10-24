@@ -40,6 +40,8 @@ The project is configured to run inside Docker. Node.js on the host is needed on
 
 The Node.js version is set in `.nvmrc`. CI and the production build on Render read it, and the Docker image uses the same major version. Update them together.
 
+Dependencies are managed with Yarn 1 (Classic). The Docker image ships Yarn 1, and in CI Corepack uses its default, Yarn 1, because `package.json` has no `packageManager` field. CI installs with `yarn install --frozen-lockfile`, which fails when `package.json` has a dependency or version range that `yarn.lock` does not include. After changing dependencies, update `yarn.lock` in the container (for example with `yarn add` or `yarn install`) and commit it together with `package.json`.
+
 ### Using Docker Compose
 
 ```bash

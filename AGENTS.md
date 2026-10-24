@@ -12,6 +12,7 @@ docker compose exec -T app bash -c 'yarn typecheck && yarn lint && yarn format &
 ```
 
 - Host dependencies are for editor type resolution and for the pre-commit hook when it runs on the host (see [Pre-commit Hook](README.md#pre-commit-hook)). If needed, install with `COREPACK_ENABLE_AUTO_PIN=0 yarn install --frozen-lockfile` to avoid adding `packageManager`. Undo an accidental addition caused by that install. Do not delete host `node_modules` while the container runs; recover a broken mount with `docker compose up -d --force-recreate`.
+- Dependencies are managed with Yarn 1. After changing `package.json`, update `yarn.lock` in the container and commit both; CI fails when `yarn.lock` does not cover `package.json` (see [Development Setup](README.md#development-setup)).
 - Write comments in Japanese. For documentation/skill-only edits, check instructions and links; application checks are needed only if behavior is affected.
 
 ## Where to work
