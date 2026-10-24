@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 
 // ===== ResizeObserver polyfill (Mantine の ScrollArea 等で必要) =====
-// 型安全に globalThis を拡張して代入（eslint の unsafe 系回避）
 type GlobalWithRO = typeof globalThis & {
   ResizeObserver?: typeof ResizeObserver;
 };
@@ -35,7 +34,7 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
 // ===== i18n: テストは日本語UIで固定 =====
 import i18n from '@/plugins/i18n';
 
-// resources を直接渡しているため言語の切り替えは同期的に終わり、返る Promise は待たない
+// i18n は resources を直接渡して初期化しているため、言語の切り替えは同期的に終わる。返る Promise は待たない
 void i18n.changeLanguage('ja');
 if (typeof document !== 'undefined') {
   document.documentElement.lang = 'ja';

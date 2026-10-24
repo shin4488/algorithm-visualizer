@@ -8,7 +8,7 @@ All algorithms sort the same shuffled dataset at the same playback speed, so you
 
 - Bubble sort, selection sort, merge sort, and quick sort each run in their own panel. Each bar is labeled with its value.
 - The merge sort panel shows the values remaining on each side, the value just moved to the result, and the result as it is built.
-- Choose which algorithms to show above the playback controls, and drag their handles to reorder the panels. Keyboard users can press Space, move with arrow keys, and press Space to drop or Escape to cancel. Hidden algorithms keep their playback state.
+- Use the chips above the playback controls to choose which algorithms to show, and drag the handle beside each chip to reorder the panels. Keyboard users can press Space, move with arrow keys, and press Space to drop or Escape to cancel. Hidden algorithms keep their playback state.
 - Play, pause, and shuffle, and set the number of bars (5–50) and the animation speed (0.2×–10×).
 - Japanese and English UI (chosen from the browser language, with a manual switch), light and dark modes, and a layout that adapts to the screen width.
 
@@ -36,7 +36,7 @@ flowchart LR
 
 ## Development Setup
 
-The project is configured to run inside Docker. Node.js on the host is needed only when the pre-commit hook runs there (see [Pre-commit Hook](#pre-commit-hook)).
+The project is configured to run inside Docker. Node.js on the host is needed only for the pre-commit hook when it runs there (see [Pre-commit Hook](#pre-commit-hook)), and optionally for type resolution in an editor running on the host.
 
 The Node.js version is set in `.nvmrc`. CI and the production build on Render read it, and the Docker image uses the same major version. Update them together.
 

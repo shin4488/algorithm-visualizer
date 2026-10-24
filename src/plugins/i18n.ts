@@ -32,7 +32,6 @@ void i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
-// <html lang> 同期
 document.documentElement.lang = initialLng;
 i18n.on('languageChanged', (lng) => {
   document.documentElement.lang = lng;

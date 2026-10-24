@@ -28,7 +28,7 @@ export default defineConfig(
       'prefer-const': 'error',
       'no-unreachable-loop': 'error',
       'no-var': 'error',
-      // undefined になり得る (obj?.foo)() のような使い方を禁止する
+      // obj?.foo が undefined のときに TypeError になる (obj?.foo)() のような書き方を禁止する
       'no-unsafe-optional-chaining': 'error',
     },
   },
