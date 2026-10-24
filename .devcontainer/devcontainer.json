@@ -4,7 +4,6 @@
   "service": "app",
   "workspaceFolder": "/app",
   "overrideCommand": false,
-  "postCreateCommand": "",
   "forwardPorts": [1234],
   "customizations": {
     "vscode": {

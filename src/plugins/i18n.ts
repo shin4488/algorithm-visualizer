@@ -11,9 +11,8 @@ function detectInitialLng(): 'en' | 'ja' {
   ).toLowerCase();
   if (language === 'ja' || language === 'en') return language;
 
-  // ブラウザ言語をみて言語設定する
+  // URL に言語がなければブラウザの言語に合わせ、日本語以外は英語にする
   const nav = (navigator.language || '').toLowerCase();
-  // default: english
   return nav.startsWith('ja') ? 'ja' : 'en';
 }
 
@@ -24,10 +23,7 @@ const resources: Resource = {
   ja: { translation: ja },
 };
 
-/**
- * resources を同期ロードしているため UI ブロックは起きませんが、
- * i18n.init は Promise を返すので no-floating-promises 対策で void を付与
- */
+// resources を直接渡すと init は同期的に終わるため、返る Promise は待たない
 void i18n.use(initReactI18next).init({
   resources,
   lng: initialLng,
@@ -36,7 +32,6 @@ void i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
-// <html lang> 同期
 document.documentElement.lang = initialLng;
 i18n.on('languageChanged', (lng) => {
   document.documentElement.lang = lng;

@@ -9,7 +9,7 @@ const LanguageSwitcher: React.FC = () => {
 
   const onChange = (value: string | null) => {
     if (value !== 'ja' && value !== 'en') return;
-    // Promise を無視して良いので void を付与（no-floating-promises 回避）
+    // i18n は resources を直接渡して初期化しているため、言語の切り替えは同期的に終わる。返る Promise は待たない
     void i18n.changeLanguage(value);
 
     // URL も言語ごとのエントリへ移動（クエリ/ハッシュは温存）

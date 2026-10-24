@@ -20,7 +20,6 @@ export type BoardState = {
   kind: Kind;
   data: number[];
   maxValue: number;
-  ids: number[];
   steps: Step[];
   stepIndex: number;
   finished: boolean;
@@ -36,13 +35,10 @@ export type BoardState = {
 };
 
 type Props = {
-  // i18n キー
   titleKey: Kind;
   stepsCount: number;
   board: BoardState;
-  // アルゴリズム固有の凡例（必須）
   Legend: React.ComponentType;
-  // アルゴリズム固有のオーバレイ（任意）
   Overlay?: React.ComponentType<{ board: BoardState }>;
 };
 
@@ -68,7 +64,6 @@ const SortSection: React.FC<Props> = ({ titleKey, stepsCount, board, Legend, Ove
   );
 };
 
-/* ============= 内部：Bars（共通） ============= */
 const Bars: React.FC<{
   board: BoardState;
   ariaLabel: string;

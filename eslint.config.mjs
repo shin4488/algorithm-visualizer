@@ -6,7 +6,7 @@ import globals from 'globals';
 export default defineConfig(
   { ignores: ['node_modules', 'public', 'coverage', '.parcel-cache'] },
 
-  // まず TSParser に tsconfig を認識させる
+  // 型情報を使うルールのため、typescript-eslint のパーサーに tsconfig を渡す
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
@@ -14,7 +14,7 @@ export default defineConfig(
       sourceType: 'module',
       globals: { ...globals.node, ...globals.es2021 },
       parserOptions: {
-        // 単一プロジェクト想定。複数なら配列で列挙
+        // tsconfig.json は src だけを含むため、設定ファイルも含む ESLint 用の tsconfig を使う
         project: ['./tsconfig.eslint.json'],
         tsconfigRootDir: import.meta.dirname,
       },
@@ -24,14 +24,11 @@ export default defineConfig(
   {
     rules: {
       'no-console': 'warn',
-      'no-extra-semi': 'warn',
       'dot-notation': 'warn',
       'prefer-const': 'error',
       'no-unreachable-loop': 'error',
       'no-var': 'error',
-      // if 1行も波括弧必須
-      curly: ['error', 'all'],
-      // (obj?.foo)?.() を要求
+      // obj?.foo が undefined のときに TypeError になる (obj?.foo)() のような書き方を禁止する
       'no-unsafe-optional-chaining': 'error',
     },
   },
@@ -42,6 +39,6 @@ export default defineConfig(
     files: ['**/*.ts', '**/*.tsx'],
   })),
 
-  // Prettier 競合OFF
+  // Prettier と重なる整形のルールを無効にするため、最後に置く
   eslintConfigPrettier,
 );
