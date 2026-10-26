@@ -13,18 +13,67 @@ const renderApp = () =>
     </MantineProvider>,
   );
 
+const ALGORITHM_NAMES = ['バブルソート', '選択ソート', 'マージソート', 'クイックソート'];
+const BAR_REGION_LABELS = [
+  'バブルソートのバー表示',
+  '選択ソートのバー表示',
+  'マージソートのバー表示',
+  'クイックソートのバー表示',
+];
+
 function getBars(container: HTMLElement) {
   return container.querySelectorAll<HTMLElement>('.bar');
 }
 
-function getAllSliders() {
-  return screen.getAllByRole('slider');
+/** 棒に表示している数字を左から順に返す */
+function barLabels(container: HTMLElement) {
+  return Array.from(getBars(container), (bar) => Number(bar.dataset.label));
+}
+
+/** 選択チップのアルゴリズム名を、画面上の並び順で返す */
+function chipOrder() {
+  const checkboxes = screen.getAllByRole('checkbox');
+  const position = (name: string) => checkboxes.indexOf(screen.getByRole('checkbox', { name }));
+  return [...ALGORITHM_NAMES].sort((a, b) => position(a) - position(b));
+}
+
+/** 要素がないときも表示していないとみなす */
+function isDisplayed(container: HTMLElement, selector: string) {
+  return Array.from(container.querySelectorAll<HTMLElement>(selector)).some(
+    (element) => getComputedStyle(element).display !== 'none',
+  );
+}
+
+/** 棒の並びが条件を満たすまでシャッフルを繰り返す */
+function shuffleUntil(condition: (labels: number[]) => boolean, maxShuffles = 5000) {
+  const region = screen.getByLabelText('バブルソートのバー表示');
+  const shuffle = screen.getByRole('button', { name: 'シャッフル' });
+  for (let count = 0; count < maxShuffles && !condition(barLabels(region)); count++) {
+    fireEvent.click(shuffle);
+  }
+  expect(condition(barLabels(region))).toBe(true);
+}
+
+/** フェイクタイマーで速度 1.00 の再生を 1 ステップずつ進め、条件を満たしたところで止める */
+function playUntil(condition: () => boolean, maxSteps = 200) {
+  for (let step = 0; step < maxSteps && !condition(); step++) {
+    act(() => {
+      vi.advanceTimersByTime(computeInterval(1));
+    });
+  }
+  expect(condition()).toBe(true);
 }
 
 describe('Algorithm visualizer UI specification', () => {
   beforeEach(() => {
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // 初期配列とシャッフルに使う乱数を固定し、毎回同じ並びで再現できるようにする（Park–Miller の線形合同法）
+    let seed = 1;
+    vi.spyOn(Math, 'random').mockImplementation(() => {
+      seed = (seed * 16807) % 2147483647;
+      return seed / 2147483647;
+    });
   });
 
   afterEach(() => {
@@ -34,8 +83,7 @@ describe('Algorithm visualizer UI specification', () => {
   it('toggles panels from the selector and can recover from hiding every algorithm', async () => {
     renderApp();
     const user = userEvent.setup();
-    const names = ['バブルソート', '選択ソート', 'マージソート', 'クイックソート'];
-    for (const name of names) {
+    for (const name of ALGORITHM_NAMES) {
       expect(screen.getByRole('checkbox', { name })).toBeChecked();
       await user.click(screen.getByRole('checkbox', { name }));
       expect(screen.queryByRole('region', { name })).not.toBeInTheDocument();
@@ -59,7 +107,7 @@ describe('Algorithm visualizer UI specification', () => {
     const initialBars = screen.getByLabelText('バブルソートのバー表示').innerHTML;
     expect(selectAll).toBeDisabled();
 
-    await user.click(screen.getAllByRole('checkbox')[0]);
+    await user.click(screen.getByRole('checkbox', { name: 'バブルソート' }));
     expect(selectAll).toBeEnabled();
     await user.click(selectAll);
     expect(screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent)).toEqual(
@@ -116,9 +164,7 @@ describe('Algorithm visualizer UI specification', () => {
       await user.click(screen.getByRole('checkbox', { name: '選択ソート' }));
       screen.getByRole('button', { name: 'バブルソートの表示順を変更' }).focus();
       await user.keyboard(' {ArrowRight} ');
-      expect(
-        screen.getAllByRole('checkbox').map((el) => el.nextElementSibling?.textContent),
-      ).toEqual(['選択ソート', 'バブルソート', 'マージソート', 'クイックソート']);
+      expect(chipOrder()).toEqual(['選択ソート', 'バブルソート', 'マージソート', 'クイックソート']);
       expect(screen.getByRole('checkbox', { name: '選択ソート' })).not.toBeChecked();
       await user.click(screen.getByRole('checkbox', { name: '選択ソート' }));
       expect(screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent)).toEqual([
@@ -207,7 +253,7 @@ describe('Algorithm visualizer UI specification', () => {
 
   it('renders the size control slider with sane defaults and range (ARIA)', () => {
     renderApp();
-    const [sizeSlider] = getAllSliders();
+    const sizeSlider = screen.getByRole('slider', { name: '本数:' });
 
     // Mantine のスライダーは ARIA 属性で検証する
     expect(sizeSlider).toHaveAttribute('aria-valuemin', '5');
@@ -223,7 +269,7 @@ describe('Algorithm visualizer UI specification', () => {
 
   it('renders the speed control and keeps two-decimal display', async () => {
     renderApp();
-    const [, speedSlider] = getAllSliders();
+    const speedSlider = screen.getByRole('slider', { name: 'アニメ速度:' });
 
     expect(speedSlider).toHaveAttribute('aria-valuemin', '0.2');
     expect(speedSlider).toHaveAttribute('aria-valuemax', '10');
@@ -279,27 +325,36 @@ describe('Algorithm visualizer UI specification', () => {
     });
   });
 
-  it('shows every panel and its legend and step counter', () => {
+  it.each([
+    { name: 'バブルソート', texts: ['入れ替え/比較', 'ソート完了'] },
+    { name: '選択ソート', texts: ['入れ替え/比較', '最小値候補', 'ソート完了'] },
+    {
+      name: 'マージソート',
+      texts: [
+        '比べて並べる',
+        '範囲と分け目',
+        'ソート完了',
+        '1個ずつに分けて、小さい順にまとめます。',
+      ],
+    },
+    {
+      name: 'クイックソート',
+      texts: [
+        '入れ替え/比較',
+        '左の交換候補（枠）',
+        '右の交換候補（枠）',
+        'ピボット',
+        '境界（グループ分け）',
+        'ピボット高（横線）',
+        'ソート完了',
+      ],
+    },
+  ])('shows the $name panel with a zero step counter and its legend', ({ name, texts }) => {
     renderApp();
+    const panel = within(screen.getByRole('region', { name }));
 
-    // 各パネルに開始前のステップ数が表示される
-    const stepZeros = screen.getAllByText(/ステップ:\s*0/);
-    expect(stepZeros).toHaveLength(4);
-
-    // 凡例テキストが表示されている（パネルに強く依存しない）
-    expect(screen.getAllByText('入れ替え/比較').length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/ソート完了/).length).toBeGreaterThan(0);
-    expect(screen.getByText('ピボット')).toBeInTheDocument();
-    expect(screen.getByText(/境界（グループ分け）/)).toBeInTheDocument();
-    expect(screen.getByText(/ピボット高（横線）/)).toBeInTheDocument();
-    expect(screen.getByText('最小値候補')).toBeInTheDocument();
-    const mergeLegend = within(screen.getByRole('region', { name: 'マージソート' }));
-    expect(mergeLegend.getByText('比べて並べる')).toBeInTheDocument();
-    expect(mergeLegend.getByText('範囲と分け目')).toBeInTheDocument();
-    expect(mergeLegend.getByText('1個ずつに分けて、小さい順にまとめます。')).toBeInTheDocument();
-    const quickLegend = within(screen.getByRole('region', { name: 'クイックソート' }));
-    expect(quickLegend.getByText('左の交換候補（枠）')).toBeInTheDocument();
-    expect(quickLegend.getByText('右の交換候補（枠）')).toBeInTheDocument();
+    expect(panel.getByText('ステップ: 0')).toBeInTheDocument();
+    for (const text of texts) expect(panel.getByText(text)).toBeInTheDocument();
   });
 
   it('increments the bar count immediately when using the size stepper controls', async () => {
@@ -308,7 +363,7 @@ describe('Algorithm visualizer UI specification', () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: '本数を1増やす' }));
 
-    const [sizeSlider] = getAllSliders();
+    const sizeSlider = screen.getByRole('slider', { name: '本数:' });
     await waitFor(() => {
       expect(sizeSlider).toHaveAttribute('aria-valuenow', '21');
     });
@@ -337,7 +392,7 @@ describe('Algorithm visualizer UI specification', () => {
     renderApp();
 
     const user = userEvent.setup();
-    const [sizeSlider] = getAllSliders();
+    const sizeSlider = screen.getByRole('slider', { name: '本数:' });
 
     // Mantine のスライダーはキーボードで値変更できる（step=1）
     sizeSlider.focus();
@@ -360,7 +415,7 @@ describe('Algorithm visualizer UI specification', () => {
     renderApp();
 
     const user = userEvent.setup();
-    const [, speedSlider] = getAllSliders();
+    const speedSlider = screen.getByRole('slider', { name: 'アニメ速度:' });
 
     speedSlider.focus();
     // 1.00 -> 1.25（5回 +0.05）
@@ -369,43 +424,30 @@ describe('Algorithm visualizer UI specification', () => {
     expect(screen.getByText(/アニメ速度:\s*1\.25/)).toBeInTheDocument();
   });
 
-  it('shuffles with the current bar count and keeps every panel synchronized', async () => {
+  it('shuffles into a new arrangement of the current bar count shared by every panel', async () => {
     renderApp();
-
     const user = userEvent.setup();
-    const randomSpy = vi.spyOn(Math, 'random');
+    await user.click(screen.getByRole('button', { name: '本数を1増やす' }));
+    const before = barLabels(screen.getByLabelText('バブルソートのバー表示'));
 
     await user.click(screen.getByRole('button', { name: 'シャッフル' }));
-    expect(randomSpy.mock.calls.length).toBeGreaterThan(0);
 
-    const bubbleRegion = screen.getByLabelText('バブルソートのバー表示');
-    const selectionRegion = screen.getByLabelText('選択ソートのバー表示');
-    const mergeRegion = screen.getByLabelText('マージソートのバー表示');
-    const quickRegion = screen.getByLabelText('クイックソートのバー表示');
-
-    const bubbleHeights = Array.from(getBars(bubbleRegion), (bar) => bar.style.height);
-    const selectionHeights = Array.from(getBars(selectionRegion), (bar) => bar.style.height);
-    const mergeHeights = Array.from(getBars(mergeRegion), (bar) => bar.style.height);
-    const quickHeights = Array.from(getBars(quickRegion), (bar) => bar.style.height);
-    expect(bubbleHeights).toEqual(quickHeights);
-    expect(selectionHeights).toEqual(quickHeights);
-    expect(mergeHeights).toEqual(quickHeights);
+    const after = barLabels(screen.getByLabelText('バブルソートのバー表示'));
+    expect(after).not.toEqual(before);
+    // 現在の本数 21 のまま、1〜21 を 1 回ずつ並べ直す
+    expect([...after].sort((a, b) => a - b)).toEqual(Array.from({ length: 21 }, (_, i) => i + 1));
+    for (const label of BAR_REGION_LABELS) {
+      expect(barLabels(screen.getByLabelText(label))).toEqual(after);
+    }
   });
 
   it('hides quick-sort overlay elements until a processing range exists', () => {
     renderApp();
 
     const quickRegion = screen.getByLabelText('クイックソートのバー表示');
-    const boundary = quickRegion.querySelector<HTMLElement>('.boundary');
-    const subrange = quickRegion.querySelector<HTMLElement>('.subrange');
-    const pivotLine = quickRegion.querySelector<HTMLElement>('.pivot-hline');
-    const zones = quickRegion.querySelectorAll<HTMLElement>('.zone');
-
-    expect(boundary?.style.display).toBe('none');
-    expect(subrange?.style.display).toBe('none');
-    expect(pivotLine?.style.display).toBe('none');
-    expect(zones[0]?.style.display).toBe('none');
-    expect(zones[1]?.style.display).toBe('none');
+    for (const selector of ['.boundary', '.subrange', '.pivot-hline', '.zone']) {
+      expect(isDisplayed(quickRegion, selector)).toBe(false);
+    }
   });
 
   it('shows the merge range and split line during playback', () => {
@@ -413,86 +455,69 @@ describe('Algorithm visualizer UI specification', () => {
     try {
       renderApp();
       const region = screen.getByLabelText('マージソートのバー表示');
-      const range = region.querySelector<HTMLElement>('.subrange');
-      const split = region.querySelector<HTMLElement>('.boundary');
-      expect(range?.style.display).toBe('none');
-      expect(split?.style.display).toBe('none');
+      expect(isDisplayed(region, '.subrange')).toBe(false);
+      expect(isDisplayed(region, '.boundary')).toBe(false);
 
       fireEvent.click(screen.getByRole('button', { name: /再生/ }));
       act(() => {
         vi.advanceTimersByTime(2000);
       });
-      expect(range?.style.display).toBe('block');
-      expect(split?.style.display).toBe('block');
+      expect(isDisplayed(region, '.subrange')).toBe(true);
+      expect(isDisplayed(region, '.boundary')).toBe(true);
     } finally {
       vi.useRealTimers();
     }
   });
 
   it('shows which side contributes each value to the merge result before writing it back', () => {
-    const random = vi.spyOn(Math, 'random').mockReturnValue(0.999);
     vi.useFakeTimers();
     try {
       renderApp();
       for (let i = 0; i < 15; i++) {
         fireEvent.click(screen.getByRole('button', { name: '本数を1減らす' }));
       }
-      const merge = within(screen.getByRole('region', { name: 'マージソート' }));
+      // 5 本を昇順に並べ、最初のマージで左の 1 と右の 2 を比べる場面を作る
+      shuffleUntil((labels) => labels.join() === '1,2,3,4,5');
+      const region = screen.getByRole('region', { name: 'マージソート' });
+      const merge = within(region);
       fireEvent.click(screen.getByRole('button', { name: '再生' }));
-      const interval = computeInterval(1);
 
-      act(() => {
-        vi.advanceTimersByTime(interval * 9);
-      });
-      expect(merge.getByText('左の残り:').parentElement).toHaveTextContent('[1]');
-      expect(merge.getByText('右の残り:').parentElement).toHaveTextContent('[2]');
-      expect(merge.getByText('結果:').parentElement).toHaveTextContent('[]');
+      playUntil(() => merge.queryByText('左の残り:') !== null);
+      expect(region).toHaveTextContent('左の残り:[1]');
+      expect(region).toHaveTextContent('右の残り:[2]');
+      expect(region).toHaveTextContent('結果:[]');
 
-      act(() => {
-        vi.advanceTimersByTime(interval * 2);
-      });
-      expect(merge.getByText('左の1を結果に入れました。')).toBeInTheDocument();
-      expect(merge.getByText('左の残り:').parentElement).toHaveTextContent('[]');
-      expect(merge.getByText('右の残り:').parentElement).toHaveTextContent('[2]');
-      expect(merge.getByText('結果:').parentElement).toHaveTextContent('[1]');
+      playUntil(() => merge.queryByText('左の1を結果に入れました。') !== null);
+      expect(region).toHaveTextContent('左の残り:[]');
+      expect(region).toHaveTextContent('右の残り:[2]');
+      expect(region).toHaveTextContent('結果:[1]');
 
-      act(() => {
-        vi.advanceTimersByTime(interval * 2);
-      });
-      expect(merge.getByText('結果に合わせて棒を並べ直しています。')).toBeInTheDocument();
-      expect(merge.getByText('結果:').parentElement).toHaveTextContent('[1, 2]');
+      playUntil(() => merge.queryByText('結果に合わせて棒を並べ直しています。') !== null);
+      expect(region).toHaveTextContent('結果:[1, 2]');
     } finally {
-      random.mockRestore();
       vi.useRealTimers();
     }
   });
 
   it('keeps bar heights on the original scale while merge writes temporarily duplicate values', () => {
-    const random = vi.spyOn(Math, 'random').mockReturnValue(0);
     vi.useFakeTimers();
     try {
       renderApp();
       for (let i = 0; i < 15; i++) {
         fireEvent.click(screen.getByRole('button', { name: '本数を1減らす' }));
       }
+      // 最大値 5 を右端以外に置く。書き戻しの途中で 5 が一時的に消える
+      shuffleUntil((labels) => labels[labels.length - 1] !== 5);
       const region = screen.getByLabelText('マージソートのバー表示');
-      const bars = () => Array.from(getBars(region));
-      expect(bars().map((bar) => bar.dataset.label)).toEqual(['2', '3', '4', '5', '1']);
 
       fireEvent.click(screen.getByRole('button', { name: '再生' }));
-      let labels: (string | undefined)[] = [];
-      for (let tick = 0; tick < 40; tick++) {
-        act(() => {
-          vi.advanceTimersByTime(computeInterval(1));
-        });
-        labels = bars().map((bar) => bar.dataset.label);
-        if (!labels.includes('5')) break;
-      }
+      playUntil(() => !barLabels(region).includes(5));
 
-      expect(labels).not.toContain('5');
-      expect(Math.max(...bars().map((bar) => parseFloat(bar.style.height)))).toBe(80);
+      // 高さの基準は、表示中の最大値ではなく初期配列の最大値 5 のまま
+      for (const bar of getBars(region)) {
+        expect(parseFloat(bar.style.height)).toBeCloseTo((Number(bar.dataset.label) / 5) * 100);
+      }
     } finally {
-      random.mockRestore();
       vi.useRealTimers();
     }
   });
@@ -505,14 +530,14 @@ describe('Algorithm visualizer UI specification', () => {
   });
 
   it('keeps comparison outlines while paused and removes them when bubble sort finishes', () => {
-    // 昇順の初期配列に固定し、最後の操作が比較になるケースを再現する。
-    const random = vi.spyOn(Math, 'random').mockReturnValue(0.999);
     vi.useFakeTimers();
     try {
       renderApp();
       for (let i = 0; i < 15; i++) {
         fireEvent.click(screen.getByRole('button', { name: '本数を1減らす' }));
       }
+      // 昇順に並べ、最後の操作が比較になるケースを再現する。
+      shuffleUntil((labels) => labels.join() === '1,2,3,4,5');
       const region = screen.getByLabelText('バブルソートのバー表示');
       fireEvent.click(screen.getByRole('button', { name: '再生' }));
       act(() => {
@@ -526,15 +551,11 @@ describe('Algorithm visualizer UI specification', () => {
       expect(region.querySelectorAll('.compare')).toHaveLength(2);
 
       fireEvent.click(screen.getByRole('button', { name: '再生' }));
-      act(() => {
-        vi.advanceTimersByTime(9000);
-      });
-      expect(region.querySelectorAll('.sorted')).toHaveLength(5);
+      playUntil(() => region.querySelectorAll('.sorted').length === 5);
       expect(region.querySelectorAll('.compare')).toHaveLength(0);
       // 他のアルゴリズムが再生中でも、完了したパネルの比較枠は消える。
       expect(screen.getByRole('button', { name: '一時停止' })).toBeEnabled();
     } finally {
-      random.mockRestore();
       vi.useRealTimers();
     }
   });
