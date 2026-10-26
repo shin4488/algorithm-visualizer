@@ -19,7 +19,7 @@ docker compose exec -T app bash -c 'yarn typecheck && yarn lint && yarn format &
 
 - Step builders in `src/plugins/visualizer.ts` are pure functions that generate `Step[]`. `applyStep()` in `src/App.tsx` applies one step per timer tick. All boards share the same shuffled base array.
 - Shared panels use `src/components/SortSection.tsx`; legends and overlays live under `src/components/algorithms/`.
-- When adding an algorithm, follow [add-sort-algorithm](.claude/skills/add-sort-algorithm/SKILL.md) for integration, translations, and tests. Preserve the GA4 `sort_finish` contract: `algorithm_type: '<kind>_sort'`.
+- When adding an algorithm, follow [add-sort-algorithm](.claude/skills/add-sort-algorithm/SKILL.md) for integration, translations, and tests. Preserve the GA4 `sort_finish` contract: `algorithm_type: '<kind>_sort'`, sent once each time a board finishes sorting.
 - Logic tests are in `src/__tests__/visualizer.spec.ts`; UI tests are in `src/__tests__/ui.spec.tsx` and use the Japanese `bars_aria_<kind>` labels. With fake timers, use synchronous `fireEvent`; `userEvent` can hang. Hidden browser tabs throttle playback, so use the fake-timer test for completion.
 - `.agents/skills` links to `.claude/skills`; edit the originals.
 

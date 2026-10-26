@@ -54,6 +54,33 @@ function shuffleUntil(condition: (labels: number[]) => boolean, maxShuffles = 50
   expect(condition(barLabels(region))).toBe(true);
 }
 
+/** react-ga4 が window.gtag に渡すイベントを、イベント名と引数の組で記録する */
+function recordGtagEvents() {
+  const events: { name: string; params: Record<string, unknown> }[] = [];
+  vi.stubGlobal('gtag', (command: string, name: string, params: Record<string, unknown>) => {
+    if (command === 'event') events.push({ name, params });
+  });
+  return events;
+}
+
+/** sort_finish の algorithm_type を、送った回数とともに返す */
+function sortFinishCounts(events: { name: string; params: Record<string, unknown> }[]) {
+  const counts: Record<string, number> = {};
+  for (const { name, params } of events) {
+    if (name !== 'sort_finish') continue;
+    const type = String(params.algorithm_type);
+    counts[type] = (counts[type] ?? 0) + 1;
+  }
+  return counts;
+}
+
+/** すべての棒が完了の表示になっているパネルの数 */
+function finishedPanelCount(regions: HTMLElement[]) {
+  return regions.filter((region) =>
+    Array.from(getBars(region)).every((bar) => bar.classList.contains('sorted')),
+  ).length;
+}
+
 /** フェイクタイマーで速度 1.00 の再生を 1 ステップずつ進め、条件を満たしたところで止める */
 function playUntil(condition: () => boolean, maxSteps = 200) {
   for (let step = 0; step < maxSteps && !condition(); step++) {
@@ -599,6 +626,93 @@ describe('Algorithm visualizer UI specification', () => {
       expect(screen.queryByRole('button', { name: /一時停止/ })).not.toBeInTheDocument();
     } finally {
       vi.useRealTimers();
+    }
+  }, 30000);
+
+  it('sends sort_finish once for each algorithm when it finishes during a playback', () => {
+    vi.useFakeTimers();
+    const events = recordGtagEvents();
+    try {
+      renderApp();
+      const regions = BAR_REGION_LABELS.map((label) => screen.getByLabelText(label));
+      fireEvent.click(screen.getByRole('button', { name: '再生' }));
+      playUntil(() => finishedPanelCount(regions) === 4, 2000);
+
+      expect(
+        events.filter(({ name }) => name === 'sort_finish').map(({ params }) => params),
+      ).toEqual(
+        expect.arrayContaining(
+          ['bubble_sort', 'selection_sort', 'merge_sort', 'quick_sort'].map((algorithm_type) => ({
+            animation_speed: 1,
+            bar_size: 20,
+            algorithm_type,
+            browser_language: 'ja',
+            translated_language: 'ja',
+          })),
+        ),
+      );
+      expect(sortFinishCounts(events)).toEqual({
+        bubble_sort: 1,
+        selection_sort: 1,
+        merge_sort: 1,
+        quick_sort: 1,
+      });
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  }, 30000);
+
+  it('does not resend sort_finish after pausing or replaying finished boards, and sends it again after a shuffle', () => {
+    vi.useFakeTimers();
+    const events = recordGtagEvents();
+    try {
+      renderApp();
+      const regions = BAR_REGION_LABELS.map((label) => screen.getByLabelText(label));
+      fireEvent.click(screen.getByRole('button', { name: '再生' }));
+      playUntil(() => finishedPanelCount(regions) > 0, 2000);
+      expect(finishedPanelCount(regions)).toBeLessThan(4);
+
+      // 一部のパネルが完了した後に、一時停止して再開する
+      fireEvent.click(screen.getByRole('button', { name: '一時停止' }));
+      fireEvent.click(screen.getByRole('button', { name: '再生' }));
+      playUntil(() => finishedPanelCount(regions) === 4, 2000);
+
+      // 全パネルの完了後に再生を押しても、並べ替えは始まらない
+      fireEvent.click(screen.getByRole('button', { name: '再生' }));
+      act(() => {
+        vi.advanceTimersByTime(computeInterval(1) * 2);
+      });
+      expect(sortFinishCounts(events)).toEqual({
+        bubble_sort: 1,
+        selection_sort: 1,
+        merge_sort: 1,
+        quick_sort: 1,
+      });
+
+      // シャッフルした新しい並びの完了は、改めて送る
+      fireEvent.click(screen.getByRole('button', { name: 'シャッフル' }));
+      fireEvent.click(screen.getByRole('button', { name: '再生' }));
+      playUntil(() => finishedPanelCount(regions) === 4, 2000);
+      expect(sortFinishCounts(events)).toEqual({
+        bubble_sort: 2,
+        selection_sort: 2,
+        merge_sort: 2,
+        quick_sort: 2,
+      });
+
+      // ほかの計測イベントは操作ごとに 1 回ずつ送る
+      expect(events.filter(({ name }) => name !== 'sort_finish').map(({ name }) => name)).toEqual([
+        'play_click',
+        'pause_click',
+        'play_click',
+        'play_click',
+        'shuffle_click',
+        'play_click',
+      ]);
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
     }
   }, 30000);
 });
