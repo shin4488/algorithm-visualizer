@@ -222,39 +222,30 @@ const App: React.FC = () => {
     return () => window.clearInterval(id);
   }, [playing, speed]);
 
+  // 完了の計測は、ボードが完了に変わったときに 1 回だけ送る。一時停止・再開や完了後の再生では送り直さない
+  const sendSortFinish = React.useEffectEvent((algorithmType: `${Kind}_sort`) => {
+    ReactGA.event('sort_finish', {
+      animation_speed: speed,
+      bar_size: size,
+      algorithm_type: algorithmType,
+      browser_language: browserLanguage,
+      translated_language: translatedLanguage,
+    });
+  });
   React.useEffect(() => {
-    if (playing && bubble.finished)
-      ReactGA.event('sort_finish', {
-        animation_speed: speed,
-        bar_size: size,
-        algorithm_type: 'bubble_sort',
-        browser_language: browserLanguage,
-        translated_language: translatedLanguage,
-      });
-    if (playing && selection.finished)
-      ReactGA.event('sort_finish', {
-        animation_speed: speed,
-        bar_size: size,
-        algorithm_type: 'selection_sort',
-        browser_language: browserLanguage,
-        translated_language: translatedLanguage,
-      });
-    if (playing && merge.finished)
-      ReactGA.event('sort_finish', {
-        animation_speed: speed,
-        bar_size: size,
-        algorithm_type: 'merge_sort',
-        browser_language: browserLanguage,
-        translated_language: translatedLanguage,
-      });
-    if (playing && quick.finished)
-      ReactGA.event('sort_finish', {
-        animation_speed: speed,
-        bar_size: size,
-        algorithm_type: 'quick_sort',
-        browser_language: browserLanguage,
-        translated_language: translatedLanguage,
-      });
+    if (bubble.finished) sendSortFinish('bubble_sort');
+  }, [bubble.finished]);
+  React.useEffect(() => {
+    if (selection.finished) sendSortFinish('selection_sort');
+  }, [selection.finished]);
+  React.useEffect(() => {
+    if (merge.finished) sendSortFinish('merge_sort');
+  }, [merge.finished]);
+  React.useEffect(() => {
+    if (quick.finished) sendSortFinish('quick_sort');
+  }, [quick.finished]);
+
+  React.useEffect(() => {
     if (playing && bubble.finished && selection.finished && merge.finished && quick.finished)
       setPlaying(false);
   }, [playing, bubble.finished, selection.finished, merge.finished, quick.finished]);
