@@ -91,6 +91,18 @@ function playUntil(condition: () => boolean, maxSteps = 200) {
   expect(condition()).toBe(true);
 }
 
+/** フェイクタイマーを 10ms ずつ進め、条件を満たすまでにかかった時間(ms)を返す */
+function elapsedUntil(condition: () => boolean, maxMs = 60 * 1000) {
+  let elapsed = 0;
+  for (; elapsed < maxMs && !condition(); elapsed += 10) {
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+  }
+  expect(condition()).toBe(true);
+  return elapsed;
+}
+
 describe('Algorithm visualizer UI specification', () => {
   beforeEach(() => {
     vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -450,6 +462,58 @@ describe('Algorithm visualizer UI specification', () => {
     expect(speedSlider).toHaveAttribute('aria-valuenow', '1.25');
     expect(screen.getByText(/アニメ速度:\s*1\.25/)).toBeInTheDocument();
   });
+
+  it('keeps the bar count within 5–50 and the speed within 0.20–10.00 when the − and ＋ buttons pass the ends', () => {
+    renderApp();
+    const sizeSlider = screen.getByRole('slider', { name: '本数:' });
+    const speedSlider = screen.getByRole('slider', { name: 'アニメ速度:' });
+
+    fireEvent.keyDown(sizeSlider, { key: 'Home' });
+    fireEvent.click(screen.getByRole('button', { name: '本数を1減らす' }));
+    expect(screen.getByText(/本数:\s*5$/)).toBeInTheDocument();
+    expect(getBars(screen.getByLabelText('バブルソートのバー表示'))).toHaveLength(5);
+
+    fireEvent.keyDown(sizeSlider, { key: 'End' });
+    fireEvent.click(screen.getByRole('button', { name: '本数を1増やす' }));
+    expect(screen.getByText(/本数:\s*50$/)).toBeInTheDocument();
+    expect(getBars(screen.getByLabelText('バブルソートのバー表示'))).toHaveLength(50);
+
+    fireEvent.keyDown(speedSlider, { key: 'Home' });
+    fireEvent.click(screen.getByRole('button', { name: '速度を一段階遅く' }));
+    expect(screen.getByText(/アニメ速度:\s*0\.20$/)).toBeInTheDocument();
+
+    fireEvent.keyDown(speedSlider, { key: 'End' });
+    fireEvent.click(screen.getByRole('button', { name: '速度を一段階速く' }));
+    expect(screen.getByText(/アニメ速度:\s*10\.00$/)).toBeInTheDocument();
+  });
+
+  it('plays ten times as fast at 10.00 as at 1.00, including when the speed is raised during playback', () => {
+    vi.useFakeTimers();
+    try {
+      renderApp();
+      fireEvent.keyDown(screen.getByRole('slider', { name: '本数:' }), { key: 'Home' });
+      const region = screen.getByLabelText('バブルソートのバー表示');
+      const bubbleFinished = () =>
+        Array.from(getBars(region)).every((bar) => bar.classList.contains('sorted'));
+
+      // 同じ並びを速度 1.00 と 10.00 で並べ替え、バブルソートの完了までの時間を比べる
+      shuffleUntil((labels) => labels.join() === '5,4,3,2,1');
+      fireEvent.click(screen.getByRole('button', { name: '再生' }));
+      const atOne = elapsedUntil(bubbleFinished);
+
+      shuffleUntil((labels) => labels.join() === '5,4,3,2,1');
+      fireEvent.click(screen.getByRole('button', { name: '再生' }));
+      // 2 回目は再生を始めてから速度を上げ、再生中の変更もすぐに効くことを確かめる
+      fireEvent.keyDown(screen.getByRole('slider', { name: 'アニメ速度:' }), { key: 'End' });
+      expect(screen.getByText(/アニメ速度:\s*10\.00$/)).toBeInTheDocument();
+      const atTen = elapsedUntil(bubbleFinished);
+
+      expect(atOne / atTen).toBeGreaterThan(9);
+      expect(atOne / atTen).toBeLessThan(11);
+    } finally {
+      vi.useRealTimers();
+    }
+  }, 30000);
 
   it('shuffles into a new arrangement of the current bar count shared by every panel', async () => {
     renderApp();
