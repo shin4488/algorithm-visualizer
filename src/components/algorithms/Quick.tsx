@@ -1,84 +1,20 @@
 import React from 'react';
-import { Group, Badge, ColorSwatch } from '@mantine/core';
+import { Group } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
+import LegendItem from '@/components/LegendItem';
 import type { BoardState } from '@/components/SortSection';
 
 export const QuickLegend: React.FC = () => {
   const { t } = useTranslation();
   return (
     <Group gap="xs" mt="xs" wrap="wrap">
-      <Badge
-        variant="transparent"
-        color="gray"
-        tt="none"
-        fw={500}
-        px={0}
-        leftSection={<ColorSwatch color="var(--danger)" size={8} radius={2} withShadow={false} />}
-      >
-        {t('badge_swap')}
-      </Badge>
-      <Badge
-        variant="transparent"
-        color="gray"
-        tt="none"
-        fw={500}
-        px={0}
-        leftSection={<ColorSwatch color="var(--markL)" size={8} radius={2} withShadow={false} />}
-      >
-        {t('badge_left_candidate')}
-      </Badge>
-      <Badge
-        variant="transparent"
-        color="gray"
-        tt="none"
-        fw={500}
-        px={0}
-        leftSection={<ColorSwatch color="var(--markR)" size={8} radius={2} withShadow={false} />}
-      >
-        {t('badge_right_candidate')}
-      </Badge>
-      <Badge
-        variant="transparent"
-        color="gray"
-        tt="none"
-        fw={500}
-        px={0}
-        leftSection={<ColorSwatch color="var(--pivot)" size={8} radius={2} withShadow={false} />}
-      >
-        {t('badge_pivot')}
-      </Badge>
-      <Badge
-        variant="transparent"
-        color="gray"
-        tt="none"
-        fw={500}
-        px={0}
-        leftSection={<ColorSwatch color="var(--cyan)" size={8} radius={2} withShadow={false} />}
-      >
-        {t('badge_boundary')}
-      </Badge>
-      <Badge
-        variant="transparent"
-        color="gray"
-        tt="none"
-        fw={500}
-        px={0}
-        leftSection={
-          <ColorSwatch color="var(--pivotLine)" size={8} radius={2} withShadow={false} />
-        }
-      >
-        {t('badge_pivotline')}
-      </Badge>
-      <Badge
-        variant="transparent"
-        color="gray"
-        tt="none"
-        fw={500}
-        px={0}
-        leftSection={<ColorSwatch color="var(--accent2)" size={8} radius={2} withShadow={false} />}
-      >
-        {t('badge_sorted')}
-      </Badge>
+      <LegendItem color="var(--danger)">{t('badge_swap')}</LegendItem>
+      <LegendItem color="var(--markL)">{t('badge_left_candidate')}</LegendItem>
+      <LegendItem color="var(--markR)">{t('badge_right_candidate')}</LegendItem>
+      <LegendItem color="var(--pivot)">{t('badge_pivot')}</LegendItem>
+      <LegendItem color="var(--cyan)">{t('badge_boundary')}</LegendItem>
+      <LegendItem color="var(--pivotLine)">{t('badge_pivotline')}</LegendItem>
+      <LegendItem color="var(--accent2)">{t('badge_sorted')}</LegendItem>
     </Group>
   );
 };
@@ -96,7 +32,7 @@ export const QuickOverlay: React.FC<{ board: BoardState }> = ({ board }) => {
 
   const pivotHeightPct =
     board.pivotIndex != null && board.data.length
-      ? (board.data[board.pivotIndex] / Math.max(...board.data, 1)) * 100
+      ? (board.data[board.pivotIndex] / board.maxValue) * 100
       : null;
 
   return (

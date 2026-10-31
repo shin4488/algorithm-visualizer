@@ -1,42 +1,16 @@
 import React from 'react';
-import { Group, Badge, Box, Code, Stack, Text, ColorSwatch } from '@mantine/core';
+import { Group, Box, Code, Stack, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
+import LegendItem from '@/components/LegendItem';
 import type { BoardState } from '@/components/SortSection';
 
 export const MergeLegend: React.FC = () => {
   const { t } = useTranslation();
   return (
     <Group gap="xs" mt="xs" wrap="wrap">
-      <Badge
-        variant="transparent"
-        color="gray"
-        tt="none"
-        fw={500}
-        px={0}
-        leftSection={<ColorSwatch color="var(--danger)" size={8} radius={2} withShadow={false} />}
-      >
-        {t('badge_merge_operations')}
-      </Badge>
-      <Badge
-        variant="transparent"
-        color="gray"
-        tt="none"
-        fw={500}
-        px={0}
-        leftSection={<ColorSwatch color="var(--cyan)" size={8} radius={2} withShadow={false} />}
-      >
-        {t('badge_merge_range')}
-      </Badge>
-      <Badge
-        variant="transparent"
-        color="gray"
-        tt="none"
-        fw={500}
-        px={0}
-        leftSection={<ColorSwatch color="var(--accent2)" size={8} radius={2} withShadow={false} />}
-      >
-        {t('badge_sorted')}
-      </Badge>
+      <LegendItem color="var(--danger)">{t('badge_merge_operations')}</LegendItem>
+      <LegendItem color="var(--cyan)">{t('badge_merge_range')}</LegendItem>
+      <LegendItem color="var(--accent2)">{t('badge_sorted')}</LegendItem>
     </Group>
   );
 };

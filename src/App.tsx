@@ -18,13 +18,11 @@ import { useTranslation } from 'react-i18next';
 import AlgorithmSelector from '@/components/AlgorithmSelector';
 import HeaderBar from '@/components/HeaderBar';
 import ControlBar from '@/components/ControlBar';
-import SortSection, { BoardState } from '@/components/SortSection';
+import SortSection, { BoardState, Kind } from '@/components/SortSection';
 import { BubbleLegend } from '@/components/algorithms/Bubble';
 import { SelectionLegend } from '@/components/algorithms/Selection';
 import { MergeLegend, MergeOverlay } from '@/components/algorithms/Merge';
 import { QuickLegend, QuickOverlay } from '@/components/algorithms/Quick';
-
-type Kind = 'bubble' | 'selection' | 'merge' | 'quick';
 
 function makeBoard(kind: Kind, base: number[]): BoardState {
   return {
@@ -157,6 +155,18 @@ function applyStep(b: BoardState, step: Step): BoardState {
   }
 }
 
+function advance(prev: BoardState): BoardState {
+  if (prev.finished || prev.stepIndex >= prev.steps.length) return prev;
+  const next = applyStep(prev, prev.steps[prev.stepIndex]);
+  const stepIndex = prev.stepIndex + 1;
+  return { ...next, stepIndex, finished: stepIndex >= prev.steps.length };
+}
+
+function withSteps(build: (arr: number[]) => Step[]) {
+  return (prev: BoardState): BoardState =>
+    prev.steps.length ? prev : { ...prev, steps: build(prev.data) };
+}
+
 const App: React.FC = () => {
   const { i18n, t } = useTranslation();
   const browserLanguage = i18n.language;
@@ -190,34 +200,10 @@ const App: React.FC = () => {
     if (!playing) return;
     const iv = computeInterval(speed);
     const id = window.setInterval(() => {
-      setBubble((prev) => {
-        if (prev.finished || prev.stepIndex >= prev.steps.length) return prev;
-        const step = prev.steps[prev.stepIndex];
-        const n = applyStep(prev, step);
-        const finished = prev.stepIndex + 1 >= prev.steps.length;
-        return { ...n, stepIndex: prev.stepIndex + 1, finished };
-      });
-      setSelection((prev) => {
-        if (prev.finished || prev.stepIndex >= prev.steps.length) return prev;
-        const step = prev.steps[prev.stepIndex];
-        const n = applyStep(prev, step);
-        const finished = prev.stepIndex + 1 >= prev.steps.length;
-        return { ...n, stepIndex: prev.stepIndex + 1, finished };
-      });
-      setMerge((prev) => {
-        if (prev.finished || prev.stepIndex >= prev.steps.length) return prev;
-        const step = prev.steps[prev.stepIndex];
-        const n = applyStep(prev, step);
-        const finished = prev.stepIndex + 1 >= prev.steps.length;
-        return { ...n, stepIndex: prev.stepIndex + 1, finished };
-      });
-      setQuick((prev) => {
-        if (prev.finished || prev.stepIndex >= prev.steps.length) return prev;
-        const step = prev.steps[prev.stepIndex];
-        const n = applyStep(prev, step);
-        const finished = prev.stepIndex + 1 >= prev.steps.length;
-        return { ...n, stepIndex: prev.stepIndex + 1, finished };
-      });
+      setBubble(advance);
+      setSelection(advance);
+      setMerge(advance);
+      setQuick(advance);
     }, iv);
     return () => window.clearInterval(id);
   }, [playing, speed]);
@@ -267,14 +253,10 @@ const App: React.FC = () => {
       translated_language: translatedLanguage,
     });
     // 一時停止後の配列からステップを作り直すと保存済みの再生位置とずれるため、再開時は既存の列を使う。
-    setBubble((prev) =>
-      prev.steps.length ? prev : { ...prev, steps: buildBubbleSteps(prev.data) },
-    );
-    setSelection((prev) =>
-      prev.steps.length ? prev : { ...prev, steps: buildSelectionSteps(prev.data) },
-    );
-    setMerge((prev) => (prev.steps.length ? prev : { ...prev, steps: buildMergeSteps(prev.data) }));
-    setQuick((prev) => (prev.steps.length ? prev : { ...prev, steps: buildQuickSteps(prev.data) }));
+    setBubble(withSteps(buildBubbleSteps));
+    setSelection(withSteps(buildSelectionSteps));
+    setMerge(withSteps(buildMergeSteps));
+    setQuick(withSteps(buildQuickSteps));
     setPlaying(true);
   };
   const handlePause = () => {
