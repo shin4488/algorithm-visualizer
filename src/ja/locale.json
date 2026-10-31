@@ -20,7 +20,7 @@
   "badge_sorted": "ソート完了",
   "badge_pivot": "ピボット",
   "badge_boundary": "境界（グループ分け）",
-  "badge_pivotline": "ピボット高（横線）",
+  "badge_pivotline": "ピボットの高さ（横線）",
   "badge_min": "最小値候補",
   "badge_merge_operations": "比べて並べる",
   "badge_merge_range": "範囲と分け目",
