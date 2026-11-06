@@ -31,13 +31,13 @@
     "@dnd-kit/core": "6.3.1",
     "@dnd-kit/sortable": "10.0.0",
     "@dnd-kit/utilities": "3.2.2",
-    "@mantine/core": "^9.7.3",
-    "@mantine/hooks": "^9.7.3",
-    "i18next": "^26.5.5",
+    "@mantine/core": "^9.7.4",
+    "@mantine/hooks": "^9.7.4",
+    "i18next": "^26.5.11",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-ga4": "^3.0.1",
-    "react-i18next": "^17.1.2"
+    "react-i18next": "^17.1.9"
   },
   "devDependencies": {
     "@parcel/resolver-default": "^2.16.4",
@@ -58,7 +58,7 @@
     "parcel": "^2.16.4",
     "prettier": "^3.9.10",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "typescript-eslint": "^8.72.0",
+    "typescript-eslint": "^8.72.1",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"
   }
