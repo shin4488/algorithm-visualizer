@@ -295,10 +295,10 @@
   resolved "https://registry.yarnpkg.com/@lmdb/lmdb-win32-x64/-/lmdb-win32-x64-2.8.5.tgz#8233e8762440b0f4632c47a09b1b6f23de8b934c"
   integrity sha512-4wvrf5BgnR8RpogHhtpCPJMKBmvyZPhhUtEwMJbXh0ni2BucpfF07jlmyM11zRqQ2XIq6PbC2j7W7UCCcm1rRQ==
 
-"@mantine/core@^9.7.5":
-  version "9.7.5"
-  resolved "https://registry.yarnpkg.com/@mantine/core/-/core-9.7.5.tgz#ba5698e882d377072a74b5ac328f08cd3c16d699"
-  integrity sha512-NiOTHpAZssi1Z5ISZBvcXEA4XDn0BWcxwpmmUthFx/eL0CsJ18FXMn/ydRCJmoeMGcIKmRE+pjt90KM70GOsUw==
+"@mantine/core@^9.8.0":
+  version "9.8.0"
+  resolved "https://registry.yarnpkg.com/@mantine/core/-/core-9.8.0.tgz#105e96e328245368dbde33a1da7fff46ff221f0c"
+  integrity sha512-+2Y+GBM6WvBJgBBb7hrfEvHbyljuRsOqC1GjxNpmX6NcD2SwmDXf9ZVFfquyXvi8fFerMrTpAwYdfb6k2PGAlQ==
   dependencies:
     "@floating-ui/react" "^0.27.20"
     clsx "^2.1.1"
@@ -306,10 +306,10 @@
     react-remove-scroll "^2.7.2"
     type-fest "^5.10.0"
 
-"@mantine/hooks@^9.7.5":
-  version "9.7.5"
-  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-9.7.5.tgz#8918202bff24fdc51c74d9381664886768d66423"
-  integrity sha512-+3cNisLOUkzF77SjRKkG/V+svZii9WDGvcwlaxFH58b14MNohz1zWbV+WfjZt9qfzrIPPUOedks/z6PMo5rAFA==
+"@mantine/hooks@^9.8.0":
+  version "9.8.0"
+  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-9.8.0.tgz#a73143a749048e4e6056dee37a8e3837f09d225e"
+  integrity sha512-fUA3PS8Ys2kih6VEuozgdEO0UyiGhryTJqx+Bf2lxee1XpXQ0XFXsQY7lNB4f+eBDzYCczYykQjIIuUzyJft7A==
 
 "@mischnic/json-sourcemap@^0.1.1":
   version "0.1.1"
@@ -1299,10 +1299,10 @@
   dependencies:
     "@babel/runtime" "^7.12.5"
 
-"@testing-library/user-event@^14.6.8":
-  version "14.6.8"
-  resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-14.6.8.tgz#9433b5008d8aff4cdf60c177f5789ce32062b763"
-  integrity sha512-vgSSqnANMnkcYR/vUNDbwS7aM3OErRLNUG8vCVVlj4oc6cKffUrccX7UAS5AmJQQNZTSibi9z5GvvRZ0aYgUCQ==
+"@testing-library/user-event@^14.6.10":
+  version "14.6.10"
+  resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-14.6.10.tgz#f5f1ac7169bc425d743cea3a746048e94b9a06b8"
+  integrity sha512-tA4stGNp3mLGOGO+lh87UA56Tz4c8NVGBSkyIF58O+W/bs2Re9BCI9xihnL70+DsThncFznE0skS88SM1D2hyg==
 
 "@tybys/wasm-util@^0.10.3":
   version "0.10.4"
@@ -2584,10 +2584,10 @@ prelude-ls@^1.2.1:
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.2.1.tgz#debc6489d7a6e6b0e7611888cec880337d316396"
   integrity sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==
 
-prettier@^3.9.10:
-  version "3.9.10"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.9.10.tgz#ac378e432f1a7381518f2e080816bbaefa38d585"
-  integrity sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA==
+prettier@^3.10.1:
+  version "3.10.1"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.10.1.tgz#00b1c1872f9650ec22093d5bdafdca0fe6760f77"
+  integrity sha512-70vp3ZUYoPlFbF9uiTdXHUUCGEIp7d4+6p+8DYbkm2jP7x/3i/paXVF6dopSI3zd/CEitrZN1rc4i85xWmmXlg==
 
 pretty-format@^27.0.2:
   version "27.5.1"
@@ -2691,7 +2691,7 @@ regenerator-runtime@^0.14.1:
   resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.14.1.tgz#356ade10263f685dda125100cd862c1db895327f"
   integrity sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==
 
-rolldown@~1.2.16:
+rolldown@~1.2.18:
   version "1.2.19"
   resolved "https://registry.yarnpkg.com/rolldown/-/rolldown-1.2.19.tgz#259be7978a73d9f223480f8cd10d39e45075e159"
   integrity sha512-QIiV1J9d0pzN4jeeTH4sjPy0AZ6cAy2cG0ExeoE1+U8Rvj+hR3gYkokx0YbeUNGlZqiQJJ2utcETe0oKXwzsuA==
@@ -2951,15 +2951,15 @@ utility-types@^3.11.0:
   resolved "https://registry.yarnpkg.com/utility-types/-/utility-types-3.11.0.tgz#607c40edb4f258915e901ea7995607fdf319424c"
   integrity sha512-6Z7Ma2aVEWisaL6TvBCy7P8rm2LQoPv6dJ7ecIaIixHcwfbJ0x7mWdbcwlIM5IGQxPZSFYeqRCqlOOeKoJYMkw==
 
-vite@^8.3.6:
-  version "8.3.6"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-8.3.6.tgz#ff2eb6b0b18e910c08a79c59a80faebecd422808"
-  integrity sha512-UI7dK29NnS54Fk+mmo7o+jI6U8Fp7hDl+X5Q1k45WH+d4dSlbLVUETGQ+hfkNgvLQGyoElPj837nZyv4MBc0VA==
+vite@^8.3.8:
+  version "8.3.8"
+  resolved "https://registry.yarnpkg.com/vite/-/vite-8.3.8.tgz#ad713bf2e46c241f344b5e50401297b77a08621d"
+  integrity sha512-LzOn3h9rG/0vhLdXrV4yJ4QFA9eEoqCl+Yx+kGJd7aB9w6nfNgVHKSYwLPZUHrz4ZGa+t+kXjV9itvcHDLQouA==
   dependencies:
     lightningcss "^1.33.0"
     picomatch "^4.0.7"
     postcss "^8.5.32"
-    rolldown "~1.2.16"
+    rolldown "~1.2.18"
     tinyglobby "^0.2.17"
   optionalDependencies:
     fsevents "~2.3.3"
