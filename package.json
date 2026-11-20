@@ -33,11 +33,11 @@
     "@dnd-kit/utilities": "3.2.2",
     "@mantine/core": "^9.8.0",
     "@mantine/hooks": "^9.8.0",
-    "i18next": "^26.7.2",
+    "i18next": "^27.1.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-ga4": "^3.0.1",
-    "react-i18next": "^17.1.13"
+    "react-i18next": "^18.0.1"
   },
   "devDependencies": {
     "@parcel/resolver-default": "^2.16.4",
